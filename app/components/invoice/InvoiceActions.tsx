@@ -2,13 +2,10 @@
 
 // ShadCn
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Components
@@ -28,7 +25,14 @@ import { useTranslationContext } from "@/contexts/TranslationContext";
 import { useIsDesktop } from "@/hooks/useMediaQuery";
 
 // Icons
-import { FileInput, FolderUp, Import, Plus, RotateCcw } from "lucide-react";
+import {
+    FileInput,
+    FolderUp,
+    Import,
+    MoreHorizontal,
+    Plus,
+    RotateCcw,
+} from "lucide-react";
 
 const InvoiceActions = () => {
     const { invoicePdfLoading, newInvoice } = useInvoiceContext();
@@ -43,99 +47,126 @@ const InvoiceActions = () => {
      */
     const isDesktop = useIsDesktop();
 
+    /*
+     * Direction A + B: on desktop this column is the invoice, not a control
+     * panel. The five equal-weight buttons that used to sit on top are now one
+     * primary action plus an overflow menu, so the preview is the thing your
+     * eye lands on.
+     */
+    const secondaryActions = (
+        <div className="flex flex-col gap-1">
+            <InvoiceLoaderModal>
+                <BaseButton
+                    variant="ghost"
+                    className="w-full justify-start"
+                    disabled={invoicePdfLoading}
+                >
+                    <FolderUp className="h-4 w-4" />
+                    {_t("actions.loadInvoice")}
+                </BaseButton>
+            </InvoiceLoaderModal>
+
+            <InvoiceExportModal>
+                <BaseButton
+                    variant="ghost"
+                    className="w-full justify-start"
+                    disabled={invoicePdfLoading}
+                >
+                    <Import className="h-4 w-4" />
+                    {_t("actions.exportInvoice")}
+                </BaseButton>
+            </InvoiceExportModal>
+
+            <NewInvoiceAlert>
+                <BaseButton
+                    variant="ghost"
+                    className="w-full justify-start"
+                    disabled={invoicePdfLoading}
+                >
+                    <Plus className="h-4 w-4" />
+                    {_t("actions.newInvoice")}
+                </BaseButton>
+            </NewInvoiceAlert>
+
+            <NewInvoiceAlert
+                title={_t("actions.resetFormTitle")}
+                description={_t("actions.resetFormDescription")}
+                confirmLabel={_t("actions.resetFormConfirm")}
+                onConfirm={newInvoice}
+            >
+                <BaseButton
+                    variant="ghost"
+                    className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    disabled={invoicePdfLoading}
+                >
+                    <RotateCcw className="h-4 w-4" />
+                    {_t("actions.resetForm")}
+                </BaseButton>
+            </NewInvoiceAlert>
+        </div>
+    );
+
     return (
         <div className="min-w-0">
-            <Card className="px-0 xl:sticky xl:top-24">
-                <CardHeader className="pb-4">
-                    <CardTitle className="text-xl md:text-2xl">
-                        {_t("actions.title")}
-                    </CardTitle>
-                    <CardDescription>
-                        {_t("actions.description")}
-                    </CardDescription>
-                </CardHeader>
+            <div className="xl:sticky xl:top-24">
+                {/* Toolbar above the preview — desktop only */}
+                <div className="mb-3 hidden items-center justify-between gap-3 xl:flex">
+                    <h2 className="text-sm font-medium text-muted-foreground">
+                        {_t("actions.previewTitle")}
+                    </h2>
 
-                <CardContent className="space-y-4 px-4 sm:px-6">
-                    {/* Primary action — hidden below xl, where MobileActionBar owns it */}
-                    <BaseButton
-                        type="submit"
-                        tooltipLabel={_t("actions.generatePdfTooltip")}
-                        loading={invoicePdfLoading}
-                        loadingText={_t("actions.generatePdfLoading")}
-                        className="hidden w-full xl:flex"
-                        size="lg"
-                    >
-                        <FileInput />
-                        {_t("actions.generatePdf")}
-                    </BaseButton>
+                    <div className="flex items-center gap-2">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <BaseButton
+                                    variant="ghost"
+                                    size="icon"
+                                    aria-label={_t("actions.moreActions")}
+                                    disabled={invoicePdfLoading}
+                                >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </BaseButton>
+                            </PopoverTrigger>
+                            <PopoverContent align="end" className="w-56 p-1.5">
+                                {secondaryActions}
+                            </PopoverContent>
+                        </Popover>
 
-                    {/* Secondary invoice-management actions */}
-                    <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-                        <InvoiceLoaderModal>
-                            <BaseButton
-                                variant="outline"
-                                tooltipLabel={_t("actions.loadInvoiceTooltip")}
-                                disabled={invoicePdfLoading}
-                                className="w-full sm:w-auto"
-                            >
-                                <FolderUp />
-                                {_t("actions.loadInvoice")}
-                            </BaseButton>
-                        </InvoiceLoaderModal>
-
-                        <InvoiceExportModal>
-                            <BaseButton
-                                variant="outline"
-                                tooltipLabel={_t("actions.exportInvoiceTooltip")}
-                                disabled={invoicePdfLoading}
-                                className="w-full sm:w-auto"
-                            >
-                                <Import />
-                                {_t("actions.exportInvoice")}
-                            </BaseButton>
-                        </InvoiceExportModal>
-
-                        <NewInvoiceAlert>
-                            <BaseButton
-                                variant="outline"
-                                tooltipLabel={_t("actions.newInvoiceTooltip")}
-                                disabled={invoicePdfLoading}
-                                className="w-full sm:w-auto"
-                            >
-                                <Plus />
-                                {_t("actions.newInvoice")}
-                            </BaseButton>
-                        </NewInvoiceAlert>
-
-                        <NewInvoiceAlert
-                            title={_t("actions.resetFormTitle")}
-                            description={_t("actions.resetFormDescription")}
-                            confirmLabel={_t("actions.resetFormConfirm")}
-                            onConfirm={newInvoice}
+                        <BaseButton
+                            type="submit"
+                            tooltipLabel={_t("actions.generatePdfTooltip")}
+                            loading={invoicePdfLoading}
+                            loadingText={_t("actions.generatePdfLoading")}
                         >
-                            <BaseButton
-                                variant="ghost"
-                                tooltipLabel={_t("actions.resetFormTooltip")}
-                                disabled={invoicePdfLoading}
-                                className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
-                            >
-                                <RotateCcw />
-                                {_t("actions.resetForm")}
-                            </BaseButton>
-                        </NewInvoiceAlert>
+                            <FileInput className="h-4 w-4" />
+                            {_t("actions.generatePdf")}
+                        </BaseButton>
                     </div>
+                </div>
 
-                    {/* Live preview / final PDF — desktop only */}
-                    <div className="hidden xl:block">
-                        <Separator className="my-4" />
-                        {isDesktop ? (
-                            <PdfViewer />
-                        ) : (
-                            <Skeleton className="min-h-[30rem] w-full rounded-xl" />
-                        )}
+                {/* Live preview / final PDF — desktop only */}
+                <div className="hidden xl:block">
+                    {isDesktop ? (
+                        <PdfViewer />
+                    ) : (
+                        <Skeleton className="min-h-[30rem] w-full rounded-xl" />
+                    )}
+                </div>
+
+                {/*
+                 * Below xl the preview moves into a sheet, so this column only
+                 * carries the secondary actions. Generate and Preview live in
+                 * the sticky MobileActionBar.
+                 */}
+                <div className="xl:hidden">
+                    <div className="border-t border-border pt-5">
+                        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            {_t("actions.title")}
+                        </h2>
+                        {secondaryActions}
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
     );
 };

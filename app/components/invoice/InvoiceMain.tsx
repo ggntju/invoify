@@ -40,7 +40,12 @@ const InvoiceMain = () => {
                  * `minmax(0, …)` lets the columns shrink below their content
                  * width instead of forcing the page to scroll horizontally.
                  */}
-                <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,55fr)_minmax(0,45fr)]">
+                {/*
+                 * The preview column is deliberately the wider of the two: the
+                 * invoice is what the user actually cares about, so it reads as
+                 * the hero and the form beside it stays quiet.
+                 */}
+                <div className="grid grid-cols-1 items-start gap-8 xl:grid-cols-[minmax(0,44fr)_minmax(0,56fr)] xl:gap-12">
                     <InvoiceForm />
                     <InvoiceActions />
                 </div>

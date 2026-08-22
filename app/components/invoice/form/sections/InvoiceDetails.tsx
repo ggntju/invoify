@@ -20,7 +20,7 @@ const InvoiceDetails = () => {
         <section className="flex flex-col flex-wrap gap-5">
             <Subheading>{_t("form.steps.invoiceDetails.heading")}:</Subheading>
 
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-8">
                 <div className="flex min-w-0 flex-col gap-3">
                     <FormFile
                         name="details.invoiceLogo"

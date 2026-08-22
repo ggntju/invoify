@@ -81,7 +81,8 @@
         "totalAmount": "Total Amount",
         "includeTotalInWords": "Include Total in Words?",
         "yes": "Yes",
-        "no": "No"
+        "no": "No",
+        "remove": "Remove"
       }
     }
   },
@@ -121,7 +122,8 @@
     "saveTooltip": "Save invoice in website",
     "sendToMailTooltip": "Send invoice PDF to mail",
     "importJson": "Import JSON",
-    "importJsonTooltip": "Import a JSON invoice file"
+    "importJsonTooltip": "Import a JSON invoice file",
+    "moreActions": "More actions"
   },
   "footer": {
     "developedBy": "Developed by"

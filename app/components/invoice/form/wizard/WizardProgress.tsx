@@ -159,21 +159,13 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
         return "upcoming";
     };
 
-    const circleStyles: Record<StepState, string> = {
+    const dotStyles: Record<StepState, string> = {
         invalid: "border-destructive bg-destructive text-destructive-foreground",
         active: "border-primary bg-primary text-primary-foreground",
         complete: "border-success bg-success text-success-foreground",
-        // Started but unfinished: clearly "in progress", never mistakable for done
-        partial: "border-primary bg-primary/10 text-primary",
+        // Started but unfinished: clearly in progress, never mistakable for done
+        partial: "border-primary bg-primary/15 text-primary",
         upcoming: "border-border bg-muted text-muted-foreground",
-    };
-
-    const labelStyles: Record<StepState, string> = {
-        invalid: "text-destructive font-medium",
-        active: "text-foreground font-medium",
-        complete: "text-muted-foreground",
-        partial: "text-foreground",
-        upcoming: "text-muted-foreground",
     };
 
     const activeStepData = steps[activeStep];
@@ -181,9 +173,14 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
         ? getStepState(activeStepData)
         : "upcoming";
 
-    const renderCircleContent = (step: Step, state: StepState) => {
-        if (state === "invalid") return <AlertCircle className="h-4 w-4" />;
-        if (state === "complete") return <Check className="h-4 w-4" />;
+    const renderDotContent = (
+        step: Step,
+        state: StepState,
+        isActive: boolean
+    ) => {
+        if (isActive) return step.id + 1;
+        if (state === "invalid") return <AlertCircle className="h-3.5 w-3.5" />;
+        if (state === "complete") return <Check className="h-3.5 w-3.5" />;
         return step.id + 1;
     };
 
@@ -198,102 +195,58 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
                     : ""
         }`;
 
+    /*
+     * Direction A: the stepper is deliberately quiet. It used to be a row of
+     * five full-label buttons plus connector lines — a band of chrome above
+     * every step. It is now a single progress rule with the current step named
+     * beside it, and small state dots for jumping.
+     *
+     * The four-state colouring is kept, because that is what tells you whether
+     * a step is genuinely finished; it just no longer shouts.
+     */
     return (
-        <nav aria-label={_t("form.wizard.progressLabel")}>
-            {/* ---------- Mobile: counter + progress bar + compact dots ---------- */}
-            <div className="md:hidden">
-                <div className="mb-2 flex items-baseline justify-between gap-3">
-                    <span className="text-sm font-medium text-foreground">
-                        {activeStepData?.label}
-                    </span>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                        {activeStep + 1} / {stepCount}
-                    </span>
-                </div>
-
-                <Progress
-                    value={((activeStep + 1) / stepCount) * 100}
-                    indicatorClassName={cn(
-                        activeStepState === "invalid" && "bg-destructive"
-                    )}
-                />
-
-                <div className="no-scrollbar -mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1">
-                    {steps.map((step) => {
-                        const state = getStepState(step);
-                        return (
-                            <button
-                                key={step.id}
-                                type="button"
-                                onClick={() => goToStep(step.id)}
-                                aria-label={stepAriaLabel(step, state)}
-                                aria-current={
-                                    step.id === activeStep ? "step" : undefined
-                                }
-                                className={cn(
-                                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition-colors",
-                                    circleStyles[state]
-                                )}
-                            >
-                                {renderCircleContent(step, state)}
-                            </button>
-                        );
-                    })}
-                </div>
+        <nav aria-label={_t("form.wizard.progressLabel")} className="mb-6">
+            <div className="mb-2.5 flex items-baseline justify-between gap-3">
+                <span className="truncate text-sm font-medium">
+                    {activeStepData?.label}
+                </span>
+                <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                    {_t("form.wizard.stepLabel")} {activeStep + 1} / {stepCount}
+                </span>
             </div>
 
-            {/* ---------- Desktop: numbered circles joined by connectors ---------- */}
-            <ol className="hidden items-start md:flex">
-                {steps.map((step, idx) => {
+            <Progress
+                value={((activeStep + 1) / stepCount) * 100}
+                indicatorClassName={cn(
+                    activeStepState === "invalid" && "bg-destructive"
+                )}
+            />
+
+            <ol className="mt-3 flex items-center gap-1.5">
+                {steps.map((step) => {
                     const state = getStepState(step);
-                    const isLast = idx === steps.length - 1;
+                    const isActive = step.id === activeStep;
 
                     return (
-                        <li
-                            key={step.id}
-                            className={cn(
-                                "flex items-start",
-                                !isLast && "flex-1"
-                            )}
-                        >
+                        <li key={step.id}>
                             <button
                                 type="button"
                                 onClick={() => goToStep(step.id)}
                                 aria-label={stepAriaLabel(step, state)}
-                                aria-current={
-                                    step.id === activeStep ? "step" : undefined
-                                }
-                                className="group flex w-20 shrink-0 flex-col items-center gap-1.5 lg:w-24"
+                                aria-current={isActive ? "step" : undefined}
+                                title={step.label}
+                                className={cn(
+                                    "flex items-center justify-center rounded-full border text-[11px] font-semibold transition-all",
+                                    // The active step is a labelled pill; the
+                                    // rest are dots, so the row stays calm.
+                                    isActive
+                                        ? "h-6 px-2.5"
+                                        : "h-6 w-6 hover:opacity-80",
+                                    dotStyles[state]
+                                )}
                             >
-                                <span
-                                    className={cn(
-                                        "flex h-9 w-9 items-center justify-center rounded-full border text-sm font-semibold transition-colors group-hover:opacity-90",
-                                        circleStyles[state]
-                                    )}
-                                >
-                                    {renderCircleContent(step, state)}
-                                </span>
-                                <span
-                                    className={cn(
-                                        "text-center text-xs leading-tight transition-colors",
-                                        labelStyles[state]
-                                    )}
-                                >
-                                    {step.label}
-                                </span>
+                                {renderDotContent(step, state, isActive)}
                             </button>
-
-                            {!isLast && (
-                                <span
-                                    aria-hidden="true"
-                                    className={cn(
-                                        "mt-[18px] h-0.5 min-w-4 flex-1 rounded-full transition-colors",
-                                        step.isComplete
-                                            ? "bg-success"
-                                            : "bg-border"
-                                    )}
-                                />
-                            )}
                         </li>
                     );
                 })}

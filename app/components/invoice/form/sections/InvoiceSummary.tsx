@@ -18,7 +18,7 @@ const InvoiceSummary = () => {
     return (
         <section>
             <Subheading>{_t("form.steps.summary.heading")}:</Subheading>
-            <div className="mt-5 grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-2">
+            <div className="mt-5 grid grid-cols-1 gap-x-8 gap-y-8">
                 <div className="flex min-w-0 flex-col gap-3">
                     <SignatureContextProvider>
                         {/* Signature dialog */}

@@ -6,12 +6,6 @@ import Image from "next/image";
 import { useFormContext } from "react-hook-form";
 
 // ShadCn
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
 // Utils
@@ -55,16 +49,13 @@ const TemplateSelector = () => {
     ];
     return (
         <>
-            <Card className="w-full min-w-0">
-                <CardHeader className="pb-3">
-                    <Label className="text-base font-semibold">
+            <div className="w-full min-w-0">
+                <div className="mb-3">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Choose Invoice Template
                     </Label>
-                    <CardDescription>
-                        Select one of the predefined templates
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="px-4 sm:px-6">
+                </div>
+                <div>
                     {/*
                      * Snap scrolling with narrower thumbnails on mobile — at
                      * a fixed 300px barely one template fit on a phone screen.
@@ -134,8 +125,8 @@ const TemplateSelector = () => {
                             );
                         })}
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </>
     );
 };

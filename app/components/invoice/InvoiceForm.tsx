@@ -5,16 +5,6 @@ import { useMemo } from "react";
 // RHF
 import { useFormContext, useWatch } from "react-hook-form";
 
-// ShadCn
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-
 // React Wizard
 import { Wizard } from "react-use-wizard";
 
@@ -51,56 +41,73 @@ const InvoiceForm = () => {
         }
     }, [invoiceNumber]);
 
+    /*
+     * No Card here any more.
+     *
+     * Every field used to sit inside a card, inside a card, inside a bordered
+     * step — three nested borders before you reached an input, which is most of
+     * why the form read as busy. The form is now a plain column separated by
+     * hairlines, and the only boxed surface left on the page is the invoice
+     * preview itself.
+     */
     return (
         <div className="min-w-0">
-            <Card>
-                <CardHeader>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <CardTitle className="text-xl uppercase md:text-2xl">
+            <div className="mx-auto max-w-2xl xl:mx-0">
+                <header className="mb-6">
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                        <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
                             {_t("form.title")}
-                        </CardTitle>
-                        <Badge variant="secondary" className="w-fit text-sm">
+                        </h1>
+                        <span className="text-sm text-muted-foreground">
                             {invoiceNumberLabel}
-                        </Badge>
+                        </span>
                     </div>
-                    <CardDescription>{_t("form.description")}</CardDescription>
-                </CardHeader>
-                <CardContent className="px-4 sm:px-6">
-                    <div className="space-y-8">
-                        <Wizard>
-                            <WizardStep>
-                                {/*
-                                 * `flex` alone does not wrap, so these two
-                                 * sections used to stay side by side and get
-                                 * crushed on narrow screens.
-                                 */}
-                                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
-                                    <BillFromSection />
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        {_t("form.description")}
+                    </p>
+                </header>
 
-                                    <BillToSection />
-                                </div>
-                            </WizardStep>
-                            <WizardStep>
-                                <div className="flex flex-wrap gap-y-10">
-                                    <InvoiceDetails />
-                                </div>
-                            </WizardStep>
+                <Wizard>
+                    <WizardStep>
+                        {/*
+                         * `flex` alone does not wrap, so these two sections used
+                         * to stay side by side and get crushed on narrow screens.
+                         */}
+                        {/*
+                         * Two columns on tablet, but back to one at xl: the
+                         * form column is now the narrower half of the page, so
+                         * splitting it again would crush both sub-forms. The
+                         * divider carries the separation instead of a border
+                         * box around each.
+                         */}
+                        <div className="grid grid-cols-1 divide-y divide-border md:grid-cols-2 md:gap-8 md:divide-y-0 xl:grid-cols-1 xl:gap-0 xl:divide-y">
+                            <div className="pb-8 md:pb-0 xl:pb-8">
+                                <BillFromSection />
+                            </div>
 
-                            <WizardStep>
-                                <Items />
-                            </WizardStep>
+                            <div className="pt-8 md:pt-0 xl:pt-8">
+                                <BillToSection />
+                            </div>
+                        </div>
+                    </WizardStep>
 
-                            <WizardStep>
-                                <PaymentInformation />
-                            </WizardStep>
+                    <WizardStep>
+                        <InvoiceDetails />
+                    </WizardStep>
 
-                            <WizardStep>
-                                <InvoiceSummary />
-                            </WizardStep>
-                        </Wizard>
-                    </div>
-                </CardContent>
-            </Card>
+                    <WizardStep>
+                        <Items />
+                    </WizardStep>
+
+                    <WizardStep>
+                        <PaymentInformation />
+                    </WizardStep>
+
+                    <WizardStep>
+                        <InvoiceSummary />
+                    </WizardStep>
+                </Wizard>
+            </div>
         </div>
     );
 };

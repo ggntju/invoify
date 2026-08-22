@@ -13,15 +13,20 @@ import { useTranslationContext } from "@/contexts/TranslationContext";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const WizardNavigation = () => {
-    const { isFirstStep, isLastStep, handleStep, previousStep, nextStep } =
-        useWizard();
+    const { isFirstStep, isLastStep, previousStep, nextStep } = useWizard();
 
     const { _t } = useTranslationContext();
+
+    /*
+     * A single hairline instead of the bordered footer this used to sit in.
+     * "Next" is the one obvious action on every step except the last, where the
+     * primary action becomes Generate PDF in the action bar.
+     */
     return (
-        <div className="flex items-center justify-between gap-3 border-t border-border pt-5">
+        <div className="mt-8 flex items-center justify-between gap-3 border-t border-border pt-5">
             {!isFirstStep ? (
                 <BaseButton
-                    variant="outline"
+                    variant="ghost"
                     tooltipLabel={_t("form.wizard.backTooltip")}
                     onClick={previousStep}
                 >
