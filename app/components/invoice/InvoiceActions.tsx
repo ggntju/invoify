@@ -2,117 +2,142 @@
 
 // ShadCn
 import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Components
 import {
-  PdfViewer,
-  BaseButton,
-  NewInvoiceAlert,
-  InvoiceLoaderModal,
-  InvoiceExportModal,
+    PdfViewer,
+    BaseButton,
+    NewInvoiceAlert,
+    InvoiceLoaderModal,
+    InvoiceExportModal,
 } from "@/app/components";
 
 // Contexts
 import { useInvoiceContext } from "@/contexts/InvoiceContext";
 import { useTranslationContext } from "@/contexts/TranslationContext";
 
+// Hooks
+import { useIsDesktop } from "@/hooks/useMediaQuery";
+
 // Icons
 import { FileInput, FolderUp, Import, Plus, RotateCcw } from "lucide-react";
 
 const InvoiceActions = () => {
-  const { invoicePdfLoading, newInvoice } = useInvoiceContext();
+    const { invoicePdfLoading, newInvoice } = useInvoiceContext();
 
-  const { _t } = useTranslationContext();
-  return (
-    <div className={`xl:w-[45%]`}>
-      <Card className="h-auto sticky top-0 px-2">
-        <CardHeader>
-          <CardTitle>{_t("actions.title")}</CardTitle>
-          <CardDescription>{_t("actions.description")}</CardDescription>
-        </CardHeader>
+    const { _t } = useTranslationContext();
 
-        <div className="flex flex-col flex-wrap items-center gap-2">
-          <div className="flex flex-wrap gap-3">
-            {/* Load modal button */}
-            <InvoiceLoaderModal>
-              <BaseButton
-                variant="outline"
-                tooltipLabel="Open load invoice menu"
-                disabled={invoicePdfLoading}
-              >
-                <FolderUp />
-                {_t("actions.loadInvoice")}
-              </BaseButton>
-            </InvoiceLoaderModal>
+    /*
+     * The preview is heavy (it renders the whole invoice template). Below xl it
+     * lives in MobilePreviewSheet instead, so only mount it here once we know
+     * we are actually on a desktop viewport — `hidden xl:block` alone would
+     * still mount and re-render it on phones.
+     */
+    const isDesktop = useIsDesktop();
 
-            {/* Export modal button */}
-            <InvoiceExportModal>
-              <BaseButton
-                variant="outline"
-                tooltipLabel="Open load invoice menu"
-                disabled={invoicePdfLoading}
-              >
-                <Import />
-                {_t("actions.exportInvoice")}
-              </BaseButton>
-            </InvoiceExportModal>
-          </div>
+    return (
+        <div className="min-w-0">
+            <Card className="px-0 xl:sticky xl:top-24">
+                <CardHeader className="pb-4">
+                    <CardTitle className="text-xl md:text-2xl">
+                        {_t("actions.title")}
+                    </CardTitle>
+                    <CardDescription>
+                        {_t("actions.description")}
+                    </CardDescription>
+                </CardHeader>
 
-          <div className="flex flex-wrap gap-3">
-            {/* New invoice button */}
-            <NewInvoiceAlert>
-              <BaseButton
-                variant="outline"
-                tooltipLabel="Get a new invoice form"
-                disabled={invoicePdfLoading}
-              >
-                <Plus />
-                {_t("actions.newInvoice")}
-              </BaseButton>
-            </NewInvoiceAlert>
+                <CardContent className="space-y-4 px-4 sm:px-6">
+                    {/* Primary action — hidden below xl, where MobileActionBar owns it */}
+                    <BaseButton
+                        type="submit"
+                        tooltipLabel={_t("actions.generatePdfTooltip")}
+                        loading={invoicePdfLoading}
+                        loadingText={_t("actions.generatePdfLoading")}
+                        className="hidden w-full xl:flex"
+                        size="lg"
+                    >
+                        <FileInput />
+                        {_t("actions.generatePdf")}
+                    </BaseButton>
 
-            {/* Reset form button */}
-            <NewInvoiceAlert
-              title="Reset form?"
-              description="This will clear all fields and the saved draft."
-              confirmLabel="Reset"
-              onConfirm={newInvoice}
-            >
-              <BaseButton
-                variant="destructive"
-                tooltipLabel="Reset entire form"
-                disabled={invoicePdfLoading}
-              >
-                <RotateCcw />
-                Reset Form
-              </BaseButton>
-            </NewInvoiceAlert>
+                    {/* Secondary invoice-management actions */}
+                    <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                        <InvoiceLoaderModal>
+                            <BaseButton
+                                variant="outline"
+                                tooltipLabel={_t("actions.loadInvoiceTooltip")}
+                                disabled={invoicePdfLoading}
+                                className="w-full sm:w-auto"
+                            >
+                                <FolderUp />
+                                {_t("actions.loadInvoice")}
+                            </BaseButton>
+                        </InvoiceLoaderModal>
 
-            {/* Generate pdf button */}
-            <BaseButton
-              type="submit"
-              tooltipLabel="Generate your invoice"
-              loading={invoicePdfLoading}
-              loadingText="Generating your invoice"
-            >
-              <FileInput />
-              {_t("actions.generatePdf")}
-            </BaseButton>
-          </div>
+                        <InvoiceExportModal>
+                            <BaseButton
+                                variant="outline"
+                                tooltipLabel={_t("actions.exportInvoiceTooltip")}
+                                disabled={invoicePdfLoading}
+                                className="w-full sm:w-auto"
+                            >
+                                <Import />
+                                {_t("actions.exportInvoice")}
+                            </BaseButton>
+                        </InvoiceExportModal>
 
-          <div className="w-full">
-            {/* Live preview and Final pdf */}
-            <PdfViewer />
-          </div>
+                        <NewInvoiceAlert>
+                            <BaseButton
+                                variant="outline"
+                                tooltipLabel={_t("actions.newInvoiceTooltip")}
+                                disabled={invoicePdfLoading}
+                                className="w-full sm:w-auto"
+                            >
+                                <Plus />
+                                {_t("actions.newInvoice")}
+                            </BaseButton>
+                        </NewInvoiceAlert>
+
+                        <NewInvoiceAlert
+                            title={_t("actions.resetFormTitle")}
+                            description={_t("actions.resetFormDescription")}
+                            confirmLabel={_t("actions.resetFormConfirm")}
+                            onConfirm={newInvoice}
+                        >
+                            <BaseButton
+                                variant="ghost"
+                                tooltipLabel={_t("actions.resetFormTooltip")}
+                                disabled={invoicePdfLoading}
+                                className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
+                            >
+                                <RotateCcw />
+                                {_t("actions.resetForm")}
+                            </BaseButton>
+                        </NewInvoiceAlert>
+                    </div>
+
+                    {/* Live preview / final PDF — desktop only */}
+                    <div className="hidden xl:block">
+                        <Separator className="my-4" />
+                        {isDesktop ? (
+                            <PdfViewer />
+                        ) : (
+                            <Skeleton className="min-h-[30rem] w-full rounded-xl" />
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
         </div>
-      </Card>
-    </div>
-  );
+    );
 };
 
 export default InvoiceActions;

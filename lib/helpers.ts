@@ -175,10 +175,10 @@ const getInvoiceTemplate = async (templateId: number) => {
     const componentName = `InvoiceTemplate${templateId}`;
 
     try {
-        const module = await import(
+        const templateModule = await import(
             `@/app/components/templates/invoice-pdf/${componentName}`
         );
-        return module.default;
+        return templateModule.default;
     } catch (err) {
         console.error(`Error importing template ${componentName}: ${err}`);
 

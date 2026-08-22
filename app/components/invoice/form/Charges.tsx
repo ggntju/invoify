@@ -60,9 +60,13 @@ const Charges = () => {
     return (
         <>
             {/* Charges */}
-            <div className="flex flex-col gap-3 min-w-[20rem]">
+            {/*
+             * `min-w-[20rem]` (320px) overflowed a 375px viewport once page and
+             * card padding were subtracted, so it now only applies from lg up.
+             */}
+            <div className="flex w-full min-w-0 flex-col gap-3 lg:min-w-[20rem]">
                 {/* Switches */}
-                <div className="flex justify-evenly pb-6">
+                <div className="flex flex-wrap justify-between gap-4 pb-6 sm:justify-evenly">
                     <div>
                         <Label>{_t("form.steps.summary.discount")}</Label>
 

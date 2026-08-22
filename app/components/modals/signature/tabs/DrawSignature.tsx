@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 // React Signature Canvas
 import SignatureCanvas from "react-signature-canvas";
 
@@ -34,17 +36,57 @@ const DrawSignature = ({ handleSaveSignature }: DrawSignatureProps) => {
         handleCanvasEnd,
     } = useSignatureContext();
 
+    /*
+     * A <canvas> has two sizes: its CSS box and its bitmap (width/height
+     * attributes, default 300x150). Only the CSS box was being set, so strokes
+     * were drawn at a different scale than the pointer — visibly offset, and
+     * worse on high-DPI phones. Keep the bitmap in sync with the rendered box,
+     * accounting for devicePixelRatio, and restore any existing drawing since
+     * resizing a canvas clears it.
+     */
+    useEffect(() => {
+        // The context types signatureRef itself as nullable, not just .current
+        const pad = signatureRef?.current;
+        const canvas = pad?.getCanvas();
+        if (!pad || !canvas) return;
+
+        const resizeCanvas = () => {
+            const { width, height } = canvas.getBoundingClientRect();
+            if (!width || !height) return;
+
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            const nextWidth = Math.round(width * ratio);
+            const nextHeight = Math.round(height * ratio);
+
+            if (canvas.width === nextWidth && canvas.height === nextHeight) {
+                return;
+            }
+
+            const previous = pad.isEmpty() ? null : pad.toDataURL();
+
+            canvas.width = nextWidth;
+            canvas.height = nextHeight;
+            canvas.getContext("2d")?.scale(ratio, ratio);
+
+            if (previous) {
+                pad.fromDataURL(previous, { width, height });
+            } else {
+                pad.clear();
+            }
+        };
+
+        resizeCanvas();
+
+        const observer = new ResizeObserver(resizeCanvas);
+        observer.observe(canvas);
+        return () => observer.disconnect();
+    }, [signatureRef]);
+
     return (
         <TabsContent value={SignatureTabs.DRAW}>
             <Card className="border-none shadow-none">
                 <CardContent className="space-y-2 p-0">
-                    <div
-                        style={{
-                            width: "100%",
-                            maxWidth: "600px",
-                            margin: "0 auto",
-                        }}
-                    >
+                    <div className="mx-auto w-full max-w-[600px] touch-none">
                         {/* Signature Canvas to draw signature */}
                         <SignatureCanvas
                             velocityFilterWeight={1} // Adjust the velocityFilterWeight to make the pen lighter
@@ -54,12 +96,9 @@ const DrawSignature = ({ handleSaveSignature }: DrawSignatureProps) => {
                             ref={signatureRef}
                             penColor={selectedColor}
                             canvasProps={{
-                                style: {
-                                    background: "#efefef",
-                                    borderRadius: "10px",
-                                    width: "100%",
-                                    height: "15rem",
-                                },
+                                className:
+                                    "w-full h-[12rem] sm:h-[15rem] rounded-[10px] touch-none",
+                                style: { background: "#efefef" },
                             }}
                             onEnd={handleCanvasEnd}
                         />

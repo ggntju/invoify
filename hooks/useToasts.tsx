@@ -65,6 +65,20 @@ const useToasts = () => {
         });
     };
 
+    /**
+     * Surfaced when RHF rejects a submit. Without this the failure was silent
+     * apart from a console.log, and on mobile the invalid field is usually on
+     * a wizard step that is not currently visible.
+     */
+    const formValidationError = () => {
+        toast({
+            variant: "destructive",
+            title: "Please check the form",
+            description:
+                "Some required fields are missing or invalid. Steps with errors are marked in the progress bar.",
+        });
+    };
+
     const importInvoiceError = () => {
         toast({
             variant: "destructive",
@@ -80,6 +94,7 @@ const useToasts = () => {
         modifiedInvoiceSuccess,
         sendPdfSuccess,
         sendPdfError,
+        formValidationError,
         importInvoiceError,
     };
 };

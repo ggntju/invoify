@@ -24,6 +24,9 @@ import {
 // Hooks
 import useCurrencies from "@/hooks/useCurrencies";
 
+// Styles
+import { fieldControl, fieldLabel, fieldRow } from "./fieldStyles";
+
 // Types
 import { CurrencyType, NameType } from "@/types";
 
@@ -49,18 +52,18 @@ const CurrencySelector = ({
                 name={name}
                 render={({ field }) => (
                     <FormItem>
-                        <div className="flex justify-between gap-5 items-center text-sm">
-                            <div>
-                                <FormLabel>{label}:</FormLabel>
-                            </div>
-                            <div>
+                        <div className={fieldRow}>
+                            <FormLabel className={fieldLabel}>
+                                {label}:
+                            </FormLabel>
+                            <div className={fieldControl}>
                                 <Select
                                     {...field}
                                     defaultValue={field.value}
                                     onValueChange={field.onChange}
                                 >
                                     <FormControl>
-                                        <SelectTrigger className="w-[13rem]">
+                                        <SelectTrigger className="w-full">
                                             <SelectValue
                                                 placeholder={placeholder}
                                             />

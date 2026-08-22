@@ -135,16 +135,6 @@ const Items = () => {
                         />
                     ))}
                 </SortableContext>
-                {/* <DragOverlay
-                    dropAnimation={{
-                        duration: 500,
-                        easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)",
-                    }}
-                >
-                    <div className="w-[10rem]">
-                        <p>Click to drop</p>
-                    </div>
-                </DragOverlay> */}
             </DndContext>
             <div className="flex flex-wrap gap-2">
                 <BaseButton

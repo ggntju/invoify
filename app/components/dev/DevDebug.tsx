@@ -12,9 +12,7 @@ import { BaseButton } from "@/app/components";
 // Variables
 import { FORM_FILL_VALUES } from "@/lib/variables";
 
-type DevDebugProps = {};
-
-const DevDebug = ({}: DevDebugProps) => {
+const DevDebug = () => {
     const { reset, formState } = useFormContext();
     return (
         <div className="flex border-2 border-red-500 rounded-md">

@@ -110,7 +110,7 @@ const SingleItem = ({
         <div
             style={style}
             {...attributes}
-            className={`${boxDragClasses} group flex flex-col gap-y-5 p-3 my-2 cursor-default rounded-xl bg-gray-50 dark:bg-slate-800 dark:border-gray-600`}
+            className={`${boxDragClasses} group my-2 flex cursor-default flex-col gap-y-5 rounded-xl border border-border bg-muted/40 p-3`}
         >
             {/* {isDragging && <div className="bg-blue-600 h-1 rounded-full"></div>} */}
             <div className="flex flex-wrap justify-between">
@@ -153,46 +153,51 @@ const SingleItem = ({
                     </BaseButton>
                 </div>
             </div>
+            {/*
+             * Name spans the full row on phones; quantity and rate share a row
+             * beneath it. From sm up all four sit on one 12-column line.
+             */}
             <div
-                className="flex flex-wrap justify-between gap-y-5 gap-x-2"
+                className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-12"
                 key={index}
             >
-                <FormInput
-                    name={`${name}[${index}].name`}
-                    label={_t("form.steps.lineItems.name")}
-                    placeholder="Item name"
-                    vertical
-                />
+                <div className="col-span-2 min-w-0 sm:col-span-5">
+                    <FormInput
+                        name={`${name}[${index}].name`}
+                        label={_t("form.steps.lineItems.name")}
+                        placeholder="Item name"
+                        vertical
+                    />
+                </div>
 
-                <FormInput
-                    name={`${name}[${index}].quantity`}
-                    type="number"
-                    label={_t("form.steps.lineItems.quantity")}
-                    placeholder={_t("form.steps.lineItems.quantity")}
-                    className="w-[8rem]"
-                    vertical
-                />
+                <div className="min-w-0 sm:col-span-2">
+                    <FormInput
+                        name={`${name}[${index}].quantity`}
+                        type="number"
+                        label={_t("form.steps.lineItems.quantity")}
+                        placeholder={_t("form.steps.lineItems.quantity")}
+                        vertical
+                    />
+                </div>
 
-                <FormInput
-                    name={`${name}[${index}].unitPrice`}
-                    type="number"
-                    label={_t("form.steps.lineItems.rate")}
-                    labelHelper={`(${currency})`}
-                    placeholder={_t("form.steps.lineItems.rate")}
-                    className="w-[8rem]"
-                    vertical
-                />
+                <div className="min-w-0 sm:col-span-2">
+                    <FormInput
+                        name={`${name}[${index}].unitPrice`}
+                        type="number"
+                        label={_t("form.steps.lineItems.rate")}
+                        labelHelper={`(${currency})`}
+                        placeholder={_t("form.steps.lineItems.rate")}
+                        vertical
+                    />
+                </div>
 
-                <div className="flex flex-col gap-2">
-                    <div>
-                        <Label>{_t("form.steps.lineItems.total")}</Label>
-                    </div>
+                <div className="col-span-2 flex min-w-0 flex-col gap-2 sm:col-span-3">
+                    <Label>{_t("form.steps.lineItems.total")}</Label>
                     <Input
                         value={`${total} ${currency}`}
                         readOnly
                         placeholder="Item total"
-                        className="border-none font-medium text-lg bg-transparent"
-                        size={10}
+                        className="w-full border-none bg-transparent px-0 text-lg font-medium"
                     />
                 </div>
             </div>

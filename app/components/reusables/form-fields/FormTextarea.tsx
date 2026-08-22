@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/form";
 import { Textarea, TextareaProps } from "@/components/ui/textarea";
 
+// Utils
+import { cn } from "@/lib/utils";
+
 type FormTextareaProps = {
     name: string;
     label?: string;
@@ -25,6 +28,7 @@ const FormTextarea = ({
     label,
     labelHelper,
     placeholder,
+    className,
     ...props
 }: FormTextareaProps) => {
     const { control } = useFormContext();
@@ -33,24 +37,26 @@ const FormTextarea = ({
             control={control}
             name={name}
             render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-full min-w-0">
                     {label && <FormLabel>{`${label}:`}</FormLabel>}
                     {labelHelper && (
                         <span className="text-xs"> {labelHelper}</span>
                     )}
-                    <div className="flex justify-between gap-5 items-center text-sm">
-                        <div>
-                            <FormControl>
-                                <Textarea
-                                    {...field}
-                                    placeholder={placeholder}
-                                    className="w-[15rem] h-0"
-                                    {...props}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </div>
-                    </div>
+                    <FormControl>
+                        {/* `h-0` was collapsing the field; height now comes
+                            from `rows` and the min-height below. */}
+                        <Textarea
+                            {...field}
+                            rows={4}
+                            placeholder={placeholder}
+                            className={cn(
+                                "min-h-[6rem] w-full resize-y sm:max-w-[20rem]",
+                                className
+                            )}
+                            {...props}
+                        />
+                    </FormControl>
+                    <FormMessage />
                 </FormItem>
             )}
         />

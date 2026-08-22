@@ -36,9 +36,7 @@ import { isDataUrl } from "@/lib/helpers";
 // Types
 import { SignatureTabs } from "@/types";
 
-type SignatureModalProps = {};
-
-const SignatureModal = ({}: SignatureModalProps) => {
+const SignatureModal = () => {
     const { setValue } = useFormContext();
 
     const {
@@ -122,22 +120,24 @@ const SignatureModal = ({}: SignatureModalProps) => {
     return (
         <>
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger className="flex justify-start">
-                    <div>
+                <DialogTrigger className="flex w-full justify-start">
+                    {/* max-w rather than a fixed 300px, so the preview cannot
+                        overflow its column on a narrow screen */}
+                    <div className="w-full max-w-[300px] min-w-0">
                         <Label>
                             {_t("form.steps.summary.signature.heading")}
                         </Label>
 
                         {signature && isDataUrl(signature) ? (
                             <img
-                                className="border border-black rounded-md hover:border-blue-500 bg-white"
+                                className="w-full rounded-md border border-border bg-white transition-colors hover:border-primary"
                                 src={signature}
-                                width={300}
-                                alt=""
+                                alt={_t("form.steps.summary.signature.heading")}
                             />
                         ) : signature && typedSignature ? (
-                            <div className="flex justify-center items-center w-[300px]">
+                            <div className="flex h-[155px] w-full items-center justify-center overflow-hidden">
                                 <p
+                                    className="truncate"
                                     style={{
                                         fontFamily: selectedFont.variable,
                                         fontSize: 55,
@@ -147,14 +147,9 @@ const SignatureModal = ({}: SignatureModalProps) => {
                                 </p>
                             </div>
                         ) : (
-                            <div
-                                style={{
-                                    width: "300px",
-                                }}
-                                className="flex flex-col justify-center items-center h-[155px] rounded-md bg-gray-100 dark:bg-slate-800 border border-black dark:border-white hover:border-blue-500"
-                            >
-                                <FileSignature />
-                                <Label>
+                            <div className="flex h-[155px] w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed border-border bg-muted/50 text-muted-foreground transition-colors hover:border-primary hover:text-foreground">
+                                <FileSignature className="h-5 w-5" />
+                                <Label className="cursor-pointer text-xs">
                                     {_t(
                                         "form.steps.summary.signature.placeholder"
                                     )}

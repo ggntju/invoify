@@ -11,6 +11,9 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+// Utils
+import { cn } from "@/lib/utils";
+
 // Icons
 import { Loader2 } from "lucide-react";
 
@@ -28,39 +31,39 @@ const BaseButton = ({
     loading,
     loadingText = "Loading",
     children,
+    className,
+    disabled,
     ...props
 }: BaseButtonProps) => {
-    const withoutTooltip = (
-        <>
-            {!loading ? (
-                <Button className="flex gap-2" type={type} {...props}>
-                    {children}
-                </Button>
-            ) : (
-                <Button disabled>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+    /*
+     * `className` is merged rather than spread over the base classes — with a
+     * plain `{...props}` spread a caller-supplied className replaced
+     * "flex gap-2" outright and collapsed the icon spacing.
+     */
+    const button = (
+        <Button
+            type={type}
+            className={cn("flex items-center gap-2", className)}
+            disabled={disabled || loading}
+            {...props}
+        >
+            {loading ? (
+                <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     {loadingText}
-                </Button>
+                </>
+            ) : (
+                children
             )}
-        </>
+        </Button>
     );
 
-    if (!tooltipLabel) return withoutTooltip;
+    if (!tooltipLabel) return button;
+
     return (
         <TooltipProvider>
             <Tooltip>
-                <TooltipTrigger asChild>
-                    {!loading ? (
-                        <Button className="flex gap-2" type={type} {...props}>
-                            {children}
-                        </Button>
-                    ) : (
-                        <Button type={type} {...props} disabled>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            {loadingText}
-                        </Button>
-                    )}
-                </TooltipTrigger>
+                <TooltipTrigger asChild>{button}</TooltipTrigger>
                 <TooltipContent>
                     <p>{tooltipLabel}</p>
                 </TooltipContent>

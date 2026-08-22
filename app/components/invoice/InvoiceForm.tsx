@@ -52,28 +52,29 @@ const InvoiceForm = () => {
     }, [invoiceNumber]);
 
     return (
-        <div className={`xl:w-[55%]`}>
+        <div className="min-w-0">
             <Card>
                 <CardHeader>
-                    <div className="flex gap-3">
-                        <CardTitle className="flex items-center gap-3">
-                            <span className="uppercase">
-                                {_t("form.title")}
-                            </span>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <CardTitle className="text-xl uppercase md:text-2xl">
+                            {_t("form.title")}
                         </CardTitle>
-                        <Badge variant="secondary" className="w-fit">
-                            <p style={{ fontSize: "14px" }}>
-                                {invoiceNumberLabel}
-                            </p>
+                        <Badge variant="secondary" className="w-fit text-sm">
+                            {invoiceNumberLabel}
                         </Badge>
                     </div>
                     <CardDescription>{_t("form.description")}</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-4 sm:px-6">
                     <div className="space-y-8">
                         <Wizard>
                             <WizardStep>
-                                <div className="flex gap-x-20 gap-y-10">
+                                {/*
+                                 * `flex` alone does not wrap, so these two
+                                 * sections used to stay side by side and get
+                                 * crushed on narrow screens.
+                                 */}
+                                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
                                     <BillFromSection />
 
                                     <BillToSection />

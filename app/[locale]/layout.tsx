@@ -21,8 +21,10 @@ import Favicon from "@/public/assets/favicon/favicon.ico";
 // Vercel Analytics
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
+import Script from "next/script";
 // Next Intl
 import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "@/i18n/messages";
 import { notFound } from "next/navigation";
 
 export const metadata: Metadata = {
@@ -71,8 +73,10 @@ export default async function LocaleLayout(props: {
 
     let messages;
     try {
-        messages = (await import(`@/i18n/locales/${locale}.json`)).default;
-    } catch (error) {
+        // English-backed so a key missing from a translation renders readable
+        // copy instead of an error. See i18n/messages.ts
+        messages = await getMessages(locale);
+    } catch {
         notFound();
     }
 
@@ -84,10 +88,9 @@ export default async function LocaleLayout(props: {
                     id="json-ld"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(JSONLD) }}
                 />
-                <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="aliabb" data-description="Support me on Buy me a coffee!" data-message="Thank you for using Invoify" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
             </head>
             <body
-                className={`${outfit.className} ${dancingScript.variable} ${parisienne.variable} ${greatVibes.variable} ${alexBrush.variable} antialiased bg-slate-100 dark:bg-slate-800`}
+                className={`${outfit.className} ${dancingScript.variable} ${parisienne.variable} ${greatVibes.variable} ${alexBrush.variable} antialiased min-h-dvh bg-background text-foreground`}
                 suppressHydrationWarning
             >
                 <NextIntlClientProvider locale={locale} messages={messages}>
@@ -103,6 +106,25 @@ export default async function LocaleLayout(props: {
 
                         {/* Vercel analytics */}
                         <Analytics />
+
+                        {/*
+                         * Buy Me a Coffee widget. Loaded via next/script with
+                         * lazyOnload so this third party does not block parsing
+                         * — it was previously a synchronous <script> in <head>.
+                         */}
+                        <Script
+                            src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js"
+                            strategy="lazyOnload"
+                            data-name="BMC-Widget"
+                            data-cfasync="false"
+                            data-id="aliabb"
+                            data-description="Support me on Buy me a coffee!"
+                            data-message="Thank you for using Invoify"
+                            data-color="#5F7FFF"
+                            data-position="Right"
+                            data-x_margin="18"
+                            data-y_margin="18"
+                        />
                     </Providers>
                 </NextIntlClientProvider>
             </body>
