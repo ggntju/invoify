@@ -3,6 +3,12 @@ import React from "react";
 // Components
 import { InvoiceLayout } from "@/app/components";
 
+// Labels
+import {
+    DEFAULT_INVOICE_LABELS,
+    InvoiceTemplateExtras,
+} from "./invoiceLabels";
+
 // Helpers
 import { formatDate, formatNumberWithCommas, isDataUrl } from "@/lib/helpers";
 
@@ -11,14 +17,17 @@ import { formatDate, formatNumberWithCommas, isDataUrl } from "@/lib/helpers";
 // Types
 import { InvoiceType } from "@/types";
 
-const InvoiceTemplate2 = (data: InvoiceType) => {
+const InvoiceTemplate2 = (data: InvoiceType & InvoiceTemplateExtras) => {
+    // Falls back to English when rendered without explicit labels
+	const _labels = data.labels ?? DEFAULT_INVOICE_LABELS;
+
     const { sender, receiver, details } = data;
     return (
         <InvoiceLayout data={data}>
             <div className="flex justify-between">
                 <div>
                     <h2 className="text-2xl md:text-3xl font-semibold text-gray-800">
-                        Invoice #
+                        {_labels.invoiceNumber}
                     </h2>
                     <span className="mt-1 block text-gray-500">
                         {details.invoiceNumber}
@@ -51,7 +60,7 @@ const InvoiceTemplate2 = (data: InvoiceType) => {
             <div className="mt-6 grid sm:grid-cols-2 gap-3">
                 <div>
                     <h3 className="text-lg font-semibold text-gray-800">
-                        Bill to:
+                        {_labels.billTo}:
                     </h3>
                     <h3 className="text-lg font-semibold text-gray-800">
                         {receiver.name}
@@ -67,7 +76,7 @@ const InvoiceTemplate2 = (data: InvoiceType) => {
                     <div className="grid grid-cols-2 sm:grid-cols-1 gap-3 sm:gap-2">
                         <dl className="grid sm:grid-cols-6 gap-x-3">
                             <dt className="col-span-3 font-semibold text-gray-800">
-                                Invoice date:
+                                {_labels.invoiceDate}:
                             </dt>
                             <dd className="col-span-3 text-gray-500">
                                 {formatDate(details.invoiceDate)}
@@ -75,7 +84,7 @@ const InvoiceTemplate2 = (data: InvoiceType) => {
                         </dl>
                         <dl className="grid sm:grid-cols-6 gap-x-3">
                             <dt className="col-span-3 font-semibold text-gray-800">
-                                Due date:
+                                {_labels.dueDate}:
                             </dt>
                             <dd className="col-span-3 text-gray-500">
                                 {formatDate(details.dueDate)}
@@ -140,7 +149,7 @@ const InvoiceTemplate2 = (data: InvoiceType) => {
                     <div className="grid grid-cols-2 sm:grid-cols-1 gap-3 sm:gap-2">
                         <dl className="grid sm:grid-cols-5 gap-x-3">
                             <dt className="col-span-3 font-semibold text-gray-800">
-                                Subtotal:
+                                {_labels.subtotal}:
                             </dt>
                             <dd className="col-span-2 text-gray-500">
                                 {formatNumberWithCommas(
@@ -153,7 +162,7 @@ const InvoiceTemplate2 = (data: InvoiceType) => {
                             details.discountDetails?.amount > 0 && (
                                 <dl className="grid sm:grid-cols-5 gap-x-3">
                                     <dt className="col-span-3 font-semibold text-gray-800">
-                                        Discount:
+                                        {_labels.discount}:
                                     </dt>
                                     <dd className="col-span-2 text-gray-500">
                                         {details.discountDetails.amountType ===
@@ -181,7 +190,7 @@ const InvoiceTemplate2 = (data: InvoiceType) => {
                             details.shippingDetails?.cost > 0 && (
                                 <dl className="grid sm:grid-cols-5 gap-x-3">
                                     <dt className="col-span-3 font-semibold text-gray-800">
-                                        Shipping:
+                                        {_labels.shipping}:
                                     </dt>
                                     <dd className="col-span-2 text-gray-500">
                                         {details.shippingDetails.costType ===
@@ -193,7 +202,7 @@ const InvoiceTemplate2 = (data: InvoiceType) => {
                             )}
                         <dl className="grid sm:grid-cols-5 gap-x-3">
                             <dt className="col-span-3 font-semibold text-gray-800">
-                                Total:
+                                {_labels.total}:
                             </dt>
                             <dd className="col-span-2 text-gray-500">
                                 {formatNumberWithCommas(
@@ -205,7 +214,7 @@ const InvoiceTemplate2 = (data: InvoiceType) => {
                         {details.totalAmountInWords && (
                             <dl className="grid sm:grid-cols-5 gap-x-3">
                                 <dt className="col-span-3 font-semibold text-gray-800">
-                                    Total in words:
+                                    {_labels.totalInWords}:
                                 </dt>
                                 <dd className="col-span-2 text-gray-500">
                                     <em>
@@ -223,7 +232,7 @@ const InvoiceTemplate2 = (data: InvoiceType) => {
                 <div className="my-4">
                     <div className="my-2">
                         <p className="font-semibold text-blue-600">
-                            Additional notes:
+                            {_labels.additionalNotes}:
                         </p>
                         <p className="font-regular text-gray-800">
                             {details.additionalNotes}
@@ -231,7 +240,7 @@ const InvoiceTemplate2 = (data: InvoiceType) => {
                     </div>
                     <div className="my-2">
                         <p className="font-semibold text-blue-600">
-                            Payment terms:
+                            {_labels.paymentTerms}:
                         </p>
                         <p className="font-regular text-gray-800">
                             {details.paymentTerms}
@@ -271,7 +280,7 @@ const InvoiceTemplate2 = (data: InvoiceType) => {
             {/* Signature */}
             {details?.signature?.data && isDataUrl(details?.signature?.data) ? (
                 <div className="mt-6">
-                    <p className="font-semibold text-gray-800">Signature:</p>
+                    <p className="font-semibold text-gray-800">{_labels.signature}:</p>
                     <img
                         src={details.signature.data}
                         width={120}
@@ -281,7 +290,7 @@ const InvoiceTemplate2 = (data: InvoiceType) => {
                 </div>
             ) : details.signature?.data ? (
                 <div className="mt-6">
-                    <p className="text-gray-800">Signature:</p>
+                    <p className="text-gray-800">{_labels.signature}:</p>
                     <p
                         style={{
                             fontSize: 30,

@@ -9,10 +9,8 @@ const defaultTranslationContext = {
 
 export const TranslationContext = createContext(defaultTranslationContext);
 
-export const useTranslation = () => {
-    return useContext(TranslationContext);
-};
-
+// `useTranslation` was an identical second export of this hook, unused
+// anywhere in the app.
 export const useTranslationContext = () => {
     return useContext(TranslationContext);
 };

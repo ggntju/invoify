@@ -66,6 +66,10 @@ export const LOCALES = [
   { code: "ja", name: "日本語" },
   { code: "nb-NO", name: "Norwegian (bokmål)" },
   { code: "nn-NO", name: "Norwegian (nynorsk)" },
+  // id.json and sr.json shipped in i18n/locales but were never registered
+  // here, so those locales were unreachable and fell back to the default.
+  { code: "id", name: "Bahasa Indonesia" },
+  { code: "sr", name: "Српски" },
 ];
 export const DEFAULT_LOCALE = LOCALES[0].code;
 

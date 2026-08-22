@@ -117,7 +117,9 @@
     "downloadTooltip": "Download invoice PDF",
     "printTooltip": "Print invoice",
     "saveTooltip": "Save invoice in website",
-    "sendToMailTooltip": "Send invoice PDF to mail"
+    "sendToMailTooltip": "Send invoice PDF to mail",
+    "importJson": "Import JSON",
+    "importJsonTooltip": "Import a JSON invoice file"
   },
   "footer": {
     "developedBy": "Developed by"
@@ -154,5 +156,24 @@
     "settings": "Settings",
     "openSettings": "Open settings",
     "language": "Language"
+  },
+  "invoiceDocument": {
+    "invoiceNumber": "Invoice #",
+    "billTo": "Bill to",
+    "invoiceDate": "Invoice date",
+    "dueDate": "Due date",
+    "item": "Item",
+    "qty": "Qty",
+    "rate": "Rate",
+    "amount": "Amount",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "tax": "Tax",
+    "shipping": "Shipping",
+    "total": "Total",
+    "totalInWords": "Total in words",
+    "additionalNotes": "Additional notes",
+    "paymentTerms": "Payment terms",
+    "signature": "Signature"
   }
 }

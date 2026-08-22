@@ -5,6 +5,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Types
 import { InvoiceType } from "@/types";
 import dynamic from "next/dynamic";
+
+// Labels
+import { InvoiceTemplateExtras } from "./invoiceLabels";
 import React, { useMemo } from "react";
 
 const DynamicInvoiceTemplateSkeleton = () => {
@@ -13,13 +16,15 @@ const DynamicInvoiceTemplateSkeleton = () => {
     return <Skeleton className="min-h-[30rem] w-full lg:min-h-[60rem]" />;
 };
 
-const DynamicInvoiceTemplate = (props: InvoiceType) => {
+type DynamicInvoiceTemplateProps = InvoiceType & InvoiceTemplateExtras;
+
+const DynamicInvoiceTemplate = (props: DynamicInvoiceTemplateProps) => {
     // Dynamic template component name
     const templateName = `InvoiceTemplate${props.details.pdfTemplate}`;
 
     const DynamicInvoice = useMemo(
         () =>
-            dynamic<InvoiceType>(
+            dynamic<DynamicInvoiceTemplateProps>(
                 () =>
                     import(
                         `@/app/components/templates/invoice-pdf/${templateName}`

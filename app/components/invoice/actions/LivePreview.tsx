@@ -1,9 +1,15 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useMemo } from "react";
+
+// Next Intl
+import { useMessages } from "next-intl";
 
 // Components
 import { DynamicInvoiceTemplate, Subheading } from "@/app/components";
+
+// Labels
+import { buildInvoiceLabels } from "@/app/components/templates/invoice-pdf/invoiceLabels";
 
 // Contexts
 import { useTranslationContext } from "@/contexts/TranslationContext";
@@ -18,11 +24,23 @@ type LivePreviewProps = {
 function LivePreview({ data }: LivePreviewProps) {
     const { _t } = useTranslationContext();
 
+    /*
+     * Labels are passed down as a prop rather than read from next-intl inside
+     * the template, because the same component is rendered server-side through
+     * renderToStaticMarkup for the PDF, where next-intl's hooks are not
+     * available. See invoiceLabels.ts
+     */
+    const messages = useMessages();
+    const labels = useMemo(
+        () => buildInvoiceLabels(messages as Record<string, unknown>),
+        [messages]
+    );
+
     return (
         <>
             <Subheading>{_t("actions.livePreview")}:</Subheading>
             <div className="my-1 overflow-hidden rounded-xl border border-border">
-                <DynamicInvoiceTemplate {...data} />
+                <DynamicInvoiceTemplate {...data} labels={labels} />
             </div>
         </>
     );

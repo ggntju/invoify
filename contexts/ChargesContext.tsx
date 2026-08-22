@@ -3,8 +3,10 @@
 import React, {
     SetStateAction,
     createContext,
+    useCallback,
     useContext,
     useEffect,
+    useMemo,
     useState,
 } from "react";
 
@@ -152,25 +154,10 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
         }
     }, [discountSwitch, taxSwitch, shippingSwitch]);
 
-    // Calculate total when values change
-    useEffect(() => {
-        calculateTotal();
-    }, [
-        itemsArray,
-        totalInWordsSwitch,
-        discountType,
-        discount?.amount,
-        taxType,
-        tax?.amount,
-        shippingType,
-        shipping?.cost,
-        currency,
-    ]);
-
     /**
      * Calculates the subtotal, total, and the total amount in words on the invoice.
      */
-    const calculateTotal = () => {
+    const calculateTotal = useCallback(() => {
         // Here Number(item.total) fixes a bug where an extra zero appears
         // at the beginning of subTotal caused by toFixed(2) in item.total in single item
         // Reason: toFixed(2) returns string, not a number instance
@@ -245,31 +232,73 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
         } else {
             setValue("details.totalAmountInWords", "");
         }
-    };
+    }, [
+        itemsArray,
+        discount,
+        tax,
+        shipping,
+        discountType,
+        taxType,
+        shippingType,
+        totalInWordsSwitch,
+        // read via getValues inside, but a change must still recalculate
+        currency,
+        setValue,
+        getValues,
+    ]);
+
+    // Calculate total when values change.
+    // calculateTotal is memoised on exactly those values, so depending on the
+    // callback identity keeps this in step with it rather than duplicating the
+    // dependency list in two places.
+    useEffect(() => {
+        calculateTotal();
+    }, [calculateTotal]);
+
+
+    /*
+     * Memoised: this object was rebuilt on every render, so every consumer of
+     * useChargesContext re-rendered on each keystroke anywhere in the form.
+     * The setters from useState are already stable identities.
+     */
+    const contextValue = useMemo(
+        () => ({
+            discountSwitch,
+            setDiscountSwitch,
+            taxSwitch,
+            setTaxSwitch,
+            shippingSwitch,
+            setShippingSwitch,
+            discountType,
+            setDiscountType,
+            taxType,
+            setTaxType,
+            shippingType,
+            setShippingType,
+            totalInWordsSwitch,
+            setTotalInWordsSwitch,
+            currency,
+            subTotal,
+            totalAmount,
+            calculateTotal,
+        }),
+        [
+            discountSwitch,
+            taxSwitch,
+            shippingSwitch,
+            discountType,
+            taxType,
+            shippingType,
+            totalInWordsSwitch,
+            currency,
+            subTotal,
+            totalAmount,
+            calculateTotal,
+        ]
+    );
 
     return (
-        <ChargesContext.Provider
-            value={{
-                discountSwitch,
-                setDiscountSwitch,
-                taxSwitch,
-                setTaxSwitch,
-                shippingSwitch,
-                setShippingSwitch,
-                discountType,
-                setDiscountType,
-                taxType,
-                setTaxType,
-                shippingType,
-                setShippingType,
-                totalInWordsSwitch,
-                setTotalInWordsSwitch,
-                currency,
-                subTotal,
-                totalAmount,
-                calculateTotal,
-            }}
-        >
+        <ChargesContext.Provider value={contextValue}>
             {children}
         </ChargesContext.Provider>
     );

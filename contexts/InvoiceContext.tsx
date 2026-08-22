@@ -12,6 +12,9 @@ import React, {
 
 import { useRouter } from "next/navigation";
 
+// Next Intl
+import { useLocale } from "next-intl";
+
 // RHF
 import { useFormContext } from "react-hook-form";
 
@@ -20,6 +23,9 @@ import useToasts from "@/hooks/useToasts";
 
 // Services
 import { exportInvoice } from "@/services/invoice/client/exportInvoice";
+
+// Validation
+import { InvoiceSchema } from "@/lib/schemas";
 
 // Variables
 import {
@@ -66,6 +72,7 @@ export const InvoiceContextProvider = ({
   children,
 }: InvoiceContextProviderProps) => {
   const router = useRouter();
+  const locale = useLocale();
 
   // Toasts
   const {
@@ -174,7 +181,9 @@ export const InvoiceContextProvider = ({
     setInvoicePdfLoading(true);
 
     try {
-      const response = await fetch(GENERATE_PDF_API, {
+      // Locale travels as a query param so the server can render the PDF in
+      // the same language as the UI.
+      const response = await fetch(`${GENERATE_PDF_API}?locale=${locale}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -212,7 +221,7 @@ export const InvoiceContextProvider = ({
         setInvoicePdfLoading(false);
       }
     }
-  }, []);
+  }, [locale]);
 
   /**
    * Removes the final PDF file and switches to Live Preview
@@ -411,6 +420,18 @@ export const InvoiceContextProvider = ({
               importedData.details.dueDate
             );
           }
+        }
+
+        /*
+         * Validate before resetting. This file is arbitrary user input, and an
+         * unvalidated reset() put malformed shapes straight into form state,
+         * which then flowed on to the PDF, export and email services.
+         */
+        const validated = InvoiceSchema.safeParse(importedData);
+        if (!validated.success) {
+          console.error("Invalid invoice file:", validated.error.issues);
+          importInvoiceError();
+          return;
         }
 
         // Reset form with imported data

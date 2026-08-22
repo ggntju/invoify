@@ -1,7 +1,25 @@
+import React from "react";
 import { NextRequest, NextResponse } from "next/server";
+
+// Next Intl
+import { getMessages } from "@/i18n/messages";
+
+// Invoice document labels
+import { buildInvoiceLabels } from "@/app/components/templates/invoice-pdf/invoiceLabels";
 
 // Helpers
 import { getInvoiceTemplate } from "@/lib/helpers";
+
+// Variables
+import { DEFAULT_LOCALE, LOCALES } from "@/lib/variables";
+
+/** Only known locales are accepted; anything else falls back to the default. */
+function resolveLocale(requested: string | null): string {
+    if (requested && LOCALES.some((locale) => locale.code === requested)) {
+        return requested;
+    }
+    return DEFAULT_LOCALE;
+}
 
 // Validation
 import { InvoiceSchema } from "@/lib/schemas";
@@ -45,8 +63,21 @@ export async function generatePdfService(req: NextRequest) {
             );
         }
 
+        /*
+         * The template was invoked as a plain function — `InvoiceTemplate(body)`
+         * — which runs its body outside React's render cycle, so it could not
+         * use hooks. Rendering it as a real element inside NextIntlClientProvider
+         * lets the templates call useTranslations, which is what makes the PDF
+         * follow the user's locale instead of always emitting English.
+         */
+        const locale = resolveLocale(req.nextUrl.searchParams.get("locale"));
+        const messages = await getMessages(locale);
+
         const htmlTemplate = ReactDOMServer.renderToStaticMarkup(
-            InvoiceTemplate(body)
+            React.createElement(InvoiceTemplate, {
+                ...body,
+                labels: buildInvoiceLabels(messages),
+            })
         );
 
         // Shared instance — see services/invoice/server/browser.ts

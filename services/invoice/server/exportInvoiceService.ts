@@ -69,6 +69,15 @@ export async function exportInvoiceService(req: NextRequest) {
                     },
                 });
             }
+            /*
+             * ExportTypes.XLSX is intentionally unimplemented. The original
+             * case was commented out, so the UI's "Export as XLSX" button only
+             * ever errored; that button has been removed rather than left
+             * broken. Restoring it needs a spreadsheet library — note the
+             * `xlsx` package was dropped here because the 0.18.5 line on npm
+             * carries unpatched advisories and SheetJS now publishes from its
+             * own registry.
+             */
             default:
                 /*
                  * Previously absent: an unknown format fell out of the switch
