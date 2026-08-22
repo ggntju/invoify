@@ -182,24 +182,22 @@ const InvoiceTemplate = (data: InvoiceType & InvoiceTemplateExtras) => {
 				<div className='my-4'>
 					<div className='my-2'>
 						<p className='font-semibold text-blue-600'>{_labels.additionalNotes}:</p>
-						<p className='font-regular text-gray-800'>{details.additionalNotes}</p>
+						<p className='text-gray-800'>{details.additionalNotes}</p>
 					</div>
 					<div className='my-2'>
 						<p className='font-semibold text-blue-600'>{_labels.paymentTerms}:</p>
-						<p className='font-regular text-gray-800'>{details.paymentTerms}</p>
+						<p className='text-gray-800'>{details.paymentTerms}</p>
 					</div>
 					<div className='my-2'>
-						<span className='font-semibold text-md text-gray-800'>
-							Please send the payment to this address
-							<p className='text-sm'>Bank: {details.paymentInformation?.bankName}</p>
-							<p className='text-sm'>Account name: {details.paymentInformation?.accountName}</p>
-							<p className='text-sm'>Account no: {details.paymentInformation?.accountNumber}</p>
+						<span className='font-semibold text-gray-800'>
+							{_labels.paymentInfoHeading}
+							<p className='text-sm'>{_labels.bankName}: {details.paymentInformation?.bankName}</p>
+							<p className='text-sm'>{_labels.accountName}: {details.paymentInformation?.accountName}</p>
+							<p className='text-sm'>{_labels.accountNumber}: {details.paymentInformation?.accountNumber}</p>
 						</span>
 					</div>
 				</div>
-				<p className='text-gray-500 text-sm'>
-					If you have any questions concerning this invoice, use the following contact information:
-				</p>
+				<p className='text-gray-500 text-sm'>{_labels.contactHeading}</p>
 				<div>
 					<p className='block text-sm font-medium text-gray-800'>{sender.email}</p>
 					<p className='block text-sm font-medium text-gray-800'>{sender.phone}</p>

@@ -15,7 +15,9 @@
       "hasErrors": "has errors",
       "progressLabel": "Invoice form steps",
       "backTooltip": "Go back to the previous step",
-      "nextTooltip": "Go to the next step"
+      "nextTooltip": "Go to the next step",
+      "stateComplete": "complete",
+      "stateIncomplete": "incomplete"
     },
     "steps": {
       "fromAndTo": {
@@ -174,6 +176,11 @@
     "totalInWords": "Total in words",
     "additionalNotes": "Additional notes",
     "paymentTerms": "Payment terms",
-    "signature": "Signature"
+    "signature": "Signature",
+    "paymentInfoHeading": "Please send the payment to this address",
+    "bankName": "Bank",
+    "accountName": "Account name",
+    "accountNumber": "Account no",
+    "contactHeading": "If you have any questions concerning this invoice, use the following contact information:"
   }
 }

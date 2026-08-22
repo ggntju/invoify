@@ -107,6 +107,11 @@
     "totalInWords": "Gesamtbetrag in Worten",
     "additionalNotes": "Zusätzliche Hinweise",
     "paymentTerms": "Zahlungsbedingungen",
-    "signature": "Unterschrift"
+    "signature": "Unterschrift",
+    "paymentInfoHeading": "Bitte senden Sie die Zahlung an diese Adresse",
+    "bankName": "Bank",
+    "accountName": "Kontoinhaber",
+    "accountNumber": "Kontonummer",
+    "contactHeading": "Bei Fragen zu dieser Rechnung verwenden Sie bitte die folgenden Kontaktdaten:"
   }
 }

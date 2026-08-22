@@ -48,11 +48,11 @@ const BaseNavbar = () => {
                     <Image
                         src={Logo}
                         alt="Invoify Logo"
-                        width={190}
-                        height={100}
+                        width={887}
+                        height={294}
                         loading="eager"
                         priority
-                        className="h-8 w-auto sm:h-9"
+                        className="h-9 w-auto sm:h-10"
                     />
                 </Link>
 

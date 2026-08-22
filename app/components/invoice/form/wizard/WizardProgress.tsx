@@ -1,7 +1,7 @@
 "use client";
 
 // RHF
-import { useFormContext } from "react-hook-form";
+import { useFormContext, useWatch } from "react-hook-form";
 
 // React Wizard
 import { WizardValues } from "react-use-wizard";
@@ -25,16 +25,70 @@ type WizardProgressProps = {
     wizard: WizardValues;
 };
 
-type StepState = "invalid" | "active" | "complete" | "upcoming";
+/**
+ * `partial` is the important one: a step the user has passed through but not
+ * actually filled in. Previously any step behind the cursor rendered a green
+ * check, because RHF validates on submit so `errors` is empty until then —
+ * skipping ahead marked the whole form complete, which is a lie.
+ */
+type StepState = "invalid" | "active" | "complete" | "partial" | "upcoming";
 
 const WizardProgress = ({ wizard }: WizardProgressProps) => {
     const { activeStep, stepCount, goToStep } = wizard;
 
     const {
+        control,
         formState: { errors },
     } = useFormContext<InvoiceType>();
 
+    // Actual field values, so completeness reflects what the user filled in
+    // rather than merely the absence of validation errors.
+    const values = useWatch({ control }) as InvoiceType;
+
     const { _t } = useTranslationContext();
+
+    const filled = (value: unknown) =>
+        typeof value === "string"
+            ? value.trim().length > 0
+            : value !== undefined && value !== null && value !== "";
+
+    const allFilled = (...vals: unknown[]) => vals.every(filled);
+    const anyFilled = (...vals: unknown[]) => vals.some(filled);
+
+    const sender = values?.sender;
+    const receiver = values?.receiver;
+    const d = values?.details;
+
+    const partyFields = (p?: InvoiceType["sender"]) => [
+        p?.name,
+        p?.address,
+        p?.zipCode,
+        p?.city,
+        p?.country,
+        p?.email,
+        p?.phone,
+    ];
+
+    const step1Fields = [...partyFields(sender), ...partyFields(receiver)];
+    const step2Fields = [
+        d?.invoiceNumber,
+        d?.invoiceDate,
+        d?.dueDate,
+        d?.currency,
+    ];
+    const items = d?.items ?? [];
+    const step3Complete =
+        items.length > 0 &&
+        items.every(
+            (i) =>
+                filled(i?.name) &&
+                Number(i?.quantity) > 0 &&
+                Number(i?.unitPrice) > 0
+        );
+    const step3Started = items.some((i) => filled(i?.name));
+    const pay = d?.paymentInformation;
+    const step4Fields = [pay?.bankName, pay?.accountName, pay?.accountNumber];
+    const step5Fields = [d?.paymentTerms];
 
     const step1Valid = !errors.sender && !errors.receiver;
     const step2Valid =
@@ -53,22 +107,55 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
         !errors.details?.taxDetails?.amount &&
         !errors.details?.shippingDetails?.cost;
 
-    const steps: WizardStepType[] = [
-        { id: 0, label: _t("form.wizard.fromAndTo"), isValid: step1Valid },
-        { id: 1, label: _t("form.wizard.invoiceDetails"), isValid: step2Valid },
-        { id: 2, label: _t("form.wizard.lineItems"), isValid: step3Valid },
-        { id: 3, label: _t("form.wizard.paymentInfo"), isValid: step4Valid },
-        { id: 4, label: _t("form.wizard.summary"), isValid: step5Valid },
+    type Step = WizardStepType & { isComplete: boolean; isStarted: boolean };
+
+    const steps: Step[] = [
+        {
+            id: 0,
+            label: _t("form.wizard.fromAndTo"),
+            isValid: step1Valid,
+            isComplete: allFilled(...step1Fields),
+            isStarted: anyFilled(...step1Fields),
+        },
+        {
+            id: 1,
+            label: _t("form.wizard.invoiceDetails"),
+            isValid: step2Valid,
+            isComplete: allFilled(...step2Fields),
+            isStarted: anyFilled(...step2Fields),
+        },
+        {
+            id: 2,
+            label: _t("form.wizard.lineItems"),
+            isValid: step3Valid,
+            isComplete: step3Complete,
+            isStarted: step3Started,
+        },
+        {
+            id: 3,
+            label: _t("form.wizard.paymentInfo"),
+            isValid: step4Valid,
+            isComplete: allFilled(...step4Fields),
+            isStarted: anyFilled(...step4Fields),
+        },
+        {
+            id: 4,
+            label: _t("form.wizard.summary"),
+            isValid: step5Valid,
+            isComplete: allFilled(...step5Fields),
+            isStarted: anyFilled(...step5Fields),
+        },
     ];
 
     /**
      * Resolves the visual state of a step. Invalid always wins so a step with
      * errors stays flagged even while it is the active one.
      */
-    const getStepState = (step: WizardStepType): StepState => {
+    const getStepState = (step: Step): StepState => {
         if (!step.isValid) return "invalid";
+        if (step.isComplete) return "complete";
         if (step.id === activeStep) return "active";
-        if (step.id < activeStep) return "complete";
+        if (step.isStarted) return "partial";
         return "upcoming";
     };
 
@@ -76,6 +163,8 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
         invalid: "border-destructive bg-destructive text-destructive-foreground",
         active: "border-primary bg-primary text-primary-foreground",
         complete: "border-success bg-success text-success-foreground",
+        // Started but unfinished: clearly "in progress", never mistakable for done
+        partial: "border-primary bg-primary/10 text-primary",
         upcoming: "border-border bg-muted text-muted-foreground",
     };
 
@@ -83,6 +172,7 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
         invalid: "text-destructive font-medium",
         active: "text-foreground font-medium",
         complete: "text-muted-foreground",
+        partial: "text-foreground",
         upcoming: "text-muted-foreground",
     };
 
@@ -91,15 +181,21 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
         ? getStepState(activeStepData)
         : "upcoming";
 
-    const renderCircleContent = (step: WizardStepType, state: StepState) => {
+    const renderCircleContent = (step: Step, state: StepState) => {
         if (state === "invalid") return <AlertCircle className="h-4 w-4" />;
         if (state === "complete") return <Check className="h-4 w-4" />;
         return step.id + 1;
     };
 
-    const stepAriaLabel = (step: WizardStepType, state: StepState) =>
+    const stepAriaLabel = (step: Step, state: StepState) =>
         `${_t("form.wizard.stepLabel")} ${step.id + 1}: ${step.label}${
-            state === "invalid" ? ` — ${_t("form.wizard.hasErrors")}` : ""
+            state === "invalid"
+                ? ` — ${_t("form.wizard.hasErrors")}`
+                : state === "complete"
+                  ? ` — ${_t("form.wizard.stateComplete")}`
+                  : state === "partial"
+                    ? ` — ${_t("form.wizard.stateIncomplete")}`
+                    : ""
         }`;
 
     return (
@@ -192,7 +288,7 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
                                     aria-hidden="true"
                                     className={cn(
                                         "mt-[18px] h-0.5 min-w-4 flex-1 rounded-full transition-colors",
-                                        step.id < activeStep
+                                        step.isComplete
                                             ? "bg-success"
                                             : "bg-border"
                                     )}

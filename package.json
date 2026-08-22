@@ -65,6 +65,11 @@
     "zod": "^3.22.2"
   },
   "devDependencies": {
+    "@fontsource/alex-brush": "5.1.0",
+    "@fontsource/dancing-script": "5.1.0",
+    "@fontsource/great-vibes": "5.1.0",
+    "@fontsource/outfit": "5.1.0",
+    "@fontsource/parisienne": "5.1.0",
     "@next/bundle-analyzer": "^14.0.4",
     "@sparticuz/chromium": "138.0.2",
     "@types/nodemailer": "^6.4.14",

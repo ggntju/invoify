@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 // React Signature Canvas
 import SignatureCanvas from "react-signature-canvas";
@@ -26,6 +26,9 @@ type DrawSignatureProps = {
 };
 
 const DrawSignature = ({ handleSaveSignature }: DrawSignatureProps) => {
+    // Guards the resize handler against firing mid-stroke
+    const isDrawingRef = useRef(false);
+
     const {
         signatureData,
         signatureRef,
@@ -39,10 +42,14 @@ const DrawSignature = ({ handleSaveSignature }: DrawSignatureProps) => {
     /*
      * A <canvas> has two sizes: its CSS box and its bitmap (width/height
      * attributes, default 300x150). Only the CSS box was being set, so strokes
-     * were drawn at a different scale than the pointer — visibly offset, and
-     * worse on high-DPI phones. Keep the bitmap in sync with the rendered box,
-     * accounting for devicePixelRatio, and restore any existing drawing since
-     * resizing a canvas clears it.
+     * were drawn at a different scale than the pointer. Keep the bitmap in
+     * sync with the rendered box, accounting for devicePixelRatio.
+     *
+     * This is kept deliberately cheap: an earlier version re-read
+     * getBoundingClientRect and re-encoded the drawing through
+     * toDataURL/fromDataURL on every observer callback, which fires repeatedly
+     * while the dialog animates open — i.e. exactly when the user starts
+     * drawing, which is what made it feel laggy.
      */
     useEffect(() => {
         // The context types signatureRef itself as nullable, not just .current
@@ -50,23 +57,32 @@ const DrawSignature = ({ handleSaveSignature }: DrawSignatureProps) => {
         const canvas = pad?.getCanvas();
         if (!pad || !canvas) return;
 
-        const resizeCanvas = () => {
-            const { width, height } = canvas.getBoundingClientRect();
+        // Last CSS size we actually applied, so repeat callbacks are free
+        let appliedWidth = 0;
+        let appliedHeight = 0;
+
+        const applySize = (width: number, height: number) => {
             if (!width || !height) return;
+            if (width === appliedWidth && height === appliedHeight) return;
 
-            const ratio = Math.max(window.devicePixelRatio || 1, 1);
-            const nextWidth = Math.round(width * ratio);
-            const nextHeight = Math.round(height * ratio);
+            // A stroke in progress must not be interrupted — resizing clears
+            // the bitmap, and re-encoding mid-gesture is what caused the lag.
+            if (isDrawingRef.current) return;
 
-            if (canvas.width === nextWidth && canvas.height === nextHeight) {
-                return;
-            }
+            /*
+             * Capped at 2. On a 3x display an uncapped ratio makes the bitmap
+             * 9x the pixels, and signature_pad redraws per pointer event.
+             */
+            const ratio = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2);
 
             const previous = pad.isEmpty() ? null : pad.toDataURL();
 
-            canvas.width = nextWidth;
-            canvas.height = nextHeight;
+            canvas.width = Math.round(width * ratio);
+            canvas.height = Math.round(height * ratio);
             canvas.getContext("2d")?.scale(ratio, ratio);
+
+            appliedWidth = width;
+            appliedHeight = height;
 
             if (previous) {
                 pad.fromDataURL(previous, { width, height });
@@ -75,9 +91,13 @@ const DrawSignature = ({ handleSaveSignature }: DrawSignatureProps) => {
             }
         };
 
-        resizeCanvas();
+        const rect = canvas.getBoundingClientRect();
+        applySize(rect.width, rect.height);
 
-        const observer = new ResizeObserver(resizeCanvas);
+        const observer = new ResizeObserver((entries) => {
+            const box = entries[0]?.contentRect;
+            if (box) applySize(box.width, box.height);
+        });
         observer.observe(canvas);
         return () => observer.disconnect();
     }, [signatureRef]);
@@ -89,10 +109,12 @@ const DrawSignature = ({ handleSaveSignature }: DrawSignatureProps) => {
                     <div className="mx-auto w-full max-w-[600px] touch-none">
                         {/* Signature Canvas to draw signature */}
                         <SignatureCanvas
-                            velocityFilterWeight={1} // Adjust the velocityFilterWeight to make the pen lighter
+                            velocityFilterWeight={0.7}
                             minWidth={1.4} // Adjust the minWidth for a finer line
                             maxWidth={1.4} // Adjust the maxWidth for a finer line
-                            throttle={0}
+                            // 0 disabled throttling entirely, so every
+                            // pointermove was processed. 16 = ~1 frame.
+                            throttle={16}
                             ref={signatureRef}
                             penColor={selectedColor}
                             canvasProps={{
@@ -100,7 +122,13 @@ const DrawSignature = ({ handleSaveSignature }: DrawSignatureProps) => {
                                     "w-full h-[12rem] sm:h-[15rem] rounded-[10px] touch-none",
                                 style: { background: "#efefef" },
                             }}
-                            onEnd={handleCanvasEnd}
+                            onBegin={() => {
+                                isDrawingRef.current = true;
+                            }}
+                            onEnd={() => {
+                                isDrawingRef.current = false;
+                                handleCanvasEnd();
+                            }}
                         />
                     </div>
                 </CardContent>

@@ -54,6 +54,13 @@ const Providers = ({ children }: ProvidersProps) => {
   const form = useForm<InvoiceType>({
     resolver: zodResolver(InvoiceSchema),
     defaultValues: FORM_DEFAULT_VALUES,
+    /*
+     * Default is "onSubmit", which meant `errors` stayed empty until a failed
+     * submit — so the wizard could not distinguish "fine" from "not filled in
+     * yet". onTouched surfaces problems as the user leaves a field, without
+     * shouting at them mid-typing.
+     */
+    mode: "onTouched",
   });
 
   // Hydrate once on mount
