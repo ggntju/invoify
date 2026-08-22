@@ -232,11 +232,21 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
         } else {
             setValue("details.totalAmountInWords", "");
         }
+        /*
+         * These deps are deliberately the primitive amounts, not the
+         * discount/tax/shipping objects.
+         *
+         * calculateTotal calls setValue on those same sub-objects, so useWatch
+         * hands back a fresh object identity on every run. Depending on the
+         * objects therefore re-memoises the callback, re-fires the effect
+         * below, and loops until React throws "Maximum update depth exceeded".
+         * The primitives only change when a value genuinely changes.
+         */
     }, [
         itemsArray,
-        discount,
-        tax,
-        shipping,
+        discount?.amount,
+        tax?.amount,
+        shipping?.cost,
         discountType,
         taxType,
         shippingType,
@@ -247,10 +257,9 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
         getValues,
     ]);
 
-    // Calculate total when values change.
-    // calculateTotal is memoised on exactly those values, so depending on the
-    // callback identity keeps this in step with it rather than duplicating the
-    // dependency list in two places.
+    // Calculate total when values change. calculateTotal is memoised on
+    // exactly those values, so depending on its identity keeps this in step
+    // rather than duplicating the dependency list in two places.
     useEffect(() => {
         calculateTotal();
     }, [calculateTotal]);
