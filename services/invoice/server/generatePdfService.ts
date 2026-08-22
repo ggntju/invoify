@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 // Helpers
 import { getInvoiceTemplate } from "@/lib/helpers";
 
+// Validation
+import { InvoiceSchema } from "@/lib/schemas";
+import { parseJsonBody } from "@/lib/server/validateRequest";
+
 // Generated stylesheet
 import { PDF_TAILWIND_CSS } from "@/lib/pdfStyles.generated";
 
@@ -21,7 +25,12 @@ import { InvoiceType } from "@/types";
  * @returns {Promise<NextResponse>} A promise that resolves to a NextResponse object containing the generated PDF.
  */
 export async function generatePdfService(req: NextRequest) {
-    const body: InvoiceType = await req.json();
+    // Client-side zod validation is bypassable by calling this route directly,
+    // so the body is re-validated (and size-capped) here.
+    const parsed = await parseJsonBody(req, InvoiceSchema);
+    if (!parsed.ok) return parsed.response;
+
+    const body = parsed.data as InvoiceType;
     let page;
 
     try {
