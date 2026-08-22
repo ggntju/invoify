@@ -8,6 +8,9 @@ import numberToWords from "number-to-words";
 import currenciesDetails from "@/public/assets/data/currencies.json";
 import { CurrencyDetails } from "@/types";
 
+// Variables
+import { DATE_OPTIONS } from "@/lib/variables";
+
 /**
  * Formats a number with commas and decimal places
  *
@@ -202,8 +205,34 @@ const fileToBuffer = async (file: File) => {
     return pdfBuffer;
 };
 
+/**
+ * Formats a date for display, tolerating the empty/invalid values the form
+ * starts with.
+ *
+ * FORM_DEFAULT_VALUES seeds invoiceDate/dueDate as "", and the templates called
+ * `new Date(details.invoiceDate).toLocaleDateString(...)` directly, so a blank
+ * form rendered the literal text "Invalid Date" in the live preview.
+ *
+ * @param {string | Date | undefined} value - The date to format
+ * @param {string} fallback - Shown when the value is missing or unparseable
+ * @returns {string} The formatted date, or the fallback
+ */
+const formatDate = (
+    value: string | Date | undefined | null,
+    fallback = "—"
+): string => {
+    if (!value) return fallback;
+
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return fallback;
+
+    return date.toLocaleDateString("en-US", DATE_OPTIONS);
+};
+
+
 export {
     formatNumberWithCommas,
+    formatDate,
     formatPriceToString,
     flattenObject,
     isValidEmail,

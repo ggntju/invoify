@@ -149,5 +149,10 @@
     "item": "Item",
     "cancel": "Cancel",
     "confirm": "Confirm Add"
+  },
+  "navbar": {
+    "settings": "Settings",
+    "openSettings": "Open settings",
+    "language": "Language"
   }
 }

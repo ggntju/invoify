@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
+// Utils
+import { cn } from "@/lib/utils";
+
 // Components
 import {
     BaseButton,
@@ -52,67 +55,87 @@ const TemplateSelector = () => {
     ];
     return (
         <>
-            <div>
-                <Label>Choose Invoice Template:</Label>
+            <Card className="w-full min-w-0">
+                <CardHeader className="pb-3">
+                    <Label className="text-base font-semibold">
+                        Choose Invoice Template
+                    </Label>
+                    <CardDescription>
+                        Select one of the predefined templates
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="px-4 sm:px-6">
+                    {/*
+                     * Snap scrolling with narrower thumbnails on mobile — at
+                     * a fixed 300px barely one template fit on a phone screen.
+                     */}
+                    <div className="no-scrollbar -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2">
+                        {templates.map((template) => {
+                            const isSelected =
+                                formValues.details.pdfTemplate === template.id;
 
-                <div>
-                    <Card>
-                        <CardHeader>
-                            Templates
-                            <CardDescription>
-                                Select one of the predefined templates
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="">
-                            <div className="flex overflow-x-auto">
-                                {templates.map((template, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="flex flex-col flex-shrink-0 mr-4 gap-y-3"
+                            return (
+                                <div
+                                    key={template.id}
+                                    className="flex w-[9rem] shrink-0 snap-start flex-col gap-y-3 sm:w-[12rem]"
+                                >
+                                    <p className="text-sm font-medium">
+                                        {template.name}
+                                    </p>
+
+                                    <button
+                                        type="button"
+                                        aria-pressed={isSelected}
+                                        aria-label={`Select ${template.name}`}
+                                        onClick={() =>
+                                            setValue(
+                                                "details.pdfTemplate",
+                                                template.id
+                                            )
+                                        }
+                                        className={cn(
+                                            "relative overflow-hidden rounded-lg border-2 transition-colors",
+                                            isSelected
+                                                ? "border-primary"
+                                                : "border-border hover:border-primary/60"
+                                        )}
                                     >
-                                        <p>{template.name}</p>
+                                        {isSelected && (
+                                            <span className="absolute right-2 top-2 z-10 rounded-full bg-primary p-1 text-primary-foreground shadow-card">
+                                                <Check className="h-4 w-4" />
+                                            </span>
+                                        )}
+                                        <Image
+                                            src={template.img}
+                                            alt={template.name}
+                                            width={300}
+                                            height={700}
+                                            placeholder="blur"
+                                            className="h-auto w-full"
+                                        />
+                                    </button>
 
-                                        <div className="relative">
-                                            {formValues.details.pdfTemplate ===
-                                                template.id && (
-                                                <div className="shadow-lg absolute right-2 top-2 rounded-full bg-blue-300 dark:bg-blue-600">
-                                                    <Check />
-                                                </div>
-                                            )}
-                                            <Image
-                                                src={template.img}
-                                                alt={template.name}
-                                                width={300}
-                                                height={700}
-                                                placeholder="blur"
-                                                className="cursor-pointer rounded-lg border-2 hover:border-blue-600"
-                                                onClick={() =>
-                                                    setValue(
-                                                        "details.pdfTemplate",
-                                                        template.id
-                                                    )
-                                                }
-                                            />
-                                            {/* {template.component} */}
-                                        </div>
-
-                                        <BaseButton
-                                            onClick={() =>
-                                                setValue(
-                                                    "details.pdfTemplate",
-                                                    template.id
-                                                )
-                                            }
-                                        >
-                                            Select
-                                        </BaseButton>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
+                                    <BaseButton
+                                        variant={
+                                            isSelected ? "default" : "outline"
+                                        }
+                                        size="sm"
+                                        className="w-full"
+                                        onClick={() =>
+                                            setValue(
+                                                "details.pdfTemplate",
+                                                template.id
+                                            )
+                                        }
+                                    >
+                                        {isSelected ? "Selected" : "Select"}
+                                    </BaseButton>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </CardContent>
+            </Card>
         </>
     );
 };

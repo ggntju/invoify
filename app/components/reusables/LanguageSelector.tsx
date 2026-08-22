@@ -32,21 +32,20 @@ const LanguageSelector = () => {
             value={params.locale!.toLocaleString()}
             onValueChange={(lang) => handleLanguageChange(lang)}
         >
+            {/* `position: absolute` inside className was not a valid utility */}
             <SelectTrigger
-                className="w-[10rem] relative"
+                className="relative w-full sm:w-[10rem]"
                 aria-label="Languages"
             >
-                <Badge className="position: absolute -top-4 -left-2 font-normal">
+                <Badge
+                    variant="secondary"
+                    className="absolute -top-2.5 left-2 h-4 px-1.5 text-[10px] font-normal leading-none"
+                >
                     BETA
                 </Badge>
                 <SelectValue placeholder="Select a language" />
             </SelectTrigger>
-            <SelectContent
-                style={{
-                    overflowY: "hidden",
-                    height: "min-content",
-                }}
-            >
+            <SelectContent className="max-h-[60vh] overflow-y-auto">
                 <SelectGroup>
                     <SelectLabel>Languages</SelectLabel>
 

@@ -43,7 +43,12 @@ const CurrencySelector = ({
 }: CurrencySelectorProps) => {
     const { control } = useFormContext();
 
-    const { currencies, currenciesLoading } = useCurrencies();
+    const {
+        currencies,
+        currenciesLoading,
+        currenciesError,
+        retryFetchCurrencies,
+    } = useCurrencies();
 
     return (
         <div>
@@ -79,6 +84,33 @@ const CurrencySelector = ({
                                             <SelectLabel>
                                                 Currencies
                                             </SelectLabel>
+
+                                            {currenciesLoading && (
+                                                <p className="px-2 py-3 text-sm text-muted-foreground">
+                                                    Loading currencies…
+                                                </p>
+                                            )}
+
+                                            {/* Previously a silent empty list */}
+                                            {currenciesError &&
+                                                !currenciesLoading && (
+                                                    <div className="px-2 py-3">
+                                                        <p className="mb-2 text-sm text-muted-foreground">
+                                                            Could not load
+                                                            currencies.
+                                                        </p>
+                                                        <button
+                                                            type="button"
+                                                            onClick={
+                                                                retryFetchCurrencies
+                                                            }
+                                                            className="text-sm font-medium text-primary underline underline-offset-4"
+                                                        >
+                                                            Retry
+                                                        </button>
+                                                    </div>
+                                                )}
+
                                             {!currenciesLoading &&
                                                 currencies.map(
                                                     (
