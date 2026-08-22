@@ -21,9 +21,14 @@ export type InvoiceLabels = Record<InvoiceLabelKey, string>;
 export const DEFAULT_INVOICE_LABELS =
     enMessages.invoiceDocument as InvoiceLabels;
 
-/** Props shared by every invoice template. */
+/** Props shared by every invoice template, beyond the invoice data itself. */
 export type InvoiceTemplateExtras = {
     labels?: InvoiceLabels;
+    /**
+     * Presentation options. Optional and individually defaulted, so invoices
+     * saved before theming existed still render.
+     */
+    theme?: Partial<import("./invoiceTheme").InvoiceTheme>;
 };
 
 /**

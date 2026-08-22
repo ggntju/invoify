@@ -179,6 +179,13 @@ export const FORM_DEFAULT_VALUES = {
     paymentTerms: "",
     totalAmountInWords: "",
     pdfTemplate: 1,
+    // `as const` so fontId/density keep their literal types and satisfy the
+    // enums in ThemeSchema rather than widening to string.
+    theme: {
+      accentColor: "#4F46E5",
+      fontId: "outfit",
+      density: "comfortable",
+    } as const,
   },
 };
 
@@ -262,5 +269,12 @@ export const FORM_FILL_VALUES = {
     totalAmount: "850",
     totalAmountInWords: "Eight Hundred Fifty",
     pdfTemplate: 1,
+    // `as const` so fontId/density keep their literal types and satisfy the
+    // enums in ThemeSchema rather than widening to string.
+    theme: {
+      accentColor: "#4F46E5",
+      fontId: "outfit",
+      density: "comfortable",
+    } as const,
   },
 };

@@ -8,6 +8,9 @@ import dynamic from "next/dynamic";
 
 // Labels
 import { InvoiceTemplateExtras } from "./invoiceLabels";
+
+// Registry
+import { DEFAULT_TEMPLATE_ID, getTemplateEntry } from "./registry";
 import React, { useMemo } from "react";
 
 const DynamicInvoiceTemplateSkeleton = () => {
@@ -19,23 +22,23 @@ const DynamicInvoiceTemplateSkeleton = () => {
 type DynamicInvoiceTemplateProps = InvoiceType & InvoiceTemplateExtras;
 
 const DynamicInvoiceTemplate = (props: DynamicInvoiceTemplateProps) => {
-    // Dynamic template component name
-    const templateName = `InvoiceTemplate${props.details.pdfTemplate}`;
+    /*
+     * Resolved through the registry rather than by interpolating the id into a
+     * module path, so an unknown id falls back to the default template instead
+     * of failing the import.
+     */
+    const templateId = props.details.pdfTemplate ?? DEFAULT_TEMPLATE_ID;
 
-    const DynamicInvoice = useMemo(
-        () =>
-            dynamic<DynamicInvoiceTemplateProps>(
-                () =>
-                    import(
-                        `@/app/components/templates/invoice-pdf/${templateName}`
-                    ),
-                {
-                    loading: () => <DynamicInvoiceTemplateSkeleton />,
-                    ssr: false,
-                }
-            ),
-        [templateName]
-    );
+    const DynamicInvoice = useMemo(() => {
+        const entry =
+            getTemplateEntry(templateId) ??
+            getTemplateEntry(DEFAULT_TEMPLATE_ID)!;
+
+        return dynamic<DynamicInvoiceTemplateProps>(entry.load, {
+            loading: () => <DynamicInvoiceTemplateSkeleton />,
+            ssr: false,
+        });
+    }, [templateId]);
 
     return <DynamicInvoice {...props} />;
 };

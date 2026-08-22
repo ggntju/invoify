@@ -19,7 +19,7 @@ import InvoiceActions from "./invoice/InvoiceActions";
 // Form components
 import SingleItem from "./invoice/form/SingleItem";
 import Charges from "./invoice/form/Charges";
-import TemplateSelector from "./invoice/form/TemplateSelector";
+import TemplateGallery from "./invoice/form/TemplateGallery";
 import VoiceInput from "./invoice/form/VoiceInput";
 
 // Form / Wizard
@@ -89,9 +89,6 @@ import NewInvoiceAlert from "./modals/alerts/NewInvoiceAlert";
    ========================= */
 // Invoice templates
 import DynamicInvoiceTemplate from "./templates/invoice-pdf/DynamicInvoiceTemplate";
-import InvoiceLayout from "./templates/invoice-pdf/InvoiceLayout";
-import InvoiceTemplate1 from "./templates/invoice-pdf/InvoiceTemplate1";
-import InvoiceTemplate2 from "./templates/invoice-pdf/InvoiceTemplate2";
 
 // Email templates
 import SendPdfEmail from "./templates/email/SendPdfEmail";
@@ -114,7 +111,7 @@ export {
     Items,
     SingleItem,
     Charges,
-    TemplateSelector,
+    TemplateGallery,
     VoiceInput,
     WizardNavigation,
     WizardStep,
@@ -149,9 +146,6 @@ export {
     SignatureFontSelector,
     NewInvoiceAlert,
     DynamicInvoiceTemplate,
-    InvoiceLayout,
-    InvoiceTemplate1,
-    InvoiceTemplate2,
     SendPdfEmail,
     DevDebug,
 };

@@ -184,5 +184,18 @@
     "accountName": "Account name",
     "accountNumber": "Account no",
     "contactHeading": "If you have any questions concerning this invoice, use the following contact information:"
+  },
+  "gallery": {
+    "title": "Choose a template",
+    "description": "Pick a layout, then set the accent colour, typeface and density. Changes preview live.",
+    "templateLabel": "Template",
+    "changeTemplate": "Change template",
+    "accent": "Accent",
+    "font": "Font",
+    "density": "Density",
+    "comfortable": "Comfortable",
+    "compact": "Compact",
+    "customColor": "Custom colour",
+    "reset": "Reset"
   }
 }

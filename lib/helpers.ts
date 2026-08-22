@@ -167,25 +167,32 @@ const isValidEmail = (email: string) => {
 const isDataUrl = (str: string) => str.startsWith("data:");
 
 /**
- * Dynamically imports and retrieves an invoice template React component based on the provided template ID.
+ * Retrieves an invoice template component by id.
+ *
+ * Reads the registry rather than interpolating the id into a module path. The
+ * old `import(`...InvoiceTemplate${id}`)` form failed at import time for an
+ * unknown id and silently returned null, and offered no way to enumerate the
+ * templates for a picker.
  *
  * @param {number} templateId - The ID of the invoice template.
- * @returns {Promise<React.ComponentType<any> | null>} A promise that resolves to the invoice template component or null if not found.
- * @throws {Error} Throws an error if there is an issue with the dynamic import or if a default template is not available.
+ * @returns A promise resolving to the template component, or null if unknown.
  */
 const getInvoiceTemplate = async (templateId: number) => {
-    // Dynamic template component name
-    const componentName = `InvoiceTemplate${templateId}`;
+    const { getTemplateEntry } = await import(
+        "@/app/components/templates/invoice-pdf/registry"
+    );
+
+    const entry = getTemplateEntry(templateId);
+    if (!entry) {
+        console.error(`Unknown invoice template id: ${templateId}`);
+        return null;
+    }
 
     try {
-        const templateModule = await import(
-            `@/app/components/templates/invoice-pdf/${componentName}`
-        );
+        const templateModule = await entry.load();
         return templateModule.default;
     } catch (err) {
-        console.error(`Error importing template ${componentName}: ${err}`);
-
-        // Provide a default template
+        console.error(`Error importing template ${entry.name}: ${err}`);
         return null;
     }
 };

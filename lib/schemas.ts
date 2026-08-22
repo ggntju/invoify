@@ -161,7 +161,25 @@ const SignatureSchema = z.object({
         .optional(),
 });
 
+/**
+ * Presentation options. Every field optional with a default so existing saved
+ * invoices keep validating.
+ */
+const ThemeSchema = z.object({
+    // Restricted to a hex literal: the value is interpolated into inline
+    // styles in the templates, including in the PDF.
+    accentColor: z
+        .string()
+        .regex(/^#[0-9a-fA-F]{6}$/, { message: "Must be a hex colour" })
+        .optional(),
+    fontId: z
+        .enum(["outfit", "plexSans", "sourceSerif", "plexMono"])
+        .optional(),
+    density: z.enum(["compact", "comfortable"]).optional(),
+});
+
 const InvoiceDetailsSchema = z.object({
+    theme: ThemeSchema.optional(),
     invoiceLogo: imageDataUrl.optional(),
     invoiceNumber: fieldValidators.stringMin1,
     invoiceDate: fieldValidators.date,

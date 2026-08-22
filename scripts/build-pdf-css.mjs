@@ -41,6 +41,10 @@ const FONT_FACES = [
     { family: "Parisienne", pkg: "parisienne", weights: [400] },
     { family: "Great Vibes", pkg: "great-vibes", weights: [400] },
     { family: "Alex Brush", pkg: "alex-brush", weights: [400] },
+    // Selectable invoice faces (see invoiceTheme.ts)
+    { family: "IBM Plex Sans", pkg: "ibm-plex-sans", weights: [400, 600, 700] },
+    { family: "Source Serif 4", pkg: "source-serif-4", weights: [400, 600, 700] },
+    { family: "IBM Plex Mono", pkg: "ibm-plex-mono", weights: [400, 600, 700] },
 ];
 
 async function buildFontFaces() {
@@ -68,7 +72,7 @@ async function buildFontFaces() {
 
 const templateGlob = resolve(
     projectRoot,
-    "app/components/templates/invoice-pdf/**/*.tsx"
+    "app/components/templates/invoice-pdf/**/*.{ts,tsx}"
 ).replace(/\\/g, "/");
 
 async function main() {
