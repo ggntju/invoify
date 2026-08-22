@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Chromium
-import chromium from "@sparticuz/chromium";
-
 // Helpers
 import { getInvoiceTemplate } from "@/lib/helpers";
 
-// Variables
-import { ENV, TAILWIND_CDN } from "@/lib/variables";
+// Generated stylesheet
+import { PDF_TAILWIND_CSS } from "@/lib/pdfStyles.generated";
+
+// Browser
+import { getBrowser } from "./browser";
 
 // Types
 import { InvoiceType } from "@/types";
@@ -22,88 +22,86 @@ import { InvoiceType } from "@/types";
  */
 export async function generatePdfService(req: NextRequest) {
     const body: InvoiceType = await req.json();
-    let browser;
     let page;
 
     try {
         const ReactDOMServer = (await import("react-dom/server")).default;
         const templateId = body.details.pdfTemplate;
         const InvoiceTemplate = await getInvoiceTemplate(templateId);
+
+        if (!InvoiceTemplate) {
+            return NextResponse.json(
+                { error: "Unknown invoice template" },
+                { status: 400 }
+            );
+        }
+
         const htmlTemplate = ReactDOMServer.renderToStaticMarkup(
             InvoiceTemplate(body)
         );
 
-		if (ENV === "production") {
-			const puppeteer = (await import("puppeteer-core")).default;
-			browser = await puppeteer.launch({
-				args: [...chromium.args, "--disable-dev-shm-usage", "--ignore-certificate-errors"],
-				executablePath: await chromium.executablePath(),
-				headless: true,
-			});
-		} else {
-			const puppeteer = (await import("puppeteer")).default;
-			browser = await puppeteer.launch({
-				args: ["--no-sandbox", "--disable-setuid-sandbox"],
-				headless: true,
-			});
-		}
-
-        if (!browser) {
-            throw new Error("Failed to launch browser");
-        }
-
+        // Shared instance — see services/invoice/server/browser.ts
+        const browser = await getBrowser();
         page = await browser.newPage();
-        await page.setContent(await htmlTemplate, {
-            waitUntil: ["networkidle0", "load", "domcontentloaded"],
+
+        /*
+         * `networkidle0` waits for 500ms of complete network silence. With the
+         * stylesheet now inlined below, the only remaining requests are the
+         * template's own font links, so waiting for the DOM and then
+         * specifically for fonts is both correct and much faster.
+         */
+        await page.setContent(htmlTemplate, {
+            waitUntil: "domcontentloaded",
             timeout: 30000,
         });
 
-        await page.addStyleTag({
-            url: TAILWIND_CDN,
+        // Inlined rather than fetched from a CDN on every request.
+        await page.addStyleTag({ content: PDF_TAILWIND_CSS });
+
+        // Fonts are decorative; don't fail a PDF over a slow font host.
+        await page
+            .evaluate(() => document.fonts.ready.then(() => undefined))
+            .catch(() => undefined);
+
+        const pdf = await page.pdf({
+            format: "a4",
+            printBackground: true,
+            margin: {
+                top: "0.4in",
+                right: "0.4in",
+                bottom: "0.4in",
+                left: "0.4in",
+            },
         });
 
-		const pdf: Uint8Array = await page.pdf({
-			format: "a4",
-			printBackground: true,
-			preferCSSPageSize: true,
-		});
-
-		return new NextResponse(new Blob([pdf], { type: "application/pdf" }), {
-			headers: {
-				"Content-Type": "application/pdf",
-				"Content-Disposition": "attachment; filename=invoice.pdf",
-				"Cache-Control": "no-cache",
-				Pragma: "no-cache",
-			},
-			status: 200,
-		});
-	} catch (error: any) {
-		console.error("PDF Generation Error:", error);
-		return new NextResponse(
-			JSON.stringify({ error: "Failed to generate PDF" }),
-			{
-				status: 500,
-				headers: {
-					"Content-Type": "application/json",
-				},
-			}
-		);
-	} finally {
-		if (page) {
-			try {
-				await page.close();
-			} catch (e) {
-				console.error("Error closing page:", e);
-			}
-		}
-		if (browser) {
-			try {
-				const pages = await browser.pages();
-				await Promise.all(pages.map((p) => p.close()));
-				await browser.close();
-			} catch (e) {
-				console.error("Error closing browser:", e);
-			}
-		}
-	}
+        /*
+         * Returned directly — the previous `new Blob([pdf])` copied the whole
+         * buffer again for no reason. `inline` lets the browser preview it
+         * instead of forcing a download.
+         */
+        return new NextResponse(pdf, {
+            headers: {
+                "Content-Type": "application/pdf",
+                "Content-Disposition": "inline; filename=invoice.pdf",
+                "Content-Length": String(pdf.length),
+                "Cache-Control": "no-store",
+            },
+            status: 200,
+        });
+    } catch (error) {
+        console.error("PDF Generation Error:", error);
+        return NextResponse.json(
+            { error: "Failed to generate PDF" },
+            { status: 500 }
+        );
+    } finally {
+        // Only the page is closed; the browser is reused across requests.
+        if (page) {
+            try {
+                await page.close();
+            } catch (e) {
+                console.error("Error closing page:", e);
+            }
+        }
+    }
 }

@@ -70,6 +70,22 @@ const useToasts = () => {
      * apart from a console.log, and on mobile the invalid field is usually on
      * a wizard step that is not currently visible.
      */
+    const exportInvoiceError = () => {
+        toast({
+            variant: "destructive",
+            title: "Could not export the invoice",
+            description: "Something went wrong. Try again in a moment.",
+        });
+    };
+
+    const pdfGenerationError = () => {
+        toast({
+            variant: "destructive",
+            title: "Could not generate the PDF",
+            description: "Something went wrong. Try again in a moment.",
+        });
+    };
+
     const formValidationError = () => {
         toast({
             variant: "destructive",
@@ -94,6 +110,8 @@ const useToasts = () => {
         modifiedInvoiceSuccess,
         sendPdfSuccess,
         sendPdfError,
+        pdfGenerationError,
+        exportInvoiceError,
         formValidationError,
         importInvoiceError,
     };

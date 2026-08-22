@@ -7,7 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "analyze": "cross-env ANALYZE=true next build"
+    "analyze": "cross-env ANALYZE=true next build",
+    "build:pdf-css": "node scripts/build-pdf-css.mjs",
+    "prebuild": "node scripts/build-pdf-css.mjs",
+    "predev": "node scripts/build-pdf-css.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",

@@ -19,6 +19,13 @@ const eslintConfig = [
         ],
     },
     {
+        // CommonJS config files legitimately use require()
+        files: ["*.js", "*.cjs", "next.config.js", "tailwind.config.js"],
+        rules: {
+            "@typescript-eslint/no-require-imports": "off",
+        },
+    },
+    {
         rules: {
             // The codebase uses <img> inside the invoice templates on purpose:
             // they are serialised with renderToStaticMarkup and rendered by

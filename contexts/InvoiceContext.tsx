@@ -6,6 +6,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -74,6 +75,8 @@ export const InvoiceContextProvider = ({
     modifiedInvoiceSuccess,
     sendPdfSuccess,
     sendPdfError,
+    pdfGenerationError,
+    exportInvoiceError,
     importInvoiceError,
   } = useToasts();
 
@@ -83,6 +86,9 @@ export const InvoiceContextProvider = ({
   // Variables
   const [invoicePdf, setInvoicePdf] = useState<Blob>(new Blob());
   const [invoicePdfLoading, setInvoicePdfLoading] = useState<boolean>(false);
+
+  // Lets a new PDF request cancel the one it supersedes
+  const generateAbortRef = useRef<AbortController | null>(null);
 
   // Saved invoices
   const [savedInvoices, setSavedInvoices] = useState<InvoiceType[]>([]);
@@ -127,9 +133,6 @@ export const InvoiceContextProvider = ({
    * @param {InvoiceType} data - The form values used to generate the PDF.
    */
   const onFormSubmit = (data: InvoiceType) => {
-    console.log("VALUE");
-    console.log(data);
-
     // Call generate pdf method
     generatePdf(data);
   };
@@ -162,13 +165,32 @@ export const InvoiceContextProvider = ({
    * @throws {Error} - If an error occurs during the PDF generation process.
    */
   const generatePdf = useCallback(async (data: InvoiceType) => {
+    // Cancel any in-flight generation so a re-submit doesn't race the previous
+    // one and resolve out of order.
+    generateAbortRef.current?.abort();
+    const controller = new AbortController();
+    generateAbortRef.current = controller;
+
     setInvoicePdfLoading(true);
 
     try {
       const response = await fetch(GENERATE_PDF_API, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        signal: controller.signal,
       });
+
+      /*
+       * Without this check an error response was read as a PDF blob and, since
+       * the JSON error body has a non-zero size, reported to the user as a
+       * successful generation.
+       */
+      if (!response.ok) {
+        throw new Error(
+          `PDF generation failed with status ${response.status}`,
+        );
+      }
 
       const result = await response.blob();
       setInvoicePdf(result);
@@ -178,9 +200,17 @@ export const InvoiceContextProvider = ({
         pdfGenerationSuccess();
       }
     } catch (err) {
-      console.log(err);
+      if ((err as Error)?.name === "AbortError") {
+        // Superseded by a newer submit; the newer one owns the loading state.
+        return;
+      }
+      console.error(err);
+      pdfGenerationError();
     } finally {
-      setInvoicePdfLoading(false);
+      if (generateAbortRef.current === controller) {
+        generateAbortRef.current = null;
+        setInvoicePdfLoading(false);
+      }
     }
   }, []);
 
@@ -352,7 +382,10 @@ export const InvoiceContextProvider = ({
     const formValues = getValues();
 
     // Service to export invoice with given parameters
-    exportInvoice(exportAs, formValues);
+    exportInvoice(exportAs, formValues).catch((error) => {
+      console.error("Error exporting invoice:", error);
+      exportInvoiceError();
+    });
   };
 
   /**

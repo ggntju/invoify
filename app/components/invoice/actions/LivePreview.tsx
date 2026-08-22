@@ -1,5 +1,12 @@
+"use client";
+
+import { memo } from "react";
+
 // Components
 import { DynamicInvoiceTemplate, Subheading } from "@/app/components";
+
+// Contexts
+import { useTranslationContext } from "@/contexts/TranslationContext";
 
 // Types
 import { InvoiceType } from "@/types";
@@ -8,13 +15,23 @@ type LivePreviewProps = {
     data: InvoiceType;
 };
 
-export default function LivePreview({ data }: LivePreviewProps) {
+function LivePreview({ data }: LivePreviewProps) {
+    const { _t } = useTranslationContext();
+
     return (
         <>
-            <Subheading>Live Preview:</Subheading>
-            <div className="border dark:border-gray-600 rounded-xl my-1">
+            <Subheading>{_t("actions.livePreview")}:</Subheading>
+            <div className="my-1 overflow-hidden rounded-xl border border-border">
                 <DynamicInvoiceTemplate {...data} />
             </div>
         </>
     );
 }
+
+/*
+ * Memoised on `data` identity. PdfViewer re-renders on every keystroke because
+ * it subscribes to the form, but the debounced value it passes down only gets
+ * a new identity every 400ms — so the invoice template re-renders then, rather
+ * than on each character typed.
+ */
+export default memo(LivePreview);

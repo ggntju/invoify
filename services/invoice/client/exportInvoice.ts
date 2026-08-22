@@ -16,23 +16,32 @@ export const exportInvoice = async (
     exportAs: ExportTypes,
     formValues: InvoiceType
 ) => {
-    return fetch(`${EXPORT_INVOICE_API}?format=${exportAs}`, {
+    const response = await fetch(`${EXPORT_INVOICE_API}?format=${exportAs}`, {
         method: "POST",
         body: JSON.stringify(formValues),
         headers: {
             "Content-Type": "application/json",
         },
-    })
-        .then((res) => res.blob())
-        .then((blob) => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `invoice.${exportAs.toLowerCase()}`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-        })
-        .catch((error) => {
-            console.error("Error downloading:", error);
-        });
+    });
+
+    /*
+     * Without this check an error response was still passed to `.blob()` and
+     * downloaded as `invoice.<format>`, so the user got a file containing the
+     * server's error text instead of being told the export failed.
+     */
+    if (!response.ok) {
+        throw new Error(`Export failed with status ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    try {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `invoice.${exportAs.toLowerCase()}`;
+        a.click();
+    } finally {
+        window.URL.revokeObjectURL(url);
+    }
 };

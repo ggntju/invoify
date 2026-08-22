@@ -1,5 +1,8 @@
 import { ReactNode } from "react";
 
+// Variables
+import { SIGNATURE_FONTS } from "@/lib/variables";
+
 // Types
 import { InvoiceType } from "@/types";
 
@@ -9,11 +12,24 @@ type InvoiceLayoutProps = {
 };
 
 export default function InvoiceLayout({ data, children }: InvoiceLayoutProps) {
-    const { sender, receiver, details } = data;
+    const { details } = data;
+
+    /*
+     * The selected font name is user-controlled and was interpolated straight
+     * into a third-party URL. Only names on the known list are allowed through,
+     * so arbitrary attacker-supplied content can't reach fonts.googleapis.com
+     * from the server during PDF generation.
+     */
+    const requestedFont = details.signature?.fontFamily;
+    const allowedFont = SIGNATURE_FONTS.find(
+        (font) => font.name === requestedFont
+    );
 
     // Instead of fetching all signature fonts, get the specific one user selected.
-    const fontHref = details.signature?.fontFamily
-        ? `https://fonts.googleapis.com/css2?family=${details?.signature?.fontFamily}&display=swap`
+    const fontHref = allowedFont
+        ? `https://fonts.googleapis.com/css2?family=${encodeURIComponent(
+              allowedFont.name
+          )}&display=swap`
         : "";
 
     const head = (
@@ -28,11 +44,7 @@ export default function InvoiceLayout({ data, children }: InvoiceLayoutProps) {
                 href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
                 rel="stylesheet"
             ></link>
-            {details.signature?.fontFamily && (
-                <>
-                    <link href={fontHref} rel="stylesheet" />
-                </>
-            )}
+            {fontHref && <link href={fontHref} rel="stylesheet" />}
         </>
     );
 
@@ -40,7 +52,13 @@ export default function InvoiceLayout({ data, children }: InvoiceLayoutProps) {
         <>
             {head}
             <section style={{ fontFamily: "Outfit, sans-serif" }}>
-                <div className="flex flex-col p-4 sm:p-10 bg-white rounded-xl min-h-[60rem]">
+                {/*
+                 * The tall min-height exists so the invoice card fills an A4
+                 * page. It is scoped to print (page.pdf() emulates print media)
+                 * and to lg screens, so a phone preview isn't padded out with
+                 * 960px of empty white.
+                 */}
+                <div className="flex min-h-[30rem] flex-col rounded-xl bg-white p-4 sm:p-10 lg:min-h-[60rem] print:min-h-[60rem]">
                     {children}
                 </div>
             </section>

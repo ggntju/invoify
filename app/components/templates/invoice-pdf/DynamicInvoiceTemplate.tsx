@@ -8,7 +8,9 @@ import dynamic from "next/dynamic";
 import React, { useMemo } from "react";
 
 const DynamicInvoiceTemplateSkeleton = () => {
-    return <Skeleton className="min-h-[60rem]" />;
+    // 60rem of forced height pushed the whole page down on mobile before the
+    // template had even loaded.
+    return <Skeleton className="min-h-[30rem] w-full lg:min-h-[60rem]" />;
 };
 
 const DynamicInvoiceTemplate = (props: InvoiceType) => {
@@ -33,4 +35,4 @@ const DynamicInvoiceTemplate = (props: InvoiceType) => {
     return <DynamicInvoice {...props} />;
 };
 
-export default DynamicInvoiceTemplate;
+export default React.memo(DynamicInvoiceTemplate);

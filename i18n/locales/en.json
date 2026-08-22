@@ -102,7 +102,22 @@
     "resetFormTitle": "Reset form?",
     "resetFormDescription": "This will clear all fields and the saved draft.",
     "resetFormConfirm": "Reset",
-    "resetFormTooltip": "Clear every field and the saved draft"
+    "resetFormTooltip": "Clear every field and the saved draft",
+    "livePreview": "Live Preview",
+    "finalPdf": "Final PDF",
+    "backToLivePreview": "Back to Live Preview",
+    "previewInTab": "Preview",
+    "download": "Download",
+    "print": "Print",
+    "save": "Save",
+    "sendToMail": "Send to mail",
+    "openPdf": "Open PDF",
+    "pdfReady": "Your invoice PDF is ready.",
+    "previewInTabTooltip": "Preview invoice in a new tab",
+    "downloadTooltip": "Download invoice PDF",
+    "printTooltip": "Print invoice",
+    "saveTooltip": "Save invoice in website",
+    "sendToMailTooltip": "Send invoice PDF to mail"
   },
   "footer": {
     "developedBy": "Developed by"
