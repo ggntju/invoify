@@ -481,6 +481,9 @@ video {
   --tw-backdrop-saturate:  ;
   --tw-backdrop-sepia:  ;
 }
+.invisible {
+  visibility: hidden;
+}
 .relative {
   position: relative;
 }
@@ -595,6 +598,12 @@ video {
 }
 .justify-between {
   justify-content: space-between;
+}
+.gap-2 {
+  gap: 0.5rem;
+}
+.gap-2\.5 {
+  gap: 0.625rem;
 }
 .gap-3 {
   gap: 0.75rem;
@@ -881,8 +890,16 @@ video {
 }
 @media print {
 
-  .print\:min-h-\[60rem\] {
-    min-height: 60rem;
+  .print\:min-h-\[1123px\] {
+    min-height: 1123px;
+  }
+
+  .print\:overflow-visible {
+    overflow: visible;
+  }
+
+  .print\:rounded-none {
+    border-radius: 0px;
   }
 }
 @media (min-width: 640px) {

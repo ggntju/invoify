@@ -114,15 +114,25 @@ export async function generatePdfService(req: NextRequest) {
                 .evaluate(() => document.fonts.ready.then(() => undefined))
                 .catch(() => undefined);
 
+            /*
+             * No page margin.
+             *
+             * A 0.4in gutter on all four sides meant a full-bleed template
+             * could never actually reach the paper: TwoTone, BoldHeader,
+             * Corner, LeftRail and Sidebar paint their headers and rails
+             * edge-to-edge within the sheet element, and every one of them
+             * stopped 0.4in short with white around it — which is the "extra
+             * space above the coloured band" that looked like a bug.
+             *
+             * Each template already carries its own page padding via
+             * densityScale().page (p-6 sm:p-12, i.e. ~0.5in at 96dpi), so the
+             * printed margin is now the template's decision rather than a
+             * fixed frame imposed on all thirteen.
+             */
             return page.pdf({
                 format: "a4",
                 printBackground: true,
-                margin: {
-                    top: "0.4in",
-                    right: "0.4in",
-                    bottom: "0.4in",
-                    left: "0.4in",
-                },
+                margin: { top: "0", right: "0", bottom: "0", left: "0" },
             });
         });
 

@@ -4,6 +4,7 @@ import TemplateFrame, {
 } from "../TemplateFrame";
 import {
     ItemsTable,
+    Logo,
     NotesBlock,
     PartyBlock,
     PaymentBlock,
@@ -39,9 +40,17 @@ export default function Compact(props: TemplateProps) {
                 >
                     {labels.invoiceNumber}
                 </h1>
-                <p className={`${scale.name} font-semibold text-gray-900`}>
-                    {data.sender.name}
-                </p>
+                {/*
+                  * The logo was missing from this layout entirely — an
+                  * oversight, not a design choice, so an uploaded logo simply
+                  * vanished when the user picked Compact.
+                  */}
+                <div className="flex items-center gap-2" data-edit-field="sender.name">
+                    <Logo {...ctx} />
+                    <p className={`${scale.name} font-semibold text-gray-900`}>
+                        {data.sender.name}
+                    </p>
+                </div>
             </header>
 
             <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1">

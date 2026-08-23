@@ -4,6 +4,7 @@ import TemplateFrame, {
 } from "../TemplateFrame";
 import {
     ContactFooter,
+    Logo,
     ItemsTable,
     NotesBlock,
     PartyBlock,
@@ -11,7 +12,7 @@ import {
     SignatureBlock,
     TotalsBlock,
 } from "../parts";
-import { formatDate } from "@/lib/helpers";
+import { formatNumberWithCommas, formatDate } from "@/lib/helpers";
 import { tint } from "../invoiceTheme";
 
 /**
@@ -29,16 +30,20 @@ export default function Statement(props: TemplateProps) {
         [labels.dueDate, formatDate(data.details.dueDate)],
         [
             labels.total,
-            `${data.details.totalAmount ?? 0} ${data.details.currency}`,
+            `${formatNumberWithCommas(Number(data.details.totalAmount ?? 0))} ${data.details.currency}`,
         ],
     ];
 
     return (
         <TemplateFrame ctx={ctx}>
-            <header className="flex flex-wrap items-baseline justify-between gap-3">
-                <p className={`${scale.name} font-semibold text-gray-900`}>
-                    {data.sender.name}
-                </p>
+            <header className="flex flex-wrap items-center justify-between gap-3">
+                {/* Logo was missing from this layout too — see Compact. */}
+                <div className="flex items-center gap-2.5" data-edit-field="sender.name">
+                    <Logo {...ctx} />
+                    <p className={`${scale.name} font-semibold text-gray-900`}>
+                        {data.sender.name}
+                    </p>
+                </div>
                 <h1
                     className="text-xs font-semibold uppercase tracking-[0.3em]"
                     style={{ color: theme.accentColor }}

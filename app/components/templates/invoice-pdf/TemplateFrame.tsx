@@ -47,6 +47,12 @@ export function templateCtx(data: TemplateProps): PartCtx {
  * The tall min-height is scoped to print (page.pdf() emulates print media) and
  * to lg screens, so it fills an A4 page without padding out a phone preview
  * with 960px of empty white.
+ *
+ * 1123px is A4 at 96dpi, matching PDF_VIEWPORT in services/invoice/server/
+ * pdfPage.ts. It used to be 60rem (960px), which is 163px short of the page —
+ * invisible while the PDF had a 0.4in margin, but with the margin removed a
+ * full-bleed rail or sidebar stopped ~1.7cm above the bottom of the paper and
+ * left a white band under it.
  */
 export default function TemplateFrame({
     ctx,
@@ -65,7 +71,16 @@ export default function TemplateFrame({
             style={{ fontFamily: fontStack(theme.fontId), color: "#111827" }}
         >
             <div
-                className={`flex min-h-[30rem] flex-col overflow-hidden rounded-xl bg-white lg:min-h-[60rem] print:min-h-[60rem] ${
+                /*
+                 * The rounded corners and clipping are for the on-screen
+                 * preview only.
+                 *
+                 * In print they did real damage: rounding cut the corners off a
+                 * full-bleed header now that the page has no margin, and
+                 * `overflow-hidden` on the sheet is a pagination hazard —
+                 * anything landing on page 2 can be clipped away entirely.
+                 */
+                className={`flex min-h-[30rem] flex-col overflow-hidden rounded-xl bg-white lg:min-h-[60rem] print:min-h-[1123px] print:overflow-visible print:rounded-none ${
                     bare ? "" : scale.page
                 }`}
             >

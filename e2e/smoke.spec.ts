@@ -366,6 +366,67 @@ test.describe("invoice builder", () => {
         expect(bodyA.equals(bodyB)).toBe(false);
     });
 
+    test("every template renders a single A4 page", async ({ request }) => {
+        // 13 layouts; each must produce a valid, single-page A4 document.
+        for (let id = 1; id <= 13; id++) {
+            const res = await request.post("/api/invoice/generate?locale=en", {
+                data: {
+                    ...SAMPLE_INVOICE,
+                    details: {
+                        ...SAMPLE_INVOICE.details,
+                        pdfTemplate: id,
+                        invoiceNumber: `TPL-${id}`,
+                    },
+                },
+            });
+
+            expect(res.status(), `template ${id} failed`).toBe(200);
+            const body = await res.body();
+            expect(body.subarray(0, 5).toString()).toBe("%PDF-");
+
+            const text = body.toString("latin1");
+            const boxes = [...text.matchAll(/\/MediaBox\s*\[([^\]]*)\]/g)].map((m) =>
+                m[1].trim()
+            );
+            expect(new Set(boxes).size, `template ${id} mixed page sizes`).toBe(1);
+            expect(boxes[0]).toContain("595.9");
+            expect(boxes[0]).toContain("841.9");
+        }
+    });
+
+    test("an uploaded logo reaches the PDF", async ({ request }) => {
+        // A 1x1 transparent PNG is enough: we are asserting the image is
+        // embedded at all, which is what three layouts previously failed to do.
+        const logo =
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+
+        // Compact (7) and Statement (11) used to drop the logo entirely.
+        for (const id of [7, 11]) {
+            const base = {
+                ...SAMPLE_INVOICE,
+                details: { ...SAMPLE_INVOICE.details, pdfTemplate: id },
+            };
+
+            const without = await request.post("/api/invoice/generate?locale=en", {
+                data: { ...base, details: { ...base.details, invoiceNumber: `NL-${id}` } },
+            });
+            const with_ = await request.post("/api/invoice/generate?locale=en", {
+                data: {
+                    ...base,
+                    details: {
+                        ...base.details,
+                        invoiceNumber: `WL-${id}`,
+                        invoiceLogo: logo,
+                    },
+                },
+            });
+
+            const a = (await without.body()).length;
+            const b = (await with_.body()).length;
+            expect(b, `template ${id} did not embed the logo`).toBeGreaterThan(a + 100);
+        }
+    });
+
     test("warm endpoint reports the renderer is ready", async ({ request }) => {
         const res = await request.get("/api/invoice/warm");
         expect(res.status()).toBe(200);

@@ -47,7 +47,7 @@ export const TEMPLATES: TemplateEntry[] = [
     {
         id: 5,
         name: "Minimal",
-        description: "No rules or fills — whitespace does the work",
+        description: "No rules, fills or logo — whitespace does the work",
         load: () => import("./layouts/Minimal"),
     },
     {

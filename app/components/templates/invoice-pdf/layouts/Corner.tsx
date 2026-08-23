@@ -12,7 +12,7 @@ import {
     SignatureBlock,
     TotalsBlock,
 } from "../parts";
-import { formatDate } from "@/lib/helpers";
+import { formatNumberWithCommas, formatDate } from "@/lib/helpers";
 import { readableOn } from "../invoiceTheme";
 
 /**
@@ -52,7 +52,8 @@ export default function Corner(props: TemplateProps) {
                         {labels.total}
                     </p>
                     <p className="text-xl font-bold tabular-nums sm:text-2xl">
-                        {data.details.totalAmount ?? 0} {data.details.currency}
+                        {formatNumberWithCommas(Number(data.details.totalAmount ?? 0))}{" "}
+                        {data.details.currency}
                     </p>
                     <p className={`${scale.label} mt-1`} style={{ opacity: 0.8 }}>
                         {labels.dueDate}: {formatDate(data.details.dueDate)}
