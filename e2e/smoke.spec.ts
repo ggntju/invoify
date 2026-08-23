@@ -160,13 +160,14 @@ test.describe("invoice builder", () => {
          * Two entry points by design: the chip row above the invoice on
          * desktop, the labelled thumbnail inside the Details step below xl.
          * Both open the same dialog.
+         *
+         * `.or()` rather than sampling `count()`, because count does not
+         * auto-wait and useIsDesktop is false on its first render — a bare
+         * count can observe the moment before the chips mount.
          */
-        const chip = page.getByRole("button", { name: /^classic$/i });
-        if (await chip.count()) {
-            await chip.first().click();
-        } else {
-            await page.getByRole("button", { name: /change template/i }).click();
-        }
+        const chip = page.getByRole("button", { name: /^Template/ });
+        const thumbnail = page.getByRole("button", { name: /change template/i });
+        await chip.or(thumbnail).first().click();
 
         const dialog = page.getByRole("dialog");
         await expect(dialog).toBeVisible();
