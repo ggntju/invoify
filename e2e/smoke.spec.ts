@@ -897,6 +897,76 @@ test.describe("invoice builder", () => {
         }
     });
 
+    test("no template filters the logo away", async ({ page }) => {
+        /*
+         * Sidebar and BoldHeader used to wrap the logo in
+         * `filter: brightness(0) invert(1)` to make a dark monochrome mark
+         * legible on a dark accent. It is not a contrast fix: brightness(0)
+         * zeroes all three colour channels and invert(1) then raises every
+         * pixel to white, so a logo exported on an opaque canvas — the common
+         * case — painted as a solid white rectangle. Measured before the fix:
+         * one distinct colour, #ffffff.
+         *
+         * Asserting on computed style rather than pixels because it is the
+         * filter that is the bug, and because reading the image back through a
+         * canvas bypasses filters entirely — which is how this got missed the
+         * first time.
+         */
+        const LOGO =
+            "data:image/svg+xml;base64," +
+            Buffer.from(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="60">' +
+                    '<rect width="120" height="60" fill="#ffffff"/>' +
+                    '<rect width="60" height="60" fill="#e11d48"/></svg>'
+            ).toString("base64");
+
+        // Every template that renders a logo (Minimal, 5, deliberately does not).
+        for (const id of [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13]) {
+            await page.addInitScript(
+                ({ invoice, logo, template }) => {
+                    window.localStorage.setItem(
+                        "invoify:invoiceDraft",
+                        JSON.stringify({
+                            ...invoice,
+                            details: {
+                                ...invoice.details,
+                                invoiceLogo: logo,
+                                pdfTemplate: template,
+                            },
+                        })
+                    );
+                },
+                { invoice: SAMPLE_INVOICE, logo: LOGO, template: id }
+            );
+
+            await page.goto("/en");
+
+            const logo = page.locator('.invoice-live-preview img[alt*="Logo"]');
+            await expect(logo, `template ${id} did not render a logo`).toBeVisible({
+                timeout: 10_000,
+            });
+
+            const filters = await page.evaluate(() => {
+                const img = document.querySelector(
+                    '.invoice-live-preview img[alt*="Logo"]'
+                );
+                const found: string[] = [];
+                let node: Element | null = img;
+                while (node && !node.classList.contains("invoice-live-preview")) {
+                    const f = getComputedStyle(node).filter;
+                    if (f && f !== "none") found.push(f);
+                    node = node.parentElement;
+                }
+                return found;
+            });
+
+            expect(
+                filters,
+                `template ${id} filters its logo: ${filters.join(", ")}`
+            ).toEqual([]);
+        }
+    });
+
     test("warm endpoint reports the renderer is ready", async ({ request }) => {
         const res = await request.get("/api/invoice/warm");
         expect(res.status()).toBe(200);

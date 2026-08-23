@@ -88,10 +88,29 @@ const money = (value: unknown, currency: string, locale: string) => {
 
 /* ------------------------------------------------------------------ */
 
-export function Logo({ data, labels }: PartCtx) {
+/**
+ * The sender's logo.
+ *
+ * `plate` sits it on a small white card. Layouts that paint the logo onto a
+ * dark accent panel pass it, because a user's logo is an arbitrary image and
+ * there is no way to make an arbitrary image legible on an arbitrary dark
+ * colour by manipulating it.
+ *
+ * Sidebar and BoldHeader previously wrapped this in
+ * `filter: brightness(0) invert(1)`, on the assumption that every logo is a
+ * monochrome dark glyph that just needs flipping white. It is not a
+ * contrast fix, it is destructive: brightness(0) multiplies every colour
+ * channel by zero, so red, blue and white all become the same black, and
+ * invert(1) then raises every one of them to pure white. Alpha is untouched —
+ * so a logo exported on an opaque canvas, which is the common case, became a
+ * solid white rectangle, and a transparent one became a featureless white
+ * silhouette. A plate leaves the image alone.
+ */
+export function Logo({ data, labels, plate = false }: PartCtx & { plate?: boolean }) {
     const { details, sender } = data;
     if (!details.invoiceLogo) return null;
-    return (
+
+    const img = (
         <img
             src={details.invoiceLogo}
             width={140}
@@ -99,6 +118,22 @@ export function Logo({ data, labels }: PartCtx) {
             alt={labels.logoAlt.replace("{name}", sender.name)}
             style={{ maxHeight: 64, width: "auto", objectFit: "contain" }}
         />
+    );
+
+    if (!plate) return img;
+
+    return (
+        <span
+            style={{
+                display: "inline-flex",
+                alignItems: "center",
+                backgroundColor: "#ffffff",
+                borderRadius: 6,
+                padding: "6px 8px",
+            }}
+        >
+            {img}
+        </span>
     );
 }
 

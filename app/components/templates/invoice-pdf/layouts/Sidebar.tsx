@@ -44,9 +44,8 @@ export default function Sidebar(props: TemplateProps) {
                     className="w-full shrink-0 p-6 sm:w-[34%] sm:p-7"
                     style={{ backgroundColor: theme.accentColor }}
                 >
-                    <div style={{ filter: onAccent === "#ffffff" ? "brightness(0) invert(1)" : "none" }}>
-                        <Logo {...ctx} />
-                    </div>
+                    {/* Plate on a dark accent — see Logo in parts/index.tsx */}
+                    <Logo {...ctx} plate={onAccent === "#ffffff"} />
                     <p
                         data-edit-field="sender.name"
                         className={`${scale.name} mt-3 font-semibold`}
