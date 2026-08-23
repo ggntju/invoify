@@ -43,6 +43,27 @@ function collectProblems(page: Page, problems: string[]) {
         if (res.status() < 400) return;
         const url = res.url();
         if (EXPECTED_FAILING_REQUESTS.some((re) => re.test(url))) return;
+
+        /*
+         * One tolerated 4xx, and only this exact one.
+         *
+         * Every page mount pings the warm endpoint, so a full suite run
+         * eventually trips its per-IP rate limit — from one IP, which is
+         * precisely what the limiter is for. The "warm endpoint" test below
+         * already accounts for this; without the same allowance here, whichever
+         * test happens to load the page after the limit is reached fails, and
+         * the suite reports on the order it ran in rather than on the app.
+         *
+         * Narrow on purpose: a 429 anywhere else, or any other status on this
+         * path, is still a problem.
+         */
+        if (
+            res.status() === 429 &&
+            new URL(url).pathname === "/api/invoice/warm"
+        ) {
+            return;
+        }
+
         problems.push(`http ${res.status()}: ${url}`);
     });
 }
@@ -54,6 +75,28 @@ function collectProblems(page: Page, problems: string[]) {
  * against the production build, where that button does not exist. Providers
  * hydrates the form from this key on mount.
  */
+/**
+ * The language popover, wherever it is portalled to.
+ *
+ * Scoped by the BETA badge in its own header rather than by `role="dialog"`
+ * alone: on a phone the switcher lives inside the settings Sheet, which is
+ * also a dialog, and an unscoped locator matches both.
+ */
+function languageMenu(page: Page) {
+    return page.getByRole("dialog").filter({ has: page.getByText("BETA") });
+}
+
+/**
+ * Opens the language switcher on either layout. Below sm the navbar has no
+ * room for it beside the logo, so it moves into the settings sheet.
+ */
+async function openLanguageMenu(page: Page) {
+    if (page.viewportSize()!.width < 640) {
+        await page.getByRole("button", { name: /open settings/i }).click();
+    }
+    await page.getByRole("button", { name: "Languages" }).click();
+}
+
 async function seedDraft(page: Page) {
     await page.addInitScript((invoice) => {
         window.localStorage.setItem("invoify:invoiceDraft", JSON.stringify(invoice));
@@ -1073,6 +1116,227 @@ test.describe("invoice builder", () => {
         } else {
             expect(res.headers()["retry-after"]).toBeTruthy();
         }
+    });
+
+    test("appearance chips drop down instead of opening the gallery", async ({
+        page,
+    }) => {
+        test.skip(
+            page.viewportSize()!.width < 1280,
+            "the chip row is part of the desktop preview toolbar"
+        );
+
+        const problems: string[] = [];
+        collectProblems(page, problems);
+
+        await page.goto("/en");
+
+        /*
+         * The regression this guards: all four chips used to call the same
+         * handler, so "Density · Comfortable" opened a modal whose main
+         * content was thirteen template thumbnails.
+         */
+        await page.getByRole("button", { name: /^Font/ }).click();
+
+        const menu = page
+            .getByRole("dialog")
+            .filter({ hasText: "IBM Plex Sans" });
+        await expect(menu).toBeVisible();
+        await expect(page.getByText("Choose a template")).toHaveCount(0);
+
+        // Picking dismisses the menu and the chip reports the new value.
+        await menu.getByRole("button", { name: "Source Serif" }).click();
+        await expect(menu).toBeHidden();
+        await expect(
+            page.getByRole("button", { name: /^Font/ })
+        ).toContainText("Source Serif");
+
+        // The template chip is the one that still needs the room.
+        await page.getByRole("button", { name: /^Template/ }).click();
+        await expect(page.getByText("Choose a template")).toBeVisible();
+
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(400);
+        expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
+    });
+
+    test("bill from and bill to sit side by side in the rail", async ({
+        page,
+    }) => {
+        test.skip(
+            page.viewportSize()!.width < 1280,
+            "phones keep the single stacked column"
+        );
+
+        await page.goto("/en");
+
+        const boxes = await page.evaluate(() => {
+            const sections = [...document.querySelectorAll("section")].filter(
+                (s) => s.querySelector("input")
+            );
+            return sections.slice(0, 2).map((s) => {
+                const r = s.getBoundingClientRect();
+                return { top: Math.round(r.top), width: Math.round(r.width) };
+            });
+        });
+
+        expect(boxes).toHaveLength(2);
+        // Same row, not stacked.
+        expect(Math.abs(boxes[0].top - boxes[1].top)).toBeLessThanOrEqual(2);
+
+        /*
+         * Each half is far too narrow for a 7rem label beside its input, so
+         * the rows inside must fall back to stacking — `shell:@[20rem]:` in
+         * fieldStyles.ts. A paired row here would leave a ~76px field.
+         */
+        const rowDisplay = await page.evaluate(() => {
+            const input = document.querySelector<HTMLElement>(
+                'input[name="sender.name"]'
+            );
+            const row = input?.closest<HTMLElement>('[class*="@[20rem]"]');
+            return row ? getComputedStyle(row).display : null;
+        });
+        expect(rowDisplay).toBe("flex");
+
+        /*
+         * And the two halves start at the same line.
+         *
+         * They did not: the address book existed on the receiver side only, so
+         * its two buttons pushed Bill To's first field ~84px below Bill From's
+         * and the columns read as misaligned. Giving the sender the same
+         * feature — which it wanted on its own merits — squares them up.
+         */
+        const firstFields = await page.evaluate(() => {
+            const top = (name: string) =>
+                Math.round(
+                    document
+                        .querySelector(`input[name="${name}"]`)!
+                        .getBoundingClientRect().top
+                );
+            return { sender: top("sender.name"), receiver: top("receiver.name") };
+        });
+        expect(
+            Math.abs(firstFields.sender - firstFields.receiver)
+        ).toBeLessThanOrEqual(1);
+    });
+
+    test("the sender has its own address book", async ({ page }) => {
+        const problems: string[] = [];
+        collectProblems(page, problems);
+
+        await seedDraft(page);
+        await page.goto("/en");
+
+        await page.getByRole("button", { name: /save sender/i }).click();
+        await expect(
+            page.getByRole("button", { name: /^senders/i })
+        ).toBeEnabled();
+
+        // Wipe the sender, then restore it from its own book.
+        await page.locator('input[name="sender.name"]').fill("");
+        await page.locator('input[name="sender.city"]').fill("");
+
+        await page.getByRole("button", { name: /^senders/i }).click();
+        await page
+            .getByRole("dialog")
+            .getByRole("button", { name: /^John Doe/ })
+            .click();
+
+        await expect(page.locator('input[name="sender.name"]')).toHaveValue(
+            "John Doe"
+        );
+        await expect(page.locator('input[name="sender.city"]')).toHaveValue(
+            "Anytown"
+        );
+
+        /*
+         * Separate books, not one shared list: saving a sender must not put
+         * your own company into the client picker.
+         */
+        const keys = await page.evaluate(() => ({
+            senders: JSON.parse(
+                window.localStorage.getItem("invoify:senders") || "[]"
+            ).map((p: { name: string }) => p.name),
+            clients: JSON.parse(
+                window.localStorage.getItem("invoify:clients") || "[]"
+            ).map((p: { name: string }) => p.name),
+        }));
+        expect(keys.senders).toEqual(["John Doe"]);
+        expect(keys.clients).toEqual([]);
+
+        expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
+    });
+
+    test("languages list English and Azerbaijani first, then alphabetically", async ({
+        page,
+    }) => {
+        await page.goto("/en");
+        await openLanguageMenu(page);
+
+        const names = await languageMenu(page)
+            .locator("button span.truncate")
+            .allTextContents();
+
+        expect(names.slice(0, 4)).toEqual([
+            "English",
+            "Azərbaycanca",
+            "Bahasa Indonesia",
+            "Català",
+        ]);
+
+        /*
+         * Latin-script names sort among themselves and the other scripts group
+         * after them — Intl.Collator's root order, which is what makes a
+         * mixed-script list readable rather than arbitrary.
+         */
+        expect(names.slice(-5)).toEqual([
+            "Српски",
+            "עברית",
+            "العربية",
+            "日本語",
+            "简体中文",
+        ]);
+    });
+
+    test("switching language shows progress and keeps what was typed", async ({
+        page,
+    }) => {
+        await page.goto("/en");
+
+        const name = page.locator('input[name="sender.name"]');
+        await name.fill("Persisted Ltd");
+
+        /*
+         * Hold the German payload back for a moment.
+         *
+         * Without this the assertion below is a race against the network: on a
+         * warm production server the navigation can land before Playwright
+         * looks, and the test would then pass or fail on timing rather than on
+         * whether the pending state exists at all.
+         */
+        await page.route("**/de**", async (route) => {
+            await new Promise((resolve) => setTimeout(resolve, 800));
+            await route.continue();
+        });
+
+        await openLanguageMenu(page);
+        await languageMenu(page)
+            .getByRole("button", { name: /Deutsch/ })
+            .click();
+
+        /*
+         * The point of the whole change: a locale switch is a server
+         * navigation, and until this landed nothing on screen said so.
+         */
+        await expect(
+            page.getByRole("button", { name: "Languages" }).first()
+        ).toHaveAttribute("aria-busy", "true");
+
+        await expect(page).toHaveURL(/\/de/);
+        // The draft is restored, so an in-progress invoice survives the switch.
+        await expect(page.locator('input[name="sender.name"]')).toHaveValue(
+            "Persisted Ltd"
+        );
     });
 });
 
