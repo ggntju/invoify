@@ -76,8 +76,19 @@
         "totalAmount": "Importo totale",
         "includeTotalInWords": "Includere il totale in parole?",
         "yes": "Si",
-        "no": "No"
+        "no": "No",
+        "terms": {
+          "dueOnReceipt": "Pagamento alla ricezione",
+          "net15": "15 giorni",
+          "net30": "30 giorni",
+          "net60": "60 giorni"
+        }
       }
+    },
+    "autosave": {
+      "saving": "Salvataggio…",
+      "saved": "Salvato",
+      "justNow": "adesso"
     }
   },
   "actions": {

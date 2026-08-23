@@ -4,6 +4,7 @@
 import {
     Charges,
     FormTextarea,
+    PaymentTermPresets,
     SignatureModal,
     Subheading,
 } from "@/app/components";
@@ -31,11 +32,20 @@ const InvoiceSummary = () => {
                         label={_t("form.steps.summary.additionalNotes")}
                         placeholder="Your additional notes"
                     />
-                    <FormTextarea
-                        name="details.paymentTerms"
-                        label={_t("form.steps.summary.paymentTerms")}
-                        placeholder="Ex: Net 30"
-                    />
+                    <div className="flex flex-col gap-2">
+                        <FormTextarea
+                            name="details.paymentTerms"
+                            label={_t("form.steps.summary.paymentTerms")}
+                            placeholder="Ex: Net 30"
+                        />
+                        {/*
+                         * Presets fill the field above rather than replacing
+                         * it — the terms stay free text, they are just no
+                         * longer something you have to type from memory in
+                         * whatever language you happen to be working in.
+                         */}
+                        <PaymentTermPresets />
+                    </div>
                 </div>
 
                 {/* Final charges */}

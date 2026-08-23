@@ -76,8 +76,19 @@
         "totalAmount": "Totalbeløp",
         "includeTotalInWords": "Inkluder totalbeløp med ord?",
         "yes": "Ja",
-        "no": "Nei"
+        "no": "Nei",
+        "terms": {
+          "dueOnReceipt": "Betalast ved mottak",
+          "net15": "15 dagar",
+          "net30": "30 dagar",
+          "net60": "60 dagar"
+        }
       }
+    },
+    "autosave": {
+      "saving": "Lagrar…",
+      "saved": "Lagra",
+      "justNow": "nettopp"
     }
   },
   "actions": {

@@ -84,8 +84,19 @@
         "includeTotalInWords": "Include Total in Words?",
         "yes": "Yes",
         "no": "No",
-        "remove": "Remove"
+        "remove": "Remove",
+        "terms": {
+          "dueOnReceipt": "Due on receipt",
+          "net15": "Net 15",
+          "net30": "Net 30",
+          "net60": "Net 60"
+        }
       }
+    },
+    "autosave": {
+      "saving": "Saving…",
+      "saved": "Saved",
+      "justNow": "just now"
     }
   },
   "actions": {
@@ -266,5 +277,15 @@
         "a": "Yes. Change any field and the preview returns to live editing straight away, then generate again when you are ready."
       }
     }
+  },
+  "clients": {
+    "emptyTooltip": "Save a client first to reuse it here",
+    "heading": "Saved clients",
+    "pick": "Clients",
+    "pickTooltip": "Fill these fields from a saved client",
+    "remove": "Remove",
+    "save": "Save client",
+    "saveTooltip": "Save this client to reuse on your next invoice",
+    "saved": "Saved"
   }
 }

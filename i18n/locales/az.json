@@ -84,8 +84,19 @@
         "includeTotalInWords": "Məbləğ sözlə yazılsın?",
         "yes": "Bəli",
         "no": "Xeyr",
-        "remove": "Sil"
+        "remove": "Sil",
+        "terms": {
+          "dueOnReceipt": "Dərhal ödənilir",
+          "net15": "15 gün",
+          "net30": "30 gün",
+          "net60": "60 gün"
+        }
       }
+    },
+    "autosave": {
+      "saving": "Saxlanılır…",
+      "saved": "Saxlanıldı",
+      "justNow": "indicə"
     }
   },
   "actions": {
@@ -266,5 +277,15 @@
         "a": "Bəli. İstənilən sahəni dəyişin — önizləmə dərhal canlı redaktəyə qayıdır, hazır olanda yenidən yaradın."
       }
     }
+  },
+  "clients": {
+    "emptyTooltip": "Burada istifadə etmək üçün əvvəlcə müştəri saxlayın",
+    "heading": "Yadda saxlanılmış müştərilər",
+    "pick": "Müştərilər",
+    "pickTooltip": "Bu sahələri saxlanılmış müştəri ilə doldurun",
+    "remove": "Sil",
+    "save": "Müştərini saxla",
+    "saveTooltip": "Növbəti qaimədə istifadə etmək üçün bu müştərini saxlayın",
+    "saved": "Saxlanılıb"
   }
 }

@@ -76,8 +76,19 @@
         "totalAmount": "Import total",
         "includeTotalInWords": "Incluir el total en paraules?",
         "yes": "Sí",
-        "no": "No"
+        "no": "No",
+        "terms": {
+          "dueOnReceipt": "Pagament a la recepció",
+          "net15": "Net 15 dies",
+          "net30": "Net 30 dies",
+          "net60": "Net 60 dies"
+        }
       }
+    },
+    "autosave": {
+      "saving": "Desant…",
+      "saved": "Desat",
+      "justNow": "ara mateix"
     }
   },
   "actions": {

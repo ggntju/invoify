@@ -7,6 +7,7 @@ import { useFormContext, useWatch } from "react-hook-form";
 
 // Components
 import {
+    AutosaveIndicator,
     WizardStep,
     BillFromSection,
     BillToSection,
@@ -69,8 +70,11 @@ const InvoiceForm = () => {
                         <p className="text-xl font-semibold tracking-tight @2xl:text-2xl">
                             {_t("form.title")}
                         </p>
-                        <span className="text-sm text-muted-foreground">
-                            {invoiceNumberLabel}
+                        <span className="flex items-center gap-3">
+                            <AutosaveIndicator />
+                            <span className="text-sm text-muted-foreground">
+                                {invoiceNumberLabel}
+                            </span>
                         </span>
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">

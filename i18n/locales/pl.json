@@ -76,8 +76,19 @@
         "totalAmount": "Kwota całkowita",
         "includeTotalInWords": "Uwzględnić kwotę słownie?",
         "yes": "Tak",
-        "no": "Nie"
+        "no": "Nie",
+        "terms": {
+          "dueOnReceipt": "Płatne przy odbiorze",
+          "net15": "15 dni",
+          "net30": "30 dni",
+          "net60": "60 dni"
+        }
       }
+    },
+    "autosave": {
+      "saving": "Zapisywanie…",
+      "saved": "Zapisano",
+      "justNow": "przed chwilą"
     }
   },
   "actions": {

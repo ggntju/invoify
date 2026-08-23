@@ -76,8 +76,19 @@
         "totalAmount": "Montant total",
         "includeTotalInWords": "Inclure le total en mots?",
         "yes": "Oui",
-        "no": "Non"
+        "no": "Non",
+        "terms": {
+          "dueOnReceipt": "Paiement à réception",
+          "net15": "Net 15 jours",
+          "net30": "Net 30 jours",
+          "net60": "Net 60 jours"
+        }
       }
+    },
+    "autosave": {
+      "saving": "Enregistrement…",
+      "saved": "Enregistré",
+      "justNow": "à l'instant"
     }
   },
   "actions": {

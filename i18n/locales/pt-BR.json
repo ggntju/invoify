@@ -83,8 +83,19 @@
         "totalAmount": "Valor Total",
         "includeTotalInWords": "Incluir Total por Extenso?",
         "yes": "Sim",
-        "no": "Não"
+        "no": "Não",
+        "terms": {
+          "dueOnReceipt": "Pagamento na entrega",
+          "net15": "15 dias",
+          "net30": "30 dias",
+          "net60": "60 dias"
+        }
       }
+    },
+    "autosave": {
+      "saving": "Salvando…",
+      "saved": "Salvo",
+      "justNow": "agora mesmo"
     }
   },
   "actions": {

@@ -76,8 +76,19 @@
         "totalAmount": "Toplam Tutar",
         "includeTotalInWords": "Toplam Tutarı Yazıyla Ekle?",
         "yes": "Evet",
-        "no": "Hayır"
+        "no": "Hayır",
+        "terms": {
+          "dueOnReceipt": "Teslimde ödeme",
+          "net15": "15 gün",
+          "net30": "30 gün",
+          "net60": "60 gün"
+        }
       }
+    },
+    "autosave": {
+      "saving": "Kaydediliyor…",
+      "saved": "Kaydedildi",
+      "justNow": "az önce"
     }
   },
   "actions": {

@@ -76,8 +76,19 @@
         "totalAmount": "Total Pembayaran",
         "includeTotalInWords": "Sertakan Total dalam Kata-kata?",
         "yes": "Ya",
-        "no": "Tidak"
+        "no": "Tidak",
+        "terms": {
+          "dueOnReceipt": "Dibayar saat diterima",
+          "net15": "15 hari",
+          "net30": "30 hari",
+          "net60": "60 hari"
+        }
       }
+    },
+    "autosave": {
+      "saving": "Menyimpan…",
+      "saved": "Tersimpan",
+      "justNow": "baru saja"
     }
   },
   "actions": {

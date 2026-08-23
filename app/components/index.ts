@@ -19,6 +19,9 @@ import InvoiceActions from "./invoice/InvoiceActions";
 // Form components
 import SingleItem from "./invoice/form/SingleItem";
 import Charges from "./invoice/form/Charges";
+import ClientPicker from "./invoice/form/ClientPicker";
+import PaymentTermPresets from "./invoice/form/PaymentTermPresets";
+import AutosaveIndicator from "./invoice/form/AutosaveIndicator";
 import TemplateGallery from "./invoice/form/TemplateGallery";
 import VoiceInput from "./invoice/form/VoiceInput";
 
@@ -118,6 +121,9 @@ export {
     Items,
     SingleItem,
     Charges,
+    ClientPicker,
+    PaymentTermPresets,
+    AutosaveIndicator,
     TemplateGallery,
     VoiceInput,
     WizardNavigation,

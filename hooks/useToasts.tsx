@@ -8,6 +8,22 @@ const useToasts = () => {
         sendPdfToMail: (email: string) => void;
     };
 
+    const clientSaved = (name: string) => {
+        toast({
+            variant: "default",
+            title: "Client saved",
+            description: `${name} is now in your address book.`,
+        });
+    };
+
+    const clientRemoved = (name: string) => {
+        toast({
+            variant: "default",
+            title: "Client removed",
+            description: `${name} is no longer in your address book.`,
+        });
+    };
+
     const newInvoiceSuccess = () => {
         toast({
             variant: "default",
@@ -104,6 +120,8 @@ const useToasts = () => {
     };
 
     return {
+        clientSaved,
+        clientRemoved,
         newInvoiceSuccess,
         pdfGenerationSuccess,
         saveInvoiceSuccess,

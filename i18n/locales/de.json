@@ -76,8 +76,19 @@
         "totalAmount": "Gesamtbetrag",
         "includeTotalInWords": "In Worten",
         "yes": "Ja",
-        "no": "Nein"
+        "no": "Nein",
+        "terms": {
+          "dueOnReceipt": "Sofort fällig",
+          "net15": "Zahlbar in 15 Tagen",
+          "net30": "Zahlbar in 30 Tagen",
+          "net60": "Zahlbar in 60 Tagen"
+        }
       }
+    },
+    "autosave": {
+      "saving": "Wird gespeichert…",
+      "saved": "Gespeichert",
+      "justNow": "gerade eben"
     }
   },
   "actions": {

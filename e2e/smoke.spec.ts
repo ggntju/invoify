@@ -664,6 +664,136 @@ test.describe("invoice builder", () => {
         expect(og.headers()["content-type"]).toContain("image/png");
     });
 
+    test("clients can be saved and reused", async ({ page }) => {
+        const problems: string[] = [];
+        collectProblems(page, problems);
+
+        await seedDraft(page);
+        await page.goto("/en");
+
+        // Save the seeded receiver.
+        await page.getByRole("button", { name: /save client/i }).click();
+        await expect(page.getByRole("button", { name: /^clients/i })).toBeEnabled();
+
+        // Wipe the receiver, then restore it from the address book.
+        await page.locator('input[name="receiver.name"]').fill("");
+        await page.locator('input[name="receiver.city"]').fill("");
+
+        await page.getByRole("button", { name: /^clients/i }).click();
+        // The row and its delete button both carry the client's name, so match
+        // the row's full accessible name rather than a substring.
+        await page
+            .getByRole("button", { name: "Jane Smith Other Town, Canada" })
+            .click();
+
+        await expect(page.locator('input[name="receiver.name"]')).toHaveValue(
+            "Jane Smith"
+        );
+        // The whole address comes back, not just the name.
+        await expect(page.locator('input[name="receiver.city"]')).toHaveValue(
+            "Other Town"
+        );
+
+        // Survives a reload — it is in storage, not in component state.
+        await page.reload();
+        await expect(page.getByRole("button", { name: /^clients/i })).toBeEnabled();
+
+        expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
+    });
+
+    test("a new invoice suggests the next number but leaves it editable", async ({
+        page,
+    }) => {
+        const problems: string[] = [];
+        collectProblems(page, problems);
+
+        await page.addInitScript(() => {
+            window.localStorage.setItem(
+                "savedInvoices",
+                JSON.stringify([{ details: { invoiceNumber: "INV0042" } }])
+            );
+        });
+        await page.goto("/en");
+
+        /*
+         * Desktop hides the secondary actions behind an overflow menu; below xl
+         * they are a plain column under the form.
+         */
+        const overflow = page.getByRole("button", { name: /more actions/i });
+        if (await overflow.count()) await overflow.click();
+
+        await page.getByRole("button", { name: /^new invoice$/i }).first().click();
+        // Confirm the alert.
+        await page
+            .getByRole("button", { name: /^(continue|ok|new invoice)$/i })
+            .last()
+            .click()
+            .catch(() => undefined);
+
+        // A fresh invoice opens on step 1; the number lives on step 2.
+        await page.goto("/en?step=details");
+
+        const field = page.locator('input[name="details.invoiceNumber"]');
+        await expect(field).toHaveValue("INV0043");
+
+        // Prefilled, never locked.
+        await expect(field).toBeEditable();
+        await field.fill("2026-01");
+        await expect(field).toHaveValue("2026-01");
+
+        expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
+    });
+
+    test("payment term presets fill the field", async ({ page }) => {
+        const problems: string[] = [];
+        collectProblems(page, problems);
+
+        await seedDraft(page);
+        await page.goto("/en?step=summary");
+
+        const terms = page.locator('textarea[name="details.paymentTerms"]');
+        await expect(terms).toBeVisible();
+
+        await page.getByRole("button", { name: "Net 60", exact: true }).click();
+        await expect(terms).toHaveValue("Net 60");
+
+        // Still free text underneath.
+        await terms.fill("Payable in 45 days");
+        await expect(terms).toHaveValue("Payable in 45 days");
+
+        expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
+    });
+
+    test("the autosave indicator reports a saved draft", async ({ page }) => {
+        const problems: string[] = [];
+        collectProblems(page, problems);
+
+        await page.goto("/en");
+        await page.locator('input[name="sender.name"]').fill("Northwind Studio");
+
+        /*
+         * Poll for the write rather than racing the 600ms debounce, and assert
+         * on the draft itself — several controls in this form have "save" in
+         * their label, so a text match would be ambiguous.
+         */
+        await expect
+            .poll(
+                () =>
+                    page.evaluate(() =>
+                        window.localStorage.getItem("invoify:invoiceDraft")
+                    ),
+                { timeout: 5000 }
+            )
+            .toContain("Northwind Studio");
+
+        // Then the indicator reports it.
+        await expect(
+            page.locator("form").getByText(/^Saved ·/)
+        ).toBeVisible();
+
+        expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
+    });
+
     test("warm endpoint reports the renderer is ready", async ({ request }) => {
         const res = await request.get("/api/invoice/warm");
         expect(res.status()).toBe(200);
