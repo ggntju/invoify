@@ -173,6 +173,62 @@ test.describe("invoice builder", () => {
         expect(body.subarray(0, 5).toString()).toBe("%PDF-");
         expect(body.length).toBeGreaterThan(5000);
     });
+
+    test("identical invoices are served from cache", async ({ request }) => {
+        // Unique so this test does not depend on what other tests generated.
+        const invoice = {
+            ...SAMPLE_INVOICE,
+            details: { ...SAMPLE_INVOICE.details, invoiceNumber: "CACHE-1" },
+        };
+
+        const first = await request.post("/api/invoice/generate?locale=en", {
+            data: invoice,
+        });
+        expect(first.status()).toBe(200);
+
+        const second = await request.post("/api/invoice/generate?locale=en", {
+            data: invoice,
+        });
+        expect(second.status()).toBe(200);
+        expect(second.headers()["x-pdf-cache"]).toBe("hit");
+
+        // A cache hit must return the same bytes, not merely a fast response.
+        expect(await second.body()).toEqual(await first.body());
+    });
+
+    test("concurrent generations do not share a page", async ({ request }) => {
+        // The renderer reuses one Chromium page behind a lock. Without the lock
+        // two requests would race on a single document and the second would
+        // print the first one's invoice.
+        const make = (name: string, template: number) => ({
+            ...SAMPLE_INVOICE,
+            sender: { ...SAMPLE_INVOICE.sender, name },
+            details: {
+                ...SAMPLE_INVOICE.details,
+                invoiceNumber: `RACE-${name}`,
+                pdfTemplate: template,
+            },
+        });
+
+        const [a, b] = await Promise.all([
+            request.post("/api/invoice/generate?locale=en", { data: make("Alpha Corp", 1) }),
+            request.post("/api/invoice/generate?locale=en", { data: make("Beta Industries", 7) }),
+        ]);
+
+        expect(a.status()).toBe(200);
+        expect(b.status()).toBe(200);
+
+        const [bodyA, bodyB] = [await a.body(), await b.body()];
+        expect(bodyA.subarray(0, 5).toString()).toBe("%PDF-");
+        expect(bodyB.subarray(0, 5).toString()).toBe("%PDF-");
+        expect(bodyA.equals(bodyB)).toBe(false);
+    });
+
+    test("warm endpoint reports the renderer is ready", async ({ request }) => {
+        const res = await request.get("/api/invoice/warm");
+        expect(res.status()).toBe(200);
+        expect(await res.json()).toEqual({ ready: true });
+    });
 });
 
 const SAMPLE_INVOICE = {

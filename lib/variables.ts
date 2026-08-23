@@ -19,6 +19,7 @@ export const AUTHOR_GITHUB = "https://github.com/al1abb";
 export const GENERATE_PDF_API = "/api/invoice/generate";
 export const SEND_PDF_API = "/api/invoice/send";
 export const EXPORT_INVOICE_API = "/api/invoice/export";
+export const WARM_BROWSER_API = "/api/invoice/warm";
 
 /**
  * External API endpoints

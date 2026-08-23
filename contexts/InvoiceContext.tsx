@@ -34,6 +34,7 @@ import {
   SHORT_DATE_OPTIONS,
   LOCAL_STORAGE_INVOICE_DRAFT_KEY,
   DRAFT_SAVE_DEBOUNCE_MS,
+  WARM_BROWSER_API,
 } from "@/lib/variables";
 
 // Types
@@ -114,6 +115,22 @@ export const InvoiceContextProvider = ({
         : [];
       setSavedInvoices(savedInvoicesDefault);
     }
+  }, []);
+
+  /*
+   * Warm the PDF renderer.
+   *
+   * Chromium takes roughly 2.3s to launch, and on a cold serverless instance
+   * the user paid all of it on their first Generate. Kicking the launch off
+   * now overlaps it with filling in the form.
+   *
+   * Deliberately fire-and-forget: the result is ignored, and a failure leaves
+   * generation to launch the browser itself exactly as before.
+   */
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(WARM_BROWSER_API, { signal: controller.signal }).catch(() => {});
+    return () => controller.abort();
   }, []);
 
   /**

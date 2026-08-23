@@ -29,7 +29,8 @@ import { parseJsonBody } from "@/lib/server/validateRequest";
 import { PDF_TAILWIND_CSS } from "@/lib/pdfStyles.generated";
 
 // Browser
-import { getBrowser } from "./browser";
+import { withPdfPage } from "./pdfPage";
+import { getCachedPdf, pdfCacheKey, setCachedPdf } from "./pdfCache";
 
 // Types
 import { InvoiceType } from "@/types";
@@ -49,7 +50,15 @@ export async function generatePdfService(req: NextRequest) {
     if (!parsed.ok) return parsed.response;
 
     const body = parsed.data as InvoiceType;
-    let page;
+    const locale = resolveLocale(req.nextUrl.searchParams.get("locale"));
+
+    /*
+     * Identical input, identical output — so re-submitting an unchanged invoice
+     * should not cost a full render. Checked before any work is done.
+     */
+    const cacheKey = pdfCacheKey(body, locale);
+    const cached = getCachedPdf(cacheKey);
+    if (cached) return pdfResponse(cached, true);
 
     try {
         const ReactDOMServer = (await import("react-dom/server")).default;
@@ -70,7 +79,6 @@ export async function generatePdfService(req: NextRequest) {
          * lets the templates call useTranslations, which is what makes the PDF
          * follow the user's locale instead of always emitting English.
          */
-        const locale = resolveLocale(req.nextUrl.searchParams.get("locale"));
         const messages = await getMessages(locale);
 
         const htmlTemplate = ReactDOMServer.renderToStaticMarkup(
@@ -80,68 +88,76 @@ export async function generatePdfService(req: NextRequest) {
             })
         );
 
-        // Shared instance — see services/invoice/server/browser.ts
-        const browser = await getBrowser();
-        page = await browser.newPage();
-
         /*
-         * `networkidle0` waits for 500ms of complete network silence. With the
-         * stylesheet now inlined below, the only remaining requests are the
-         * template's own font links, so waiting for the DOM and then
-         * specifically for fonts is both correct and much faster.
+         * One shared, pre-configured page reused across requests — see
+         * pdfPage.ts. Creating a page per request was the largest remaining
+         * fixed cost once the browser itself was shared.
          */
-        await page.setContent(htmlTemplate, {
-            waitUntil: "domcontentloaded",
-            timeout: 30000,
+        const pdf = await withPdfPage(async (page) => {
+            /*
+             * `networkidle0` waits for 500ms of complete network silence. The
+             * stylesheet is inlined below and the fonts are embedded in it, so
+             * this document issues no requests at all — waiting for the DOM is
+             * both correct and much faster.
+             */
+            await page.setContent(htmlTemplate, {
+                waitUntil: "domcontentloaded",
+                timeout: 30000,
+            });
+
+            // Inlined rather than fetched from a CDN on every request.
+            await page.addStyleTag({ content: PDF_TAILWIND_CSS });
+
+            // Fonts are embedded, so this resolves immediately. Kept as a cheap
+            // guard rather than a load-bearing wait.
+            await page
+                .evaluate(() => document.fonts.ready.then(() => undefined))
+                .catch(() => undefined);
+
+            return page.pdf({
+                format: "a4",
+                printBackground: true,
+                margin: {
+                    top: "0.4in",
+                    right: "0.4in",
+                    bottom: "0.4in",
+                    left: "0.4in",
+                },
+            });
         });
 
-        // Inlined rather than fetched from a CDN on every request.
-        await page.addStyleTag({ content: PDF_TAILWIND_CSS });
+        setCachedPdf(cacheKey, pdf);
 
-        // Fonts are decorative; don't fail a PDF over a slow font host.
-        await page
-            .evaluate(() => document.fonts.ready.then(() => undefined))
-            .catch(() => undefined);
-
-        const pdf = await page.pdf({
-            format: "a4",
-            printBackground: true,
-            margin: {
-                top: "0.4in",
-                right: "0.4in",
-                bottom: "0.4in",
-                left: "0.4in",
-            },
-        });
-
-        /*
-         * Returned directly — the previous `new Blob([pdf])` copied the whole
-         * buffer again for no reason. `inline` lets the browser preview it
-         * instead of forcing a download.
-         */
-        return new NextResponse(pdf, {
-            headers: {
-                "Content-Type": "application/pdf",
-                "Content-Disposition": "inline; filename=invoice.pdf",
-                "Content-Length": String(pdf.length),
-                "Cache-Control": "no-store",
-            },
-            status: 200,
-        });
+        return pdfResponse(pdf, false);
     } catch (error) {
         console.error("PDF Generation Error:", error);
         return NextResponse.json(
             { error: "Failed to generate PDF" },
             { status: 500 }
         );
-    } finally {
-        // Only the page is closed; the browser is reused across requests.
-        if (page) {
-            try {
-                await page.close();
-            } catch (e) {
-                console.error("Error closing page:", e);
-            }
-        }
     }
+}
+
+/**
+ * Builds the PDF response.
+ *
+ * The buffer is passed straight through — an earlier `new Blob([pdf])` copied
+ * it again for no reason. `inline` lets the browser preview it rather than
+ * forcing a download. `no-store` because an invoice is not something to leave
+ * in a shared cache; the in-process cache above never crosses a request
+ * boundary and is keyed on the full validated body.
+ */
+function pdfResponse(pdf: Uint8Array, cacheHit: boolean) {
+    return new NextResponse(pdf, {
+        headers: {
+            "Content-Type": "application/pdf",
+            "Content-Disposition": "inline; filename=invoice.pdf",
+            "Content-Length": String(pdf.byteLength),
+            "Cache-Control": "no-store",
+            // Diagnostic only — makes a cache hit observable in the network tab
+            // and assertable from a test.
+            "X-Pdf-Cache": cacheHit ? "hit" : "miss",
+        },
+        status: 200,
+    });
 }
