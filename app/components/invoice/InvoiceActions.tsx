@@ -107,8 +107,13 @@ const InvoiceActions = () => {
     );
 
     return (
-        <div className="min-w-0">
-            <div className="xl:sticky xl:top-24">
+        <div className="min-w-0 shell:flex shell:min-h-0 shell:flex-col">
+            {/*
+             * Sticky is the fallback for tall-enough-but-short viewports; in
+             * the shell the column is a flex child that fills the pinned
+             * region instead.
+             */}
+            <div className="xl:sticky xl:top-24 shell:static shell:flex shell:min-h-0 shell:flex-1 shell:flex-col">
                 {/* Toolbar above the preview — desktop only */}
                 <div className="mb-3 hidden items-center justify-between gap-3 xl:flex">
                     <h2 className="text-sm font-medium text-muted-foreground">
@@ -144,8 +149,15 @@ const InvoiceActions = () => {
                     </div>
                 </div>
 
-                {/* Live preview / final PDF — desktop only */}
-                <div className="hidden xl:block">
+                {/*
+                 * Live preview / final PDF — desktop only.
+                 *
+                 * In the shell this pane owns its own scrollbar. A long invoice
+                 * is scrolled here rather than by moving the whole page, which
+                 * is what keeps the form and the toolbar in place while you
+                 * read down the document.
+                 */}
+                <div className="hidden xl:block shell:min-h-0 shell:flex-1 shell:overflow-y-auto shell:overscroll-contain">
                     {isDesktop ? (
                         <PdfViewer />
                     ) : (

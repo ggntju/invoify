@@ -3,19 +3,32 @@
  *
  * Every field used to hardcode a pixel width (`w-[13rem]`) inside a
  * non-wrapping flex row, which overflowed the viewport on phones. The rule
- * here is: stack label above control on mobile, align them side by side from
- * `sm` up, and never let the control have a fixed width below `sm`.
+ * here is: stack label above control on mobile, pair them from `sm` up, and
+ * never let the control have a fixed width below `sm`.
+ *
+ * IMPORTANT: the mobile branch of these classes is signed off and must not
+ * change. Every rule below `sm:` is what a phone gets; desktop refinements
+ * belong in the `sm:` half only.
  */
 
-/** Row wrapper: stacked on mobile, label/control side by side from sm up. */
+/*
+ * From `sm` up this is a two-column grid rather than a flex row with
+ * `justify-between`.
+ *
+ * The old row pushed a fixed 13rem control hard against the right edge and let
+ * the label absorb all the slack, so a short label sat a long way from its
+ * value — the pair read as two separate columns, a label rail and a control
+ * rail, which is a large part of why the form felt like a dense table. A grid
+ * keeps the value next to its label at any label length.
+ */
 export const fieldRow =
-    "flex flex-col gap-1.5 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4";
+    "flex flex-col gap-1.5 text-sm sm:grid sm:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] sm:items-center sm:gap-4";
 
-/** Control column: fluid on mobile, fixed and non-shrinking from sm up. */
-export const fieldControl = "w-full min-w-0 sm:w-[13rem] sm:shrink-0";
+/** Control column: fluid on mobile, the grid's second track from sm up. */
+export const fieldControl = "w-full min-w-0";
 
-/** Wider variant, for textareas. */
-export const fieldControlWide = "w-full min-w-0 sm:w-[15rem] sm:shrink-0";
+/** Wider variant, kept for textareas that want the full row. */
+export const fieldControlWide = "w-full min-w-0";
 
-/** Label column: takes the remaining space so controls stay right-aligned. */
-export const fieldLabel = "sm:flex-1";
+/** Label column: the grid's first track from sm up. */
+export const fieldLabel = "min-w-0";

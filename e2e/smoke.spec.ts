@@ -260,6 +260,46 @@ test.describe("invoice builder", () => {
         expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
     });
 
+    test("desktop shell pins the app and gives each pane its own scroll", async ({
+        page,
+    }) => {
+        test.skip(
+            page.viewportSize()!.width < 1280,
+            "the shell is a desktop-only layout"
+        );
+
+        const problems: string[] = [];
+        collectProblems(page, problems);
+
+        await seedDraft(page);
+        await page.goto("/en");
+        await page.waitForTimeout(1200);
+
+        const shell = await page.evaluate(() => {
+            const de = document.documentElement;
+            const panes = Array.from(document.querySelectorAll("div")).filter((el) => {
+                const style = getComputedStyle(el);
+                return (
+                    (style.overflowY === "auto" || style.overflowY === "scroll") &&
+                    el.clientHeight > 200
+                );
+            });
+            return {
+                paneCount: panes.length,
+                horizontal: de.scrollWidth > de.clientWidth + 1,
+                // The footer sits below the pinned region, so a little vertical
+                // slack is expected; the app itself must not need scrolling.
+                verticalSlack: de.scrollHeight - de.clientHeight,
+            };
+        });
+
+        expect(shell.paneCount, "form and preview should each scroll").toBe(2);
+        expect(shell.horizontal).toBe(false);
+        expect(shell.verticalSlack).toBeLessThan(200);
+
+        expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
+    });
+
     test("generate endpoint returns a real PDF", async ({ request }) => {
         const res = await request.post("/api/invoice/generate?locale=en", {
             data: SAMPLE_INVOICE,

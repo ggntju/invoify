@@ -45,7 +45,24 @@ const InvoiceMain = () => {
                  * invoice is what the user actually cares about, so it reads as
                  * the hero and the form beside it stays quiet.
                  */}
-                <div className="grid grid-cols-1 items-start gap-8 xl:grid-cols-[minmax(0,44fr)_minmax(0,56fr)] xl:gap-12">
+                {/*
+                 * At `shell` (>=1280px wide AND >=800px tall) this becomes an
+                 * application shell rather than a document: the region is
+                 * pinned to the viewport and each pane scrolls inside itself,
+                 * so the page never scrolls sideways past the work. Below that
+                 * — including every phone — it stays exactly as it was, a
+                 * single column that scrolls normally.
+                 *
+                 * The height subtracts the 4rem navbar and the 5rem of `md:py`
+                 * gutter this main element carries.
+                 */}
+                <div
+                    className={[
+                        "grid grid-cols-1 items-start gap-8",
+                        "xl:grid-cols-[minmax(0,44fr)_minmax(0,56fr)] xl:gap-12",
+                        "shell:h-[calc(100dvh-9rem)] shell:items-stretch shell:overflow-hidden",
+                    ].join(" ")}
+                >
                     <InvoiceForm />
                     <InvoiceActions />
                 </div>

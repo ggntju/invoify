@@ -48,8 +48,10 @@ const InvoiceForm = () => {
      * preview itself.
      */
     return (
-        <div className="min-w-0">
-            <div className="mx-auto max-w-2xl xl:mx-0">
+        // `min-h-0` is what actually lets a grid child shrink and scroll; without
+        // it the pane grows to its content and the page scrolls instead.
+        <div className="min-w-0 shell:flex shell:min-h-0 shell:flex-col">
+            <div className="mx-auto max-w-2xl shell:min-h-0 shell:overflow-y-auto shell:pr-4 xl:mx-0">
                 <header className="mb-6">
                     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                         <h1 className="text-xl font-semibold tracking-tight md:text-2xl">

@@ -22,6 +22,19 @@ module.exports = {
             },
         },
         extend: {
+            screens: {
+                /*
+                 * The desktop app-shell breakpoint.
+                 *
+                 * Height matters as much as width here: the shell pins the
+                 * page to the viewport and gives each pane its own scroll, and
+                 * on a 768px-tall laptop that leaves a form pane too short to
+                 * be usable. Below either threshold the layout falls back to
+                 * ordinary document scroll, which is also exactly what phones
+                 * get.
+                 */
+                shell: { raw: "(min-width: 1280px) and (min-height: 800px)" },
+            },
             colors: {
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",

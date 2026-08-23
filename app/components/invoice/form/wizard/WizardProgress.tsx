@@ -206,7 +206,11 @@ const WizardProgress = () => {
                 )}
             />
 
-            <ol className="mt-3 flex items-center gap-1.5 sm:gap-2">
+            {/*
+             * gap-1 and an 11px label from sm up: with five steps sharing the
+             * form column, "Invoice Details" was being truncated at 1440px.
+             */}
+            <ol className="mt-3 flex items-center gap-1.5 sm:gap-1">
                 {steps.map((step) => {
                     const state = getStepState(step);
                     const isActive = step.id === activeStep;
@@ -219,11 +223,11 @@ const WizardProgress = () => {
                                 aria-label={stepAriaLabel(step, state)}
                                 aria-current={isActive ? "step" : undefined}
                                 title={step.label}
-                                className="flex w-full items-center gap-1.5 rounded-md transition-opacity hover:opacity-80"
+                                className="flex w-full items-center gap-1.5 rounded-md transition-opacity hover:opacity-80 sm:gap-1"
                             >
                                 <span
                                     className={cn(
-                                        "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold",
+                                        "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold sm:h-5 sm:w-5 sm:text-[10px]",
                                         markerStyles[state]
                                     )}
                                 >
@@ -232,7 +236,7 @@ const WizardProgress = () => {
 
                                 <span
                                     className={cn(
-                                        "hidden min-w-0 truncate text-left text-xs sm:inline",
+                                        "hidden min-w-0 truncate text-left text-[11px] leading-tight sm:inline",
                                         isActive ? "font-semibold" : "font-medium",
                                         labelStyles[state]
                                     )}

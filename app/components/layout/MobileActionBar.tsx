@@ -28,7 +28,10 @@ const MobileActionBar = () => {
                 <MobilePreviewSheet>
                     <BaseButton
                         variant="outline"
-                        className="flex-1"
+                        // whitespace-nowrap: at 375px the two buttons split the
+                        // row and the labels wrapped inside a fixed-height
+                        // button, so the second line was clipped.
+                        className="flex-1 whitespace-nowrap"
                         size="lg"
                         disabled={invoicePdfLoading}
                     >
@@ -39,7 +42,7 @@ const MobileActionBar = () => {
 
                 <BaseButton
                     type="submit"
-                    className="flex-1"
+                    className="flex-1 whitespace-nowrap"
                     size="lg"
                     loading={invoicePdfLoading}
                     loadingText={_t("actions.generatePdfLoading")}
