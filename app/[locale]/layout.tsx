@@ -13,11 +13,14 @@ import {
     parisienne,
 } from "@/lib/fonts";
 // SEO
-import { JSONLD, ROOTKEYWORDS } from "@/lib/seo";
+import {
+    buildJsonLd,
+    languageAlternates,
+    localePath,
+    ROOTKEYWORDS,
+} from "@/lib/seo";
 // Variables
 import { BASE_URL, GOOGLE_SC_VERIFICATION, LOCALES } from "@/lib/variables";
-// Favicon
-import Favicon from "@/public/assets/favicon/favicon.ico";
 // Vercel Analytics
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
@@ -27,27 +30,61 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "@/i18n/messages";
 import { notFound } from "next/navigation";
 
-export const metadata: Metadata = {
-    title: "Invoify | Free Invoice Generator",
-    description:
-        "Create invoices effortlessly with Invoify, the free invoice generator. Try it now!",
-    icons: [{ rel: "icon", url: Favicon.src }],
-    keywords: ROOTKEYWORDS,
-    robots: {
-        index: true,
-        follow: true,
-    },
-    alternates: {
-        canonical: BASE_URL,
-    },
-    authors: {
-        name: "Ali Abbasov",
-        url: "https://aliabb.vercel.app",
-    },
-    verification: {
-        google: GOOGLE_SC_VERIFICATION,
-    },
-};
+/**
+ * Per-locale metadata.
+ *
+ * This was a single static object: one English title and description served to
+ * all eighteen locales, no metadataBase, no Open Graph, no Twitter card, no
+ * hreflang, and `canonical` hardcoded to the bare origin — which, since every
+ * locale is path-prefixed, is a redirect rather than a page. Each locale was
+ * telling search engines that the canonical version of itself was somewhere
+ * else.
+ */
+export async function generateMetadata(props: {
+    params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+    const { locale } = await props.params;
+    const messages = await getMessages(locale);
+    const meta = (messages as Record<string, Record<string, string>>)?.meta ?? {};
+
+    const title = meta.title ?? "Invoify | Free Invoice Generator";
+    const description =
+        meta.description ??
+        "Create invoices effortlessly with Invoify, the free invoice generator. Try it now!";
+
+    return {
+        // Resolves every relative URL below, including the generated OG image.
+        metadataBase: new URL(BASE_URL),
+        title,
+        description,
+        keywords: ROOTKEYWORDS,
+        robots: { index: true, follow: true },
+        alternates: {
+            canonical: localePath(locale),
+            languages: languageAlternates(),
+        },
+        openGraph: {
+            type: "website",
+            siteName: "Invoify",
+            title,
+            description,
+            url: localePath(locale),
+            locale,
+        },
+        twitter: {
+            card: "summary_large_image",
+            title,
+            description,
+        },
+        authors: {
+            name: "Ali Abbasov",
+            url: "https://aliabb.vercel.app",
+        },
+        verification: {
+            google: GOOGLE_SC_VERIFICATION,
+        },
+    };
+}
 
 export const viewport = {
     width: "device-width",
@@ -86,7 +123,9 @@ export default async function LocaleLayout(props: {
                 <script
                     type="application/ld+json"
                     id="json-ld"
-                    dangerouslySetInnerHTML={{ __html: JSON.stringify(JSONLD) }}
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify(buildJsonLd(locale)),
+                    }}
                 />
             </head>
             <body

@@ -58,9 +58,17 @@ const InvoiceForm = () => {
             <div className="mx-auto max-w-2xl shell:min-h-0 shell:overflow-y-auto shell:p-5 xl:mx-0">
                 <header className="mb-6">
                     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                        <h1 className="text-xl font-semibold tracking-tight @2xl:text-2xl">
+                        {/*
+                          * A <p>, not an <h1>. This said "Invoice" — a form
+                          * label, not the page's subject — while every invoice
+                          * template also renders headings inside the live
+                          * preview, so the document carried several competing
+                          * h1s made of the user's own data. The real h1 is in
+                          * LandingContent.
+                          */}
+                        <p className="text-xl font-semibold tracking-tight @2xl:text-2xl">
                             {_t("form.title")}
-                        </h1>
+                        </p>
                         <span className="text-sm text-muted-foreground">
                             {invoiceNumberLabel}
                         </span>

@@ -28,11 +28,11 @@ export default function Modern(props: TemplateProps) {
             <header>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <Logo {...ctx} />
-                    <h1
+                    <div
                         className={`${scale.heading} font-semibold uppercase tracking-tight text-gray-900`}
                     >
                         {labels.invoiceNumber}
-                    </h1>
+                    </div>
                 </div>
                 <div
                     className="mt-3 h-1 w-full rounded"

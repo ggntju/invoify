@@ -39,12 +39,12 @@ export default function TwoTone(props: TemplateProps) {
                         </p>
                     </div>
                     <div className="text-right">
-                        <h1
+                        <div
                             className={`${scale.heading} font-bold uppercase tracking-tight`}
                             style={{ color: theme.accentColor }}
                         >
                             {labels.invoiceNumber}
-                        </h1>
+                        </div>
                         <DocumentMeta ctx={ctx} />
                     </div>
                 </div>

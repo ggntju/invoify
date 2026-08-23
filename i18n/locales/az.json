@@ -203,5 +203,68 @@
     "spacious": "Geniş",
     "customColor": "Fərdi rəng",
     "reset": "Sıfırla"
+  },
+  "meta": {
+    "title": "Pulsuz Qaimə Yaradıcısı | Invoify",
+    "description": "Bir neçə dəqiqəyə peşəkar qaimə hazırlayın. On üç şablon, öz rəngləriniz və loqonuz, endirə və ya e-poçtla göndərə biləcəyiniz PDF. Pulsuzdur, qeydiyyat tələb olunmur.",
+    "ogTitle": "Pulsuz qaimə yaradıcısı",
+    "ogDescription": "On üç şablon. Doldurun, PDF-i endirin. Qeydiyyat yoxdur."
+  },
+  "landing": {
+    "h1": "Pulsuz qaimə yaradıcısı",
+    "intro": "Invoify brauzerinizdə peşəkar qaimə hazırlayır və sizə PDF verir. On üç şablondan birini seçin, vurğu rəngini və şrifti təyin edin, loqonuzu və imzanızı əlavə edin, nəticəni endirin və ya e-poçtla göndərin. Heç nə hesaba yüklənmir, çünki hesab anlayışı yoxdur.",
+    "featuresHeading": "Nə əldə edirsiniz",
+    "features": {
+      "1": {
+        "title": "On üç şablon",
+        "body": "Bir tərtibatın on üç rəngi deyil, həqiqətən fərqli tərtibatlar — tam enli başlıqlar, vurğu zolaqları, mərkəzləşdirilmiş başlıqlar, cədvəlli formalar və yığcam qəbz üslubu. Hər biri tam A4 səhifədir və qaimə uzananda düzgün bölünür."
+      },
+      "2": {
+        "title": "Özünüzə uyğunlaşdırın",
+        "body": "Hazır rənglərdən və ya istənilən hex koddan vurğu rəngi seçin, dörd şrift arasından birini götürün, sıxlığı tənzimləyin — iyirmi sətir bir səhifəyə sığsın və ya üç sətir rahat yerləşsin. Loqo və çəkilmiş, yazılmış ya da yüklənmiş imza əlavə edin."
+      },
+      "3": {
+        "title": "Əsl PDF",
+        "body": "Brauzerinizin istifadə etdiyi mühərriklə, şriftlər fayla hopdurulmuş şəkildə hazırlanır — beləliklə fayl onu açan hər kompüterdə eyni görünür. Endirin, çap edin və ya birbaşa müştərinizə e-poçtla göndərin."
+      }
+    },
+    "howHeading": "Necə işləyir",
+    "how": {
+      "1": {
+        "title": "Məlumatları doldurun",
+        "body": "Kimin kimə qaimə verdiyi, tarixlər, mal və xidmətlər, ödəniş rekvizitləri. Yazdığınız hər şey dərhal yanındakı önizləmədə görünür və işiniz brauzerinizdə qaralama kimi saxlanılır."
+      },
+      "2": {
+        "title": "Görünüşü seçin",
+        "body": "Şablon qalereyasını açın, on üç tərtibatı öz məlumatlarınızla yan-yana müqayisə edin, sonra rəngi, şrifti və sıxlığı təyin edin."
+      },
+      "3": {
+        "title": "PDF yaradın",
+        "body": "Bir kliklə sənəd hazırlanır. Endirin, çap edin, sonra açmaq üçün yadda saxlayın və ya səhifədən çıxmadan müştərinizə göndərin."
+      }
+    },
+    "faqHeading": "Suallar",
+    "faq": {
+      "1": {
+        "q": "Invoify həqiqətən pulsuzdur?",
+        "a": "Bəli. Ödənişli paket, sınaq müddəti və ya yaradılmalı hesab yoxdur. Qaimə yaradıcısı, on üç şablonun hamısı və PDF ixracı pulsuzdur."
+      },
+      "2": {
+        "q": "Qeydiyyatdan keçmək lazımdırmı?",
+        "a": "Xeyr. Qaiməniz üzərində işlədiyiniz müddətdə öz brauzerinizdə saxlanılır, yadda saxlanılmış qaimələr də brauzerin yaddaşında qalır. Serverdə heç nə saxlanılmır."
+      },
+      "3": {
+        "q": "Şirkət loqomu əlavə edə bilərəmmi?",
+        "a": "Bəli. Qaimə məlumatları addımında şəkil yükləyin — o, on üç şablondan on ikisində görünəcək. Minimal şablonu qəsdən loqosuzdur."
+      },
+      "4": {
+        "q": "Hansı valyuta və dillər dəstəklənir?",
+        "a": "Yüz yetmişdən çox valyuta, istifadə etdiyiniz dilə uyğun formatlanır; interfeys on səkkiz dilə tərcümə olunub. Qaimə sənədinin özü isə onlardan on üçünə."
+      },
+      "5": {
+        "q": "PDF yaratdıqdan sonra qaiməni redaktə edə bilərəmmi?",
+        "a": "Bəli. İstənilən sahəni dəyişin — önizləmə dərhal canlı redaktəyə qayıdır, hazır olanda yenidən yaradın."
+      }
+    }
   }
 }

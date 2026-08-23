@@ -29,7 +29,7 @@ export default function Column(props: TemplateProps) {
                 className="flex flex-wrap items-baseline justify-between gap-3 border-b pb-4"
                 style={{ borderColor: theme.accentColor }}
             >
-                <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+                <div className="text-2xl font-semibold tracking-tight text-gray-900">
                     {labels.invoiceNumber}{" "}
                     <span
                         className="tabular-nums"
@@ -37,7 +37,7 @@ export default function Column(props: TemplateProps) {
                     >
                         {data.details.invoiceNumber}
                     </span>
-                </h1>
+                </div>
                 <Logo {...ctx} />
             </header>
 

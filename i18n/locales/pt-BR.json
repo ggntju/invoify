@@ -125,5 +125,11 @@
     "contactHeading": "Em caso de dúvidas sobre esta fatura, utilize os seguintes contatos:",
     "logoAlt": "Logotipo de {name}",
     "signatureAlt": "Assinatura de {name}"
+  },
+  "meta": {
+    "title": "Gerador de faturas gratuito | Invoify",
+    "description": "Crie uma fatura profissional em minutos. Treze modelos, suas cores e seu logotipo, e um PDF para baixar ou enviar por e-mail. Grátis, sem cadastro.",
+    "ogTitle": "Gerador de faturas gratuito",
+    "ogDescription": "Treze modelos. Preencha e baixe o PDF. Sem cadastro."
   }
 }

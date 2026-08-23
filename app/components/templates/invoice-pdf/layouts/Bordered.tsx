@@ -39,12 +39,12 @@ export default function Bordered(props: TemplateProps) {
                             {data.sender.name}
                         </p>
                     </div>
-                    <h1
+                    <div
                         className={`${scale.heading} font-bold uppercase tracking-widest`}
                         style={{ color: theme.accentColor }}
                     >
                         {labels.invoiceNumber}
-                    </h1>
+                    </div>
                 </header>
 
                 <div className="grid border-b sm:grid-cols-2" style={{ borderColor: theme.accentColor }}>

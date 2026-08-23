@@ -203,5 +203,68 @@
     "spacious": "Spacious",
     "customColor": "Custom colour",
     "reset": "Reset"
+  },
+  "meta": {
+    "title": "Free Invoice Generator | Invoify",
+    "description": "Create a professional invoice in minutes. Thirteen templates, your own colours and logo, and a PDF you can download or email. Free, no account needed.",
+    "ogTitle": "Free invoice generator",
+    "ogDescription": "Thirteen templates. Fill it in, download the PDF. No account."
+  },
+  "landing": {
+    "h1": "Free invoice generator",
+    "intro": "Invoify builds a professional invoice in your browser and hands you a PDF. Choose one of thirteen templates, set your accent colour and typeface, add your logo and signature, and download or email the result. Nothing is uploaded to an account, because there are no accounts.",
+    "featuresHeading": "What you get",
+    "features": {
+      "1": {
+        "title": "Thirteen templates",
+        "body": "Genuinely different layouts, not one layout in thirteen colours — full-bleed headers, accent rails, centred mastheads, ruled forms and a compact receipt style. Every one is a proper A4 page and paginates correctly when the invoice runs long."
+      },
+      "2": {
+        "title": "Make it yours",
+        "body": "Pick an accent colour from the presets or any hex you like, choose between four typefaces, and set the density to fit twenty line items on one page or let three of them breathe. Add a logo and a drawn, typed or uploaded signature."
+      },
+      "3": {
+        "title": "A real PDF",
+        "body": "Rendered with the same engine your browser uses, with the fonts embedded, so the file looks the same on every machine that opens it. Download it, print it, or send it straight to your client by email."
+      }
+    },
+    "howHeading": "How it works",
+    "how": {
+      "1": {
+        "title": "Fill in the details",
+        "body": "Who is invoicing whom, the dates, the line items, and your payment details. Everything you type appears in the preview beside the form as you go, and your work is saved in your browser as a draft."
+      },
+      "2": {
+        "title": "Choose how it looks",
+        "body": "Open the template gallery to compare all thirteen layouts side by side with your own data in them, then set the colour, typeface and density."
+      },
+      "3": {
+        "title": "Generate the PDF",
+        "body": "One click produces the document. Download it, print it, save it to reopen later, or email it to your client without leaving the page."
+      }
+    },
+    "faqHeading": "Questions",
+    "faq": {
+      "1": {
+        "q": "Is Invoify really free?",
+        "a": "Yes. There is no paid tier, no trial, and no account to create. The invoice generator, all thirteen templates and the PDF export are free to use."
+      },
+      "2": {
+        "q": "Do I need to sign up?",
+        "a": "No. Your invoice is held in your own browser while you work on it, and saved invoices stay in your browser's local storage. Nothing is stored on a server."
+      },
+      "3": {
+        "q": "Can I add my company logo?",
+        "a": "Yes. Upload an image on the invoice details step and it appears on twelve of the thirteen templates. The Minimal template is deliberately logo-free."
+      },
+      "4": {
+        "q": "What currencies and languages are supported?",
+        "a": "Over a hundred and seventy currencies, formatted for the language you are using, and the interface is translated into eighteen languages. The invoice document itself is translated into thirteen of them."
+      },
+      "5": {
+        "q": "Can I edit an invoice after generating the PDF?",
+        "a": "Yes. Change any field and the preview returns to live editing straight away, then generate again when you are ready."
+      }
+    }
   }
 }

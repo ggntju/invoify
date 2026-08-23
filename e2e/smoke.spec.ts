@@ -299,18 +299,29 @@ test.describe("invoice builder", () => {
                     el.clientHeight > 200
                 );
             });
+            /*
+             * The app region must fit the viewport without scrolling. The
+             * document itself is much taller — the marketing section and the
+             * footer sit below the fold on purpose — so measuring document
+             * height would test the wrong thing.
+             */
+            const main = document.querySelector("main");
+            const mainBottom = main ? main.getBoundingClientRect().bottom : Infinity;
+
             return {
                 paneCount: panes.length,
                 horizontal: de.scrollWidth > de.clientWidth + 1,
-                // The footer sits below the pinned region, so a little vertical
-                // slack is expected; the app itself must not need scrolling.
-                verticalSlack: de.scrollHeight - de.clientHeight,
+                mainBottom: Math.round(mainBottom),
+                viewportHeight: de.clientHeight,
             };
         });
 
         expect(shell.paneCount, "form and preview should each scroll").toBe(2);
         expect(shell.horizontal).toBe(false);
-        expect(shell.verticalSlack).toBeLessThan(200);
+        expect(
+            shell.mainBottom,
+            "the builder should fit the viewport without scrolling"
+        ).toBeLessThanOrEqual(shell.viewportHeight + 1);
 
         expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
     });
@@ -569,6 +580,88 @@ test.describe("invoice builder", () => {
                 `${locale} fell back to non-embedded fonts: ${foreign.join(", ")}`
             ).toEqual([]);
         }
+    });
+
+    test("each locale advertises itself correctly to crawlers", async ({ request }) => {
+        const en = await request.get("/en");
+        const az = await request.get("/az");
+        expect(en.status()).toBe(200);
+        expect(az.status()).toBe(200);
+
+        const enHtml = await en.text();
+        const azHtml = await az.text();
+
+        const titleOf = (html: string) =>
+            html.match(/<title>(.*?)<\/title>/i)?.[1] ?? "";
+        const canonicalOf = (html: string) =>
+            html.match(/rel="canonical"[^>]*href="([^"]+)"/i)?.[1] ?? "";
+
+        // Every locale served one English title and one canonical before this.
+        expect(titleOf(enHtml)).not.toBe(titleOf(azHtml));
+        expect(canonicalOf(enHtml)).toMatch(/\/en$/);
+        expect(canonicalOf(azHtml)).toMatch(/\/az$/);
+
+        // hreflang: one per locale plus x-default. Next serialises the
+        // attribute as `hrefLang`, which HTML parses case-insensitively.
+        const alternates = enHtml.match(/rel="alternate"[^>]*hreflang=/gi) ?? [];
+        expect(alternates.length).toBeGreaterThanOrEqual(18);
+        expect(enHtml).toMatch(/hreflang="x-default"/i);
+
+        // Open Graph and Twitter, neither of which existed.
+        expect(enHtml).toMatch(/property="og:image"/i);
+        expect(enHtml).toMatch(/name="twitter:card"/i);
+
+        // Exactly one h1 — the invoice templates used to render their own
+        // inside the live preview, out of the user's data.
+        expect((enHtml.match(/<h1/g) ?? []).length).toBe(1);
+
+        // Structured data: the app, and the FAQ that matches the rendered one.
+        const blocks = [
+            ...enHtml.matchAll(
+                /<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/gs
+            ),
+        ].map((m) => JSON.parse(m[1]));
+        const types = blocks.map((b) => b["@type"]);
+        expect(types).toContain("WebApplication");
+        expect(types).toContain("FAQPage");
+
+        const faq = blocks.find((b) => b["@type"] === "FAQPage");
+        const rendered = (enHtml.match(/<dt[^>]*>/g) ?? []).length;
+        expect(faq.mainEntity.length).toBe(rendered);
+
+        // There is prose on the page at all.
+        const text = enHtml
+            .replace(/<script[\s\S]*?<\/script>/g, " ")
+            .replace(/<[^>]+>/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+        expect(text.length).toBeGreaterThan(2000);
+    });
+
+    test("sitemap, robots and manifest are served", async ({ request }) => {
+        const sitemap = await request.get("/sitemap.xml");
+        expect(sitemap.status()).toBe(200);
+        const xml = await sitemap.text();
+        expect((xml.match(/<url>/g) ?? []).length).toBeGreaterThanOrEqual(17);
+        expect(xml).toContain("xhtml:link");
+
+        const robots = await request.get("/robots.txt");
+        expect(robots.status()).toBe(200);
+        const txt = await robots.text();
+        // The static robots.txt it replaced named no sitemap at all.
+        expect(txt).toMatch(/Sitemap:\s*https?:\/\/\S+\/sitemap\.xml/);
+        expect(txt).toMatch(/Disallow:\s*\/api\//);
+
+        const manifest = await request.get("/manifest.webmanifest");
+        expect(manifest.status()).toBe(200);
+        expect((await manifest.json()).icons.length).toBeGreaterThan(0);
+
+        const favicon = await request.get("/favicon.ico");
+        expect(favicon.status()).toBe(200);
+
+        const og = await request.get("/en/opengraph-image");
+        expect(og.status()).toBe(200);
+        expect(og.headers()["content-type"]).toContain("image/png");
     });
 
     test("warm endpoint reports the renderer is ready", async ({ request }) => {

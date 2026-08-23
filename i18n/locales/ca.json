@@ -118,5 +118,11 @@
     "contactHeading": "Si teniu cap pregunta sobre aquesta factura, feu servir les dades de contacte següents:",
     "logoAlt": "Logotip de {name}",
     "signatureAlt": "Signatura de {name}"
+  },
+  "meta": {
+    "title": "Generador de factures gratuït | Invoify",
+    "description": "Crea una factura professional en minuts. Tretze plantilles, els teus colors i el teu logotip, i un PDF per descarregar o enviar per correu. Gratuït i sense registre.",
+    "ogTitle": "Generador de factures gratuït",
+    "ogDescription": "Tretze plantilles. Omple i descarrega el PDF. Sense compte."
   }
 }

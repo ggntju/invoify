@@ -36,11 +36,11 @@ export default function Classic(props: TemplateProps) {
                     </p>
                 </div>
                 <div className="text-right">
-                    <h1
+                    <div
                         className={`${scale.heading} font-semibold uppercase tracking-tight text-gray-900`}
                     >
                         {labels.invoiceNumber}
-                    </h1>
+                    </div>
                     <p className={`${scale.body} mt-0.5 text-gray-500`}>
                         {data.details.invoiceNumber}
                     </p>

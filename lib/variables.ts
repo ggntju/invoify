@@ -9,7 +9,18 @@ export const ENV = process.env.NODE_ENV;
 /**
  * Websites
  */
-export const BASE_URL = "https://invoify.vercel.app";
+/**
+ * Canonical origin, used for metadataBase, canonicals, hreflang, the sitemap
+ * and JSON-LD.
+ *
+ * Read from the environment so a preview deployment or a future custom domain
+ * does not need a code change — and, more importantly, so those deployments
+ * stop advertising the production URL as their canonical. Falls back to the
+ * current production host. No trailing slash.
+ */
+export const BASE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL || "https://invoify.vercel.app"
+).replace(/\/$/, "");
 export const AUTHOR_WEBSITE = "https://aliabb.vercel.app";
 export const AUTHOR_GITHUB = "https://github.com/al1abb";
 

@@ -34,12 +34,12 @@ export default function Compact(props: TemplateProps) {
                 className="flex flex-wrap items-baseline justify-between gap-3 border-b pb-2"
                 style={{ borderColor: theme.accentColor }}
             >
-                <h1
+                <div
                     className="text-sm font-bold uppercase tracking-[0.2em]"
                     style={{ color: theme.accentColor }}
                 >
                     {labels.invoiceNumber}
-                </h1>
+                </div>
                 {/*
                   * The logo was missing from this layout entirely — an
                   * oversight, not a design choice, so an uploaded logo simply

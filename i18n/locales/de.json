@@ -118,5 +118,11 @@
     "contactHeading": "Bei Fragen zu dieser Rechnung verwenden Sie bitte die folgenden Kontaktdaten:",
     "logoAlt": "Logo von {name}",
     "signatureAlt": "Unterschrift von {name}"
+  },
+  "meta": {
+    "title": "Kostenloser Rechnungsgenerator | Invoify",
+    "description": "Erstellen Sie in wenigen Minuten eine professionelle Rechnung. Dreizehn Vorlagen, eigene Farben und Logo, als PDF zum Herunterladen oder Versenden. Kostenlos, ohne Konto.",
+    "ogTitle": "Kostenloser Rechnungsgenerator",
+    "ogDescription": "Dreizehn Vorlagen. Ausfüllen, PDF herunterladen. Ohne Konto."
   }
 }

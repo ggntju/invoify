@@ -21,6 +21,12 @@ import type { InvoiceType } from "@/types";
  * These are plain functions of their props: no hooks, no context, because the
  * same components render server-side through renderToStaticMarkup for the PDF.
  *
+ * The layouts render the invoice title as a styled <div>, never an <h1>. An
+ * invoice is a document *inside* the page, not the page's own outline — and
+ * because the same components render into the live preview, an <h1> here put
+ * several competing top-level headings made of the user's own data into the
+ * app's HTML. The page's real <h1> lives in LandingContent.
+ *
  * Several parts carry a `data-edit-field` attribute naming the form field that
  * produced them. The live preview delegates a single click handler over the
  * whole document and uses it to jump to that field, which is how clicking the

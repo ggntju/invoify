@@ -33,9 +33,9 @@ export default function Corner(props: TemplateProps) {
                     <p className={`${scale.name} mt-2 font-semibold text-gray-900`}>
                         {data.sender.name}
                     </p>
-                    <h1 className="mt-4 text-2xl font-light uppercase tracking-[0.2em] text-gray-900">
+                    <div className="mt-4 text-2xl font-light uppercase tracking-[0.2em] text-gray-900">
                         {labels.invoiceNumber}
-                    </h1>
+                    </div>
                     <p className={`${scale.body} tabular-nums text-gray-500`}>
                         {data.details.invoiceNumber}
                     </p>

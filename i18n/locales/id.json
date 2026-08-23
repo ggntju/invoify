@@ -118,5 +118,11 @@
     "contactHeading": "Jika ada pertanyaan mengenai faktur ini, gunakan informasi kontak berikut:",
     "logoAlt": "Logo {name}",
     "signatureAlt": "Tanda tangan {name}"
+  },
+  "meta": {
+    "title": "Pembuat Faktur Gratis | Invoify",
+    "description": "Buat faktur profesional dalam hitungan menit. Tiga belas templat, warna dan logo Anda sendiri, serta PDF yang bisa diunduh atau dikirim lewat email. Gratis, tanpa akun.",
+    "ogTitle": "Pembuat faktur gratis",
+    "ogDescription": "Tiga belas templat. Isi, unduh PDF-nya. Tanpa akun."
   }
 }

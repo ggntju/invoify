@@ -35,9 +35,9 @@ export default function LeftRail(props: TemplateProps) {
                 <div className={`flex min-w-0 flex-1 flex-col ${scale.page}`}>
                     <header className="flex flex-wrap items-start justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl font-light uppercase tracking-[0.25em] text-gray-900">
+                            <div className="text-3xl font-light uppercase tracking-[0.25em] text-gray-900">
                                 {labels.invoiceNumber}
-                            </h1>
+                            </div>
                             <p
                                 className={`${scale.body} mt-1 tabular-nums`}
                                 style={{ color: theme.accentColor }}

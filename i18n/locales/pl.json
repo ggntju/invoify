@@ -118,5 +118,11 @@
     "contactHeading": "W razie pytań dotyczących tej faktury prosimy o kontakt:",
     "logoAlt": "Logo {name}",
     "signatureAlt": "Podpis {name}"
+  },
+  "meta": {
+    "title": "Darmowy generator faktur | Invoify",
+    "description": "Stwórz profesjonalną fakturę w kilka minut. Trzynaście szablonów, własne kolory i logo oraz PDF do pobrania lub wysłania e-mailem. Za darmo, bez zakładania konta.",
+    "ogTitle": "Darmowy generator faktur",
+    "ogDescription": "Trzynaście szablonów. Wypełnij i pobierz PDF. Bez konta."
   }
 }

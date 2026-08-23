@@ -81,12 +81,12 @@ export default function Sidebar(props: TemplateProps) {
                 </aside>
 
                 <main className="flex min-w-0 flex-1 flex-col p-6 sm:p-8">
-                    <h1
+                    <div
                         className={`${scale.heading} font-bold uppercase tracking-tight`}
                         style={{ color: theme.accentColor }}
                     >
                         {labels.invoiceNumber}
-                    </h1>
+                    </div>
 
                     <div className="mt-5">
                         <PartyBlock

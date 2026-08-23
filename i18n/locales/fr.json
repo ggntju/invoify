@@ -118,5 +118,11 @@
     "contactHeading": "Pour toute question concernant cette facture, veuillez utiliser les coordonnées suivantes :",
     "logoAlt": "Logo de {name}",
     "signatureAlt": "Signature de {name}"
+  },
+  "meta": {
+    "title": "Générateur de factures gratuit | Invoify",
+    "description": "Créez une facture professionnelle en quelques minutes. Treize modèles, vos couleurs et votre logo, un PDF à télécharger ou à envoyer. Gratuit, sans inscription.",
+    "ogTitle": "Générateur de factures gratuit",
+    "ogDescription": "Treize modèles. Remplissez, téléchargez le PDF. Sans compte."
   }
 }

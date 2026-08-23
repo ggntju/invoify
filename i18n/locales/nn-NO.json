@@ -118,5 +118,11 @@
     "contactHeading": "Har du spørsmål om denne fakturaen, bruk kontaktinformasjonen nedanfor:",
     "logoAlt": "Logo til {name}",
     "signatureAlt": "Signatur til {name}"
+  },
+  "meta": {
+    "title": "Gratis fakturagenerator | Invoify",
+    "description": "Lag ein profesjonell faktura på minutt. Tretten malar, eigne fargar og logo, og ein PDF du kan lasta ned eller senda på e-post. Gratis, utan konto.",
+    "ogTitle": "Gratis fakturagenerator",
+    "ogDescription": "Tretten malar. Fyll ut, last ned PDF-en. Ingen konto."
   }
 }

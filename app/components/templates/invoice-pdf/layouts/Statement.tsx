@@ -44,12 +44,12 @@ export default function Statement(props: TemplateProps) {
                         {data.sender.name}
                     </p>
                 </div>
-                <h1
+                <div
                     className="text-xs font-semibold uppercase tracking-[0.3em]"
                     style={{ color: theme.accentColor }}
                 >
                     {labels.invoiceNumber}
-                </h1>
+                </div>
             </header>
 
             <div

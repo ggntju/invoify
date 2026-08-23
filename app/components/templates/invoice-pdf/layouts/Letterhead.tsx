@@ -48,11 +48,11 @@ export default function Letterhead(props: TemplateProps) {
                     className="mx-auto mt-4 border-t-2 border-b"
                     style={{ borderColor: theme.accentColor, width: "100%" }}
                 >
-                    <h1
+                    <div
                         className={`${scale.heading} py-2 font-semibold uppercase tracking-[0.3em] text-gray-900`}
                     >
                         {labels.invoiceNumber}
-                    </h1>
+                    </div>
                 </div>
             </header>
 
