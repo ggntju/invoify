@@ -61,12 +61,20 @@ const PartyPicker = ({ kind }: { kind: PartyKind }) => {
     const [open, setOpen] = useState(false);
 
     /*
-     * Read on mount rather than during render: localStorage is not available on
-     * the server, and reading it while rendering would make the first client
-     * render disagree with the prerendered HTML.
+     * Read on mount rather than during render: storage is not available on the
+     * server, and reading it while rendering would make the first client render
+     * disagree with the prerendered HTML. It is also async now — the entries
+     * are encrypted at rest — so the guard stops a late resolve writing into an
+     * unmounted component.
      */
     useEffect(() => {
-        setParties(readParties(kind));
+        let active = true;
+        readParties(kind).then((saved) => {
+            if (active) setParties(saved);
+        });
+        return () => {
+            active = false;
+        };
     }, [kind]);
 
     /*
@@ -93,9 +101,9 @@ const PartyPicker = ({ kind }: { kind: PartyKind }) => {
         [parties, currentName]
     );
 
-    const handleSave = useCallback(() => {
+    const handleSave = useCallback(async () => {
         const party = getValues(kind);
-        setParties(saveParty(kind, party));
+        setParties(await saveParty(kind, party));
         partySaved(kind, party.name);
     }, [getValues, kind, partySaved]);
 
@@ -117,10 +125,10 @@ const PartyPicker = ({ kind }: { kind: PartyKind }) => {
     );
 
     const handleDelete = useCallback(
-        (event: React.MouseEvent, party: SavedParty) => {
+        async (event: React.MouseEvent, party: SavedParty) => {
             // The row itself selects the party; the bin must not do both.
             event.stopPropagation();
-            setParties(deleteParty(kind, party.id));
+            setParties(await deleteParty(kind, party.id));
             partyRemoved(kind, party.name);
         },
         [kind, partyRemoved]
@@ -185,7 +193,7 @@ const PartyPicker = ({ kind }: { kind: PartyKind }) => {
                                 <button
                                     type="button"
                                     onClick={(event) =>
-                                        handleDelete(event, party)
+                                        void handleDelete(event, party)
                                     }
                                     aria-label={`${label("remove")} ${party.name}`}
                                     className={cn(
@@ -206,7 +214,7 @@ const PartyPicker = ({ kind }: { kind: PartyKind }) => {
                 size="sm"
                 className="h-8"
                 disabled={!canSave}
-                onClick={handleSave}
+                onClick={() => void handleSave()}
                 tooltipLabel={label("saveTooltip")}
             >
                 <UserPlus className="h-4 w-4" />

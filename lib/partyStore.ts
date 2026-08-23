@@ -1,3 +1,5 @@
+import { readSecure, writeSecure } from "@/lib/secureStore";
+
 import type { InvoiceType } from "@/types";
 
 /**
@@ -14,6 +16,11 @@ import type { InvoiceType } from "@/types";
  * implementation, and so the parsing stays defensive: this is user data that
  * may have been written by an older version of the app, or edited by hand in
  * devtools.
+ *
+ * Encrypted at rest through lib/secureStore, which is why every function here
+ * is async. An address book is names, postal addresses, emails and phone
+ * numbers; see that module for exactly what the encryption does and does not
+ * protect.
  */
 
 /** Which end of the invoice an entry belongs to. */
@@ -66,30 +73,20 @@ function normalise(entry: unknown): SavedParty | null {
     };
 }
 
-export function readParties(kind: PartyKind): SavedParty[] {
-    if (typeof window === "undefined") return [];
-    try {
-        const raw = window.localStorage.getItem(STORAGE_KEYS[kind]);
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) return [];
-        return parsed.map(normalise).filter((p): p is SavedParty => p !== null);
-    } catch {
-        return [];
-    }
+export async function readParties(kind: PartyKind): Promise<SavedParty[]> {
+    const parsed = await readSecure<unknown>(STORAGE_KEYS[kind]);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(normalise).filter((p): p is SavedParty => p !== null);
 }
 
-function writeParties(kind: PartyKind, parties: SavedParty[]): SavedParty[] {
-    if (typeof window === "undefined") return parties;
-    try {
-        window.localStorage.setItem(
-            STORAGE_KEYS[kind],
-            JSON.stringify(parties)
-        );
-    } catch {
-        // Quota or disabled storage. The address book is a convenience; losing
-        // a write must not interrupt the invoice being worked on.
-    }
+async function writeParties(
+    kind: PartyKind,
+    parties: SavedParty[]
+): Promise<SavedParty[]> {
+    // A false result means quota, disabled storage, or no usable key. The
+    // address book is a convenience; losing a write must not interrupt the
+    // invoice being worked on, so the caller gets the list either way.
+    await writeSecure(STORAGE_KEYS[kind], parties);
     return parties;
 }
 
@@ -100,14 +97,14 @@ function writeParties(kind: PartyKind, parties: SavedParty[]): SavedParty[] {
  * is invoicing the same client twice and ending up with two near-identical
  * rows in the picker.
  */
-export function saveParty(
+export async function saveParty(
     kind: PartyKind,
     party: InvoiceType["receiver"] | InvoiceType["sender"]
-): SavedParty[] {
+): Promise<SavedParty[]> {
     const candidate = normalise({ ...party, id: undefined });
     if (!candidate) return readParties(kind);
 
-    const existing = readParties(kind);
+    const existing = await readParties(kind);
     const index = existing.findIndex(
         (entry) =>
             entry.name.trim().toLowerCase() ===
@@ -123,9 +120,12 @@ export function saveParty(
     return writeParties(kind, merged);
 }
 
-export function deleteParty(kind: PartyKind, id: string): SavedParty[] {
-    return writeParties(
-        kind,
-        readParties(kind).filter((entry) => entry.id !== id)
+export async function deleteParty(
+    kind: PartyKind,
+    id: string
+): Promise<SavedParty[]> {
+    const remaining = (await readParties(kind)).filter(
+        (entry) => entry.id !== id
     );
+    return writeParties(kind, remaining);
 }

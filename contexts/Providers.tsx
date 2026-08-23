@@ -23,6 +23,9 @@ import { TranslationProvider } from "@/contexts/TranslationContext";
 import { InvoiceContextProvider } from "@/contexts/InvoiceContext";
 import { ChargesContextProvider } from "@/contexts/ChargesContext";
 
+// Storage
+import { readSecure } from "@/lib/secureStore";
+
 // Types
 import { InvoiceType } from "@/types";
 
@@ -34,23 +37,34 @@ import {
 } from "@/lib/variables";
 
 // Helpers
-const readDraftFromLocalStorage = (): InvoiceType | null => {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(LOCAL_STORAGE_INVOICE_DRAFT_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    // revive dates
-    if (parsed?.details) {
-      if (parsed.details.invoiceDate)
-        parsed.details.invoiceDate = new Date(parsed.details.invoiceDate);
-      if (parsed.details.dueDate)
-        parsed.details.dueDate = new Date(parsed.details.dueDate);
-    }
-    return parsed;
-  } catch {
-    return null;
+/**
+ * Restores the saved draft. Async because the draft is encrypted at rest —
+ * see lib/secureStore. It was already read in a mount effect rather than
+ * during render, so awaiting it changes when the form repopulates by a
+ * microtask, not which paint it lands in.
+ */
+const readDraft = async (): Promise<InvoiceType | null> => {
+  /*
+   * Read loosely, then revive. The stored dates are ISO strings and the form
+   * wants Date objects, so this deliberately does not read as InvoiceType —
+   * the whole point of this step is that the parsed value does not match the
+   * type yet.
+   */
+  const parsed = await readSecure<{
+    details?: { invoiceDate?: unknown; dueDate?: unknown };
+  }>(LOCAL_STORAGE_INVOICE_DRAFT_KEY);
+  if (!parsed) return null;
+
+  // revive dates
+  if (parsed.details) {
+    if (parsed.details.invoiceDate)
+      parsed.details.invoiceDate = new Date(
+        parsed.details.invoiceDate as string
+      );
+    if (parsed.details.dueDate)
+      parsed.details.dueDate = new Date(parsed.details.dueDate as string);
   }
+  return parsed as unknown as InvoiceType;
 };
 
 type ProvidersProps = {
@@ -79,10 +93,15 @@ const Providers = ({ children }: ProvidersProps) => {
 
   // Hydrate once on mount
   useEffect(() => {
-    const draft = readDraftFromLocalStorage();
-    if (draft) {
-      form.reset(draft, { keepDefaultValues: false });
-    }
+    let active = true;
+    readDraft().then((draft) => {
+      if (active && draft) {
+        form.reset(draft, { keepDefaultValues: false });
+      }
+    });
+    return () => {
+      active = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

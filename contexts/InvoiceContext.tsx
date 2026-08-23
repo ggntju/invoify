@@ -40,8 +40,17 @@ import {
   WARM_BROWSER_API,
 } from "@/lib/variables";
 
+// Storage
+import { readSecure, removeSecure, writeSecure } from "@/lib/secureStore";
+
 // Types
 import { ExportTypes, InvoiceType } from "@/types";
+
+/**
+ * Unprefixed, unlike the newer invoify: keys — this one predates that
+ * namespace and renaming it would orphan every invoice anyone has saved.
+ */
+const SAVED_INVOICES_KEY = "savedInvoices";
 
 const defaultInvoiceContext = {
   invoicePdf: new Blob(),
@@ -109,15 +118,15 @@ export const InvoiceContextProvider = ({
   const [savedInvoices, setSavedInvoices] = useState<InvoiceType[]>([]);
 
   useEffect(() => {
-    let savedInvoicesDefault;
-    if (typeof window !== undefined) {
-      // Saved invoices variables
-      const savedInvoicesJSON = window.localStorage.getItem("savedInvoices");
-      savedInvoicesDefault = savedInvoicesJSON
-        ? JSON.parse(savedInvoicesJSON)
-        : [];
-      setSavedInvoices(savedInvoicesDefault);
-    }
+    let active = true;
+    // Encrypted at rest, so this is a promise now. The guard keeps a late
+    // resolve from writing into an unmounted provider.
+    readSecure<InvoiceType[]>(SAVED_INVOICES_KEY).then((saved) => {
+      if (active) setSavedInvoices(Array.isArray(saved) ? saved : []);
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
   /*
@@ -155,19 +164,25 @@ export const InvoiceContextProvider = ({
   const [draftPending, setDraftPending] = useState(false);
   const pendingDraftRef = useRef<unknown>(null);
 
+  /*
+   * Encryption makes this async, which costs one guarantee worth naming: a tab
+   * killed inside the 600ms debounce may not finish the write, where the old
+   * synchronous setItem would have. The visibilitychange-to-hidden flush below
+   * is unaffected and fires on every ordinary way of leaving a page, so the
+   * loss window is narrow.
+   */
   const flushDraft = useCallback(() => {
     if (pendingDraftRef.current === null) return;
-    try {
-      window.localStorage.setItem(
-        LOCAL_STORAGE_INVOICE_DRAFT_KEY,
-        JSON.stringify(pendingDraftRef.current)
-      );
-      setDraftSavedAt(Date.now());
-    } catch {
-      // Quota exceeded or storage disabled — the draft is a convenience, not
-      // a guarantee, so a failure here must not break editing.
-    }
+    const payload = pendingDraftRef.current;
     pendingDraftRef.current = null;
+
+    void writeSecure(LOCAL_STORAGE_INVOICE_DRAFT_KEY, payload).then((ok) => {
+      // A false result is quota, disabled storage, or no usable key. The draft
+      // is a convenience, not a guarantee, so a failure must not break editing
+      // — but it must not report "Saved" either.
+      if (ok) setDraftSavedAt(Date.now());
+    });
+
     setDraftPending(false);
   }, []);
 
@@ -276,11 +291,7 @@ export const InvoiceContextProvider = ({
     setInvoicePdf(new Blob());
 
     // Clear the draft
-    if (typeof window !== "undefined") {
-      try {
-        window.localStorage.removeItem(LOCAL_STORAGE_INVOICE_DRAFT_KEY);
-      } catch {}
-    }
+    void removeSecure(LOCAL_STORAGE_INVOICE_DRAFT_KEY);
 
     router.refresh();
 
@@ -407,14 +418,14 @@ export const InvoiceContextProvider = ({
   /**
    * Saves the invoice data to local storage.
    */
-  const saveInvoice = () => {
+  const saveInvoice = async () => {
     if (invoicePdf) {
       // If get values function is provided, allow to save the invoice
       if (getValues) {
-        // Retrieve the existing array from local storage or initialize an empty array
-        const savedInvoicesJSON = localStorage.getItem("savedInvoices");
-        const savedInvoices = savedInvoicesJSON
-          ? JSON.parse(savedInvoicesJSON)
+        // Retrieve the existing array from storage or initialize an empty array
+        const stored = await readSecure<InvoiceType[]>(SAVED_INVOICES_KEY);
+        const savedInvoices: InvoiceType[] = Array.isArray(stored)
+          ? stored
           : [];
 
         const updatedDate = new Date().toLocaleDateString(
@@ -447,7 +458,7 @@ export const InvoiceContextProvider = ({
           saveInvoiceSuccess();
         }
 
-        localStorage.setItem("savedInvoices", JSON.stringify(savedInvoices));
+        await writeSecure(SAVED_INVOICES_KEY, savedInvoices);
 
         setSavedInvoices(savedInvoices);
       }
@@ -466,9 +477,7 @@ export const InvoiceContextProvider = ({
       updatedInvoices.splice(index, 1);
       setSavedInvoices(updatedInvoices);
 
-      const updatedInvoicesJSON = JSON.stringify(updatedInvoices);
-
-      localStorage.setItem("savedInvoices", updatedInvoicesJSON);
+      void writeSecure(SAVED_INVOICES_KEY, updatedInvoices);
     }
   };
 

@@ -69,12 +69,88 @@ function collectProblems(page: Page, problems: string[]) {
 }
 
 /**
- * Pre-populates the saved draft so a test starts from a filled invoice.
+ * Opens the app's encrypted store inside the page and returns its handles.
  *
- * Deliberately not the dev-only "Fill in the form" button: these tests run
- * against the production build, where that button does not exist. Providers
- * hydrates the form from this key on mount.
+ * A test can no longer read these keys with JSON.parse — everything the app
+ * persists about people is encrypted at rest. This pulls the origin's key back
+ * out of IndexedDB and uses it, which is exactly the point: the key is
+ * non-extractable so nothing can copy it out, but anything running on the
+ * origin can still use it.
  */
+const VAULT_SETUP = `
+  const db = await new Promise((resolve, reject) => {
+    const request = indexedDB.open("invoify-secure", 2);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+  const idbGet = (store, id) => new Promise((resolve, reject) => {
+    const request = db.transaction(store, "readonly").objectStore(store).get(id);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+`;
+
+/** Decrypts one stored value, or reads a legacy plaintext one. */
+async function readStored<T>(page: Page, storageKey: string): Promise<T | null> {
+    return page.evaluate<T | null, string>(
+        new Function(
+            "key",
+            `return (async () => {
+        ${VAULT_SETUP}
+        const stored = await idbGet("values", key);
+        if (!stored) {
+          const raw = window.localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : null;
+        }
+        const cryptoKey = await idbGet("keys", "storage-key");
+        const bytes = new Uint8Array(stored);
+        const plaintext = await crypto.subtle.decrypt(
+          { name: "AES-GCM", iv: bytes.subarray(0, 12) },
+          cryptoKey,
+          bytes.subarray(12)
+        );
+        return JSON.parse(new TextDecoder().decode(plaintext));
+      })();`
+        ) as (key: string) => Promise<T | null>,
+        storageKey
+    );
+}
+
+/**
+ * Everything on disk for one key, as text, for asserting what is *not* legible
+ * in it: the ciphertext bytes plus whatever localStorage still holds.
+ */
+async function rawStored(page: Page, storageKey: string): Promise<string> {
+    return page.evaluate<string, string>(
+        new Function(
+            "key",
+            `return (async () => {
+        ${VAULT_SETUP}
+        const stored = await idbGet("values", key);
+        const bytes = stored ? Array.from(new Uint8Array(stored)) : [];
+        const asText = bytes.map((b) => String.fromCharCode(b)).join("");
+        return (window.localStorage.getItem(key) || "") + asText;
+      })();`
+        ) as (key: string) => Promise<string>,
+        storageKey
+    );
+}
+
+/** True when the key has ciphertext in the encrypted store. */
+async function isEncrypted(page: Page, storageKey: string): Promise<boolean> {
+    return page.evaluate<boolean, string>(
+        new Function(
+            "key",
+            `return (async () => {
+        ${VAULT_SETUP}
+        const stored = await idbGet("values", key);
+        return Boolean(stored && stored.byteLength > 12);
+      })();`
+        ) as (key: string) => Promise<boolean>,
+        storageKey
+    );
+}
+
 /**
  * The language popover, wherever it is portalled to.
  *
@@ -97,6 +173,16 @@ async function openLanguageMenu(page: Page) {
     await page.getByRole("button", { name: "Languages" }).click();
 }
 
+/**
+ * Pre-populates the saved draft so a test starts from a filled invoice.
+ *
+ * Deliberately not the dev-only "Fill in the form" button: these tests run
+ * against the production build, where that button does not exist. Providers
+ * hydrates the form from this key on mount.
+ *
+ * Writes plaintext on purpose: that is the shape an older build left behind,
+ * so every test that seeds also exercises the migration path.
+ */
 async function seedDraft(page: Page) {
     await page.addInitScript((invoice) => {
         window.localStorage.setItem("invoify:invoiceDraft", JSON.stringify(invoice));
@@ -156,11 +242,12 @@ test.describe("invoice builder", () => {
 
         // Past the autosave debounce.
         await page.waitForTimeout(1200);
-        const draft = await page.evaluate(() =>
-            window.localStorage.getItem("invoify:invoiceDraft")
+        const draft = await readStored<{ sender: { name: string } }>(
+            page,
+            "invoify:invoiceDraft"
         );
         expect(draft, "draft should be written after the debounce").toBeTruthy();
-        expect(draft!).toContain("Alexandria Consulting Group");
+        expect(draft!.sender.name).toBe("Alexandria Consulting Group");
 
         expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
     });
@@ -783,6 +870,27 @@ test.describe("invoice builder", () => {
             .click()
             .catch(() => undefined);
 
+        /*
+         * Wait for the new number to reach storage before navigating away.
+         *
+         * The draft is written on a 600ms debounce and the write is async now
+         * that it is encrypted, so a hard navigation issued immediately can
+         * outrun it. This used to pass on a synchronous setItem; polling for
+         * the state the next assertion depends on is what it should have been
+         * doing either way.
+         */
+        await expect
+            .poll(
+                async () =>
+                    (
+                        await readStored<{
+                            details?: { invoiceNumber?: string };
+                        }>(page, "invoify:invoiceDraft")
+                    )?.details?.invoiceNumber ?? null,
+                { timeout: 5000 }
+            )
+            .toBe("INV0043");
+
         // A fresh invoice opens on step 1; the number lives on step 2.
         await page.goto("/en?step=details");
 
@@ -831,13 +939,16 @@ test.describe("invoice builder", () => {
          */
         await expect
             .poll(
-                () =>
-                    page.evaluate(() =>
-                        window.localStorage.getItem("invoify:invoiceDraft")
-                    ),
+                async () =>
+                    (
+                        await readStored<{ sender?: { name?: string } }>(
+                            page,
+                            "invoify:invoiceDraft"
+                        )
+                    )?.sender?.name ?? null,
                 { timeout: 5000 }
             )
-            .toContain("Northwind Studio");
+            .toBe("Northwind Studio");
 
         // Then the indicator reports it.
         await expect(
@@ -1253,16 +1364,170 @@ test.describe("invoice builder", () => {
          * Separate books, not one shared list: saving a sender must not put
          * your own company into the client picker.
          */
-        const keys = await page.evaluate(() => ({
-            senders: JSON.parse(
-                window.localStorage.getItem("invoify:senders") || "[]"
-            ).map((p: { name: string }) => p.name),
-            clients: JSON.parse(
-                window.localStorage.getItem("invoify:clients") || "[]"
-            ).map((p: { name: string }) => p.name),
-        }));
-        expect(keys.senders).toEqual(["John Doe"]);
-        expect(keys.clients).toEqual([]);
+        const senders =
+            (await readStored<{ name: string }[]>(page, "invoify:senders")) ??
+            [];
+        const clients =
+            (await readStored<{ name: string }[]>(page, "invoify:clients")) ??
+            [];
+        expect(senders.map((p) => p.name)).toEqual(["John Doe"]);
+        expect(clients).toEqual([]);
+
+        expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
+    });
+
+    test("stored personal data is not legible on disk", async ({ page }) => {
+        const problems: string[] = [];
+        collectProblems(page, problems);
+
+        await seedDraft(page);
+        await page.goto("/en");
+
+        await page.getByRole("button", { name: /save client/i }).click();
+        await expect(
+            page.getByRole("button", { name: /^clients/i })
+        ).toBeEnabled();
+
+        // Give the draft debounce time to write too.
+        await page.waitForTimeout(1500);
+
+        /*
+         * The point of the whole exercise: someone reading the browser profile
+         * off disk gets ciphertext. Checked against the actual values in the
+         * seeded invoice rather than a token string, because a partial
+         * encryption would still leak exactly these.
+         */
+        for (const key of ["invoify:clients", "invoify:invoiceDraft"]) {
+            expect(await isEncrypted(page, key), `${key} ciphertext`).toBe(true);
+
+            /*
+             * Everything on disk for this key — the ciphertext bytes and
+             * anything localStorage still holds. Checked against the real
+             * values in the seeded invoice rather than a token string, because
+             * a partial encryption would leak exactly these.
+             */
+            const onDisk = await rawStored(page, key);
+            for (const secret of [
+                "Jane Smith",
+                "janesmith@example.com",
+                "987-654-3210",
+                "456 Elm St",
+            ]) {
+                expect(onDisk.includes(secret), `${key} leaks ${secret}`).toBe(
+                    false
+                );
+            }
+        }
+
+        // And it is genuinely the data, not just scrambled beyond use.
+        const clients = await readStored<{ name: string }[]>(
+            page,
+            "invoify:clients"
+        );
+        expect(clients?.map((c) => c.name)).toEqual(["Jane Smith"]);
+
+        /*
+         * The key must be non-extractable. This is the property that makes the
+         * IndexedDB record worthless on its own: the browser will hand out a
+         * usable handle and refuse to ever produce the bytes.
+         */
+        const keyState = await page.evaluate(async () => {
+            const db = await new Promise<IDBDatabase>((resolve, reject) => {
+                // Must match the app's DB_VERSION; opening with a lower one
+                // throws VersionError rather than downgrading.
+                const request = indexedDB.open("invoify-secure", 2);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+            const key = await new Promise<CryptoKey>((resolve, reject) => {
+                const request = db
+                    .transaction("keys", "readonly")
+                    .objectStore("keys")
+                    .get("storage-key");
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+
+            let exported = "did not throw";
+            try {
+                await crypto.subtle.exportKey("raw", key);
+            } catch {
+                exported = "refused";
+            }
+            return {
+                algorithm: (key.algorithm as AesKeyAlgorithm).name,
+                length: (key.algorithm as AesKeyAlgorithm).length,
+                extractable: key.extractable,
+                exported,
+            };
+        });
+
+        expect(keyState).toEqual({
+            algorithm: "AES-GCM",
+            length: 256,
+            extractable: false,
+            exported: "refused",
+        });
+
+        expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
+    });
+
+    test("a plaintext address book from an older build is migrated", async ({
+        page,
+    }) => {
+        const problems: string[] = [];
+        collectProblems(page, problems);
+
+        // Exactly what the previous release wrote.
+        await page.addInitScript(() => {
+            window.localStorage.setItem(
+                "invoify:clients",
+                JSON.stringify([
+                    {
+                        id: "legacy-1",
+                        name: "Legacy Client",
+                        address: "1 Old Road",
+                        zipCode: "00001",
+                        city: "Oldtown",
+                        country: "Nowhere",
+                        email: "legacy@example.com",
+                        phone: "555-0000",
+                        customInputs: [],
+                    },
+                ])
+            );
+        });
+        await page.goto("/en");
+
+        // Still there, and usable.
+        await page.getByRole("button", { name: /^clients/i }).click();
+        await page
+            .getByRole("dialog")
+            .getByRole("button", { name: /^Legacy Client/ })
+            .click();
+        await expect(page.locator('input[name="receiver.name"]')).toHaveValue(
+            "Legacy Client"
+        );
+
+        // And rewritten encrypted, rather than left as it was found.
+        await expect
+            .poll(() => isEncrypted(page, "invoify:clients"))
+            .toBe(true);
+
+        /*
+         * And the plaintext copy is gone, not merely superseded. Leaving it
+         * beside the ciphertext would encrypt nothing in practice.
+         */
+        expect(
+            await page.evaluate(() =>
+                window.localStorage.getItem("invoify:clients")
+            )
+        ).toBeNull();
+        expect(
+            (await rawStored(page, "invoify:clients")).includes(
+                "legacy@example.com"
+            )
+        ).toBe(false);
 
         expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
     });
