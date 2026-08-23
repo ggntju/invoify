@@ -8,18 +8,26 @@ const useToasts = () => {
         sendPdfToMail: (email: string) => void;
     };
 
-    const clientSaved = (name: string) => {
+    /*
+     * One address book per side of the invoice, so the toast has to say which
+     * one it means — "Client saved" after saving your own company reads as a
+     * bug report.
+     */
+    const partyNoun = (kind: "sender" | "receiver") =>
+        kind === "sender" ? "Sender" : "Client";
+
+    const partySaved = (kind: "sender" | "receiver", name: string) => {
         toast({
             variant: "default",
-            title: "Client saved",
+            title: `${partyNoun(kind)} saved`,
             description: `${name} is now in your address book.`,
         });
     };
 
-    const clientRemoved = (name: string) => {
+    const partyRemoved = (kind: "sender" | "receiver", name: string) => {
         toast({
             variant: "default",
-            title: "Client removed",
+            title: `${partyNoun(kind)} removed`,
             description: `${name} is no longer in your address book.`,
         });
     };
@@ -120,8 +128,8 @@ const useToasts = () => {
     };
 
     return {
-        clientSaved,
-        clientRemoved,
+        partySaved,
+        partyRemoved,
         newInvoiceSuccess,
         pdfGenerationSuccess,
         saveInvoiceSuccess,

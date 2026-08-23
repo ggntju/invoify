@@ -294,5 +294,15 @@
     "save": "Müştərini saxla",
     "saveTooltip": "Növbəti qaimədə istifadə etmək üçün bu müştərini saxlayın",
     "saved": "Saxlanılıb"
+  },
+  "senders": {
+    "emptyTooltip": "Burada istifadə etmək üçün əvvəlcə məlumatlarınızı yadda saxlayın",
+    "heading": "Saxlanılmış göndərənlər",
+    "pick": "Göndərənlər",
+    "pickTooltip": "Bu sahələri saxlanılmış göndərəndən doldurun",
+    "remove": "Sil",
+    "save": "Göndərəni saxla",
+    "saveTooltip": "Növbəti qaimədə istifadə etmək üçün bu məlumatları saxlayın",
+    "saved": "Saxlanıldı"
   }
 }

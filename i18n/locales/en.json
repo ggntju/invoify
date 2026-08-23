@@ -294,5 +294,15 @@
     "save": "Save client",
     "saveTooltip": "Save this client to reuse on your next invoice",
     "saved": "Saved"
+  },
+  "senders": {
+    "emptyTooltip": "Save your details first to reuse them here",
+    "heading": "Saved senders",
+    "pick": "Senders",
+    "pickTooltip": "Fill these fields from a saved sender",
+    "remove": "Remove",
+    "save": "Save sender",
+    "saveTooltip": "Save these details to reuse on your next invoice",
+    "saved": "Saved"
   }
 }

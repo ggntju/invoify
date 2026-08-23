@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 // RHF
 import { useFormContext } from "react-hook-form";
@@ -21,35 +21,43 @@ import useToasts from "@/hooks/useToasts";
 
 // Store
 import {
-    deleteClient,
-    readClients,
-    saveClient,
-    type SavedClient,
-} from "@/lib/clientStore";
+    deleteParty,
+    readParties,
+    saveParty,
+    type PartyKind,
+    type SavedParty,
+} from "@/lib/partyStore";
 
 // Utils
 import { cn } from "@/lib/utils";
 
 // Icons
-import { Check, Contact, Trash2, UserPlus } from "lucide-react";
+import { Building2, Check, Contact, Trash2, UserPlus } from "lucide-react";
 
 // Types
 import type { InvoiceType } from "@/types";
 
 /**
- * Save and reuse the party you are invoicing.
+ * Save and reuse either party on the invoice.
  *
  * The single biggest time-saver for anyone who invoices the same people:
  * without it, every repeat invoice means retyping seven address fields
- * verbatim. Stored in the browser alongside the saved invoices — see
- * lib/clientStore.ts
+ * verbatim. That applies just as much to the "Bill From" side — your own
+ * details are the ones you retype on *every* invoice, not just repeat ones —
+ * which is why this is no longer receiver-only.
+ *
+ * It also squares the two columns up. With a picker on one side only, Bill To's
+ * fields started ~84px below Bill From's, and the two halves of a side-by-side
+ * step read as misaligned.
+ *
+ * Stored in the browser alongside the saved invoices — see lib/partyStore.ts
  */
-const ClientPicker = () => {
+const PartyPicker = ({ kind }: { kind: PartyKind }) => {
     const { getValues, setValue, watch } = useFormContext<InvoiceType>();
     const { _t } = useTranslationContext();
-    const { clientSaved, clientRemoved } = useToasts();
+    const { partySaved, partyRemoved } = useToasts();
 
-    const [clients, setClients] = useState<SavedClient[]>([]);
+    const [parties, setParties] = useState<SavedParty[]>([]);
     const [open, setOpen] = useState(false);
 
     /*
@@ -58,44 +66,68 @@ const ClientPicker = () => {
      * render disagree with the prerendered HTML.
      */
     useEffect(() => {
-        setClients(readClients());
-    }, []);
+        setParties(readParties(kind));
+    }, [kind]);
 
-    const receiverName = watch("receiver.name");
-    const canSave = Boolean(receiverName?.trim());
+    /*
+     * One message namespace per side, so "Save client" and "Save sender" are
+     * separately translatable rather than one string doing double duty and
+     * reading wrong on at least one of them.
+     */
+    const ns = kind === "sender" ? "senders" : "clients";
+    const label = useCallback(
+        (key: string) => _t(`${ns}.${key}`),
+        [_t, ns]
+    );
+
+    const currentName = watch(`${kind}.name` as "receiver.name");
+    const canSave = Boolean(currentName?.trim());
+
+    const isSaved = useMemo(
+        () =>
+            parties.some(
+                (party) =>
+                    party.name.trim().toLowerCase() ===
+                    currentName?.trim().toLowerCase()
+            ),
+        [parties, currentName]
+    );
 
     const handleSave = useCallback(() => {
-        const receiver = getValues("receiver");
-        setClients(saveClient(receiver));
-        clientSaved(receiver.name);
-    }, [getValues, setValue, clientSaved]);
+        const party = getValues(kind);
+        setParties(saveParty(kind, party));
+        partySaved(kind, party.name);
+    }, [getValues, kind, partySaved]);
 
     const handlePick = useCallback(
-        (client: SavedClient) => {
+        (party: SavedParty) => {
             setOpen(false);
             /*
              * `id` is ours, not a form field — spreading it into the form would
              * put an unknown key into the invoice and fail schema validation on
              * the way to the PDF.
              */
-            const { id: _id, ...receiver } = client;
-            setValue("receiver", receiver, {
+            const { id: _id, ...fields } = party;
+            setValue(kind, fields, {
                 shouldDirty: true,
                 shouldValidate: true,
             });
         },
-        [setValue]
+        [setValue, kind]
     );
 
     const handleDelete = useCallback(
-        (event: React.MouseEvent, client: SavedClient) => {
-            // The row itself selects the client; the bin must not do both.
+        (event: React.MouseEvent, party: SavedParty) => {
+            // The row itself selects the party; the bin must not do both.
             event.stopPropagation();
-            setClients(deleteClient(client.id));
-            clientRemoved(client.name);
+            setParties(deleteParty(kind, party.id));
+            partyRemoved(kind, party.name);
         },
-        [clientRemoved]
+        [kind, partyRemoved]
     );
+
+    // A building for "who is billing", a contact card for "who is billed".
+    const PickIcon = kind === "sender" ? Building2 : Contact;
 
     return (
         <div className="flex flex-wrap items-center gap-2">
@@ -105,18 +137,18 @@ const ClientPicker = () => {
                         variant="outline"
                         size="sm"
                         className="h-8"
-                        disabled={clients.length === 0}
+                        disabled={parties.length === 0}
                         tooltipLabel={
-                            clients.length === 0
-                                ? _t("clients.emptyTooltip")
-                                : _t("clients.pickTooltip")
+                            parties.length === 0
+                                ? label("emptyTooltip")
+                                : label("pickTooltip")
                         }
                     >
-                        <Contact className="h-4 w-4" />
-                        {_t("clients.pick")}
-                        {clients.length > 0 && (
+                        <PickIcon className="h-4 w-4" />
+                        {label("pick")}
+                        {parties.length > 0 && (
                             <span className="text-muted-foreground">
-                                ({clients.length})
+                                ({parties.length})
                             </span>
                         )}
                     </BaseButton>
@@ -124,26 +156,26 @@ const ClientPicker = () => {
 
                 <PopoverContent align="start" className="w-72 p-1.5">
                     <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        {_t("clients.heading")}
+                        {label("heading")}
                     </p>
 
                     <div className="max-h-[50vh] overflow-y-auto">
-                        {clients.map((client) => (
+                        {parties.map((party) => (
                             <div
-                                key={client.id}
+                                key={party.id}
                                 className="group flex items-center gap-1 rounded-md hover:bg-muted"
                             >
                                 <button
                                     type="button"
-                                    onClick={() => handlePick(client)}
+                                    onClick={() => handlePick(party)}
                                     className="min-w-0 flex-1 px-2 py-1.5 text-start"
                                 >
                                     <span className="block truncate text-sm font-medium">
-                                        {client.name}
+                                        {party.name}
                                     </span>
-                                    {(client.city || client.country) && (
+                                    {(party.city || party.country) && (
                                         <span className="block truncate text-xs text-muted-foreground">
-                                            {[client.city, client.country]
+                                            {[party.city, party.country]
                                                 .filter(Boolean)
                                                 .join(", ")}
                                         </span>
@@ -153,9 +185,9 @@ const ClientPicker = () => {
                                 <button
                                     type="button"
                                     onClick={(event) =>
-                                        handleDelete(event, client)
+                                        handleDelete(event, party)
                                     }
-                                    aria-label={`${_t("clients.remove")} ${client.name}`}
+                                    aria-label={`${label("remove")} ${party.name}`}
                                     className={cn(
                                         "me-1 rounded p-1.5 text-muted-foreground transition-colors",
                                         "hover:bg-destructive/10 hover:text-destructive"
@@ -175,24 +207,20 @@ const ClientPicker = () => {
                 className="h-8"
                 disabled={!canSave}
                 onClick={handleSave}
-                tooltipLabel={_t("clients.saveTooltip")}
+                tooltipLabel={label("saveTooltip")}
             >
                 <UserPlus className="h-4 w-4" />
-                {_t("clients.save")}
+                {label("save")}
             </BaseButton>
 
-            {clients.some(
-                (client) =>
-                    client.name.trim().toLowerCase() ===
-                    receiverName?.trim().toLowerCase()
-            ) && (
+            {isSaved && (
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Check className="h-3 w-3 text-success" />
-                    {_t("clients.saved")}
+                    {label("saved")}
                 </span>
             )}
         </div>
     );
 };
 
-export default ClientPicker;
+export default PartyPicker;

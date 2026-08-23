@@ -6,7 +6,7 @@ import { useFieldArray, useFormContext } from "react-hook-form";
 // Components
 import {
     BaseButton,
-    ClientPicker,
+    PartyPicker,
     FormCustomInput,
     FormInput,
     Subheading,
@@ -46,7 +46,7 @@ const BillToSection = () => {
             <Subheading>{_t("form.steps.fromAndTo.billTo")}:</Subheading>
 
             {/* Save this client, or fill the fields from one saved before. */}
-            <ClientPicker />
+            <PartyPicker kind="receiver" />
 
             <FormInput
                 name="receiver.name"

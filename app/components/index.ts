@@ -19,7 +19,7 @@ import InvoiceActions from "./invoice/InvoiceActions";
 // Form components
 import SingleItem from "./invoice/form/SingleItem";
 import Charges from "./invoice/form/Charges";
-import ClientPicker from "./invoice/form/ClientPicker";
+import PartyPicker from "./invoice/form/PartyPicker";
 import PaymentTermPresets from "./invoice/form/PaymentTermPresets";
 import AutosaveIndicator from "./invoice/form/AutosaveIndicator";
 import TemplateGallery from "./invoice/form/TemplateGallery";
@@ -121,7 +121,7 @@ export {
     Items,
     SingleItem,
     Charges,
-    ClientPicker,
+    PartyPicker,
     PaymentTermPresets,
     AutosaveIndicator,
     TemplateGallery,
