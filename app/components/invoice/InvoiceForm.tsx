@@ -57,30 +57,26 @@ const InvoiceForm = () => {
         // rail, which is how a 12-column line-item grid ends up in 420px.
         <div className="@container min-w-0 shell:flex shell:min-h-0 shell:flex-col shell:border-e shell:border-border shell:bg-card">
             <div className="mx-auto max-w-2xl shell:min-h-0 shell:overflow-y-auto shell:p-5 xl:mx-0">
-                <header className="mb-6">
-                    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                        {/*
-                          * A <p>, not an <h1>. This said "Invoice" — a form
-                          * label, not the page's subject — while every invoice
-                          * template also renders headings inside the live
-                          * preview, so the document carried several competing
-                          * h1s made of the user's own data. The real h1 is in
-                          * LandingContent.
-                          */}
-                        <p className="text-xl font-semibold tracking-tight @2xl:text-2xl">
-                            {_t("form.title")}
-                        </p>
-                        <span className="flex items-center gap-3">
-                            <AutosaveIndicator />
-                            <span className="text-sm text-muted-foreground">
-                                {invoiceNumberLabel}
-                            </span>
-                        </span>
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        {_t("form.description")}
-                    </p>
-                </header>
+                {/*
+                  * A meta row, not a heading.
+                  *
+                  * This used to be "Invoice" over "Generate Invoice" — a title
+                  * and a subtitle labelling a form that is plainly visible,
+                  * costing ~64px of a rail whose whole problem is height. What
+                  * is left is the two things here a user acts on: whether the
+                  * draft is saved, and which invoice this is.
+                  *
+                  * Still not an <h1>: every invoice template renders headings
+                  * inside the live preview, so the document already carries
+                  * headings made of the user's own data. The real h1 is in
+                  * LandingContent.
+                  */}
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 shell:mb-3">
+                    <AutosaveIndicator />
+                    <span className="text-sm font-medium text-muted-foreground">
+                        {invoiceNumberLabel}
+                    </span>
+                </div>
 
                 {/*
                  * react-use-wizard is gone; the active step lives in
@@ -96,12 +92,24 @@ const InvoiceForm = () => {
                      * of a split layout. A container query states the real rule
                      * once: split at 672px of column, stack below.
                      */}
-                    <div className="grid grid-cols-1 divide-y divide-border @2xl:grid-cols-2 @2xl:gap-8 @2xl:divide-y-0">
-                        <div className="pb-8 @2xl:pb-0">
+                    {/*
+                     * `shell:` as well as `@2xl:`, because in the desktop rail
+                     * the two sections side by side are *shorter* than the two
+                     * stacked: ~560px against ~790px. Each half is only ~190px
+                     * though, far too narrow for a 7rem label beside its
+                     * input, so each is its own `@container` and the rows
+                     * inside fall back to stacked — see fieldStyles.ts.
+                     *
+                     * Not width-gated below shell: a 430px phone's form column
+                     * is the same width as the 1280px rail, and phones must
+                     * keep the single stacked column that is signed off.
+                     */}
+                    <div className="grid grid-cols-1 divide-y divide-border shell:grid-cols-2 shell:gap-5 shell:divide-y-0 @2xl:grid-cols-2 @2xl:gap-8 @2xl:divide-y-0">
+                        <div className="@container pb-8 shell:pb-0 @2xl:pb-0">
                             <BillFromSection />
                         </div>
 
-                        <div className="pt-8 @2xl:pt-0">
+                        <div className="@container pt-8 shell:pt-0 @2xl:pt-0">
                             <BillToSection />
                         </div>
                     </div>

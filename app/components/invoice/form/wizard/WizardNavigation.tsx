@@ -28,8 +28,10 @@ const WizardNavigation = () => {
      * "Next" is the one obvious action on every step except the last, where the
      * primary action becomes Generate PDF in the action bar.
      */
+    // Tighter in the rail: `mt-8` plus `pt-5` is 52px of nothing between the
+    // last field and the Next button, and the rail is short on height.
     return (
-        <div className="mt-8 flex items-center justify-between gap-3 border-t border-border pt-5">
+        <div className="mt-8 flex items-center justify-between gap-3 border-t border-border pt-5 shell:mt-5 shell:pt-4">
             {!isFirstStep ? (
                 <BaseButton
                     variant="ghost"

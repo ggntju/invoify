@@ -33,11 +33,20 @@ export const fieldRow = [
      * Inside the desktop rail the row pairs up rather than stacking, even
      * though the column is only ~420px. A stacked row is ~78px; paired it is
      * ~46px, which is the difference between a step you scroll and a step you
-     * see. `shell:` rather than a container query because this is specifically
-     * about the pinned two-pane layout, not about width in general — at the
-     * same 420px on a phone, stacked is still right.
+     * see.
+     *
+     * Two conditions, and both are needed:
+     *
+     * `shell:` — because width alone cannot tell the cases apart. A 430px
+     * phone's form column and the rail at a 1280px viewport are within a few
+     * pixels of each other, and one must stack while the other pairs.
+     *
+     * `@[20rem]:` — because the rail is not always the container. Bill From
+     * and Bill To sit side by side in the shell, each its own `@container` at
+     * ~190px, where a 7rem label beside its input would leave a ~76px field.
+     * Those halves fall back to stacked; the full rail (~395px and up) pairs.
      */
-    "shell:grid shell:grid-cols-[minmax(0,7rem)_minmax(0,1fr)] shell:items-center shell:gap-3",
+    "shell:@[20rem]:grid shell:@[20rem]:grid-cols-[minmax(0,7rem)_minmax(0,1fr)] shell:@[20rem]:items-center shell:@[20rem]:gap-3",
     // Above the rail width, back to the proportional pairing.
     "@xl:grid @xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] @xl:items-center @xl:gap-4",
 ].join(" ");

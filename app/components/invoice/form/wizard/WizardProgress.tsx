@@ -197,15 +197,27 @@ const WizardProgress = () => {
      * step's name above — five labels do not fit in 375px. That row is signed
      * off and unchanged.
      *
-     * At `shell`, where the form is a ~420px rail, the steps become a vertical
-     * outline: a full-size marker and a full-length label per row, the way
-     * option B's "SECTIONS" list works. This is also why the markers were too
-     * small before — they had shrunk to 20px with 11px text purely to fit five
-     * labels across a horizontal row, which a vertical list does not have to
-     * do.
+     * At `shell`, where the form is a ~420px rail, the steps run left to
+     * right: five equal columns, a 28px numbered marker with its label
+     * wrapped beneath it.
+     *
+     * No connecting rule between the markers. A line drawn behind them shows
+     * through the half-transparent "partial" marker, and the fixes for that
+     * (opaque backing plates, per-segment widths that have to account for the
+     * grid gap) cost more than the line is worth. Five numbered circles in a
+     * row already read as a sequence.
+     *
+     * The "SECTIONS" caption that headed the vertical list is gone too: the
+     * nav carries an aria-label, and in a rail whose whole problem is height
+     * a caption over five obviously-numbered steps is 22px spent on nothing.
      */
     return (
-        <nav aria-label={_t("form.wizard.progressLabel")} className="mb-6">
+        <nav
+            aria-label={_t("form.wizard.progressLabel")}
+            /* A rule under the steps, so the rail reads as chrome then work.
+               There was nothing dividing the stepper from the fields at all. */
+            className="mb-5 border-b border-border pb-4 shell:mb-4 shell:pb-3"
+        >
             {/* Compact header + progress rule. */}
             {!isShell && (
                 <div>
@@ -269,27 +281,23 @@ const WizardProgress = () => {
                 </div>
             )}
 
-            {/* Vertical outline: the rail's table of contents. */}
+            {/* Horizontal outline: the rail's table of contents. */}
             {isShell && (
-                <div>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    {_t("form.wizard.sections")}
-                </p>
-
-                <ol className="-mx-2 space-y-0.5">
+                <ol className="grid grid-cols-5 gap-1">
                     {steps.map((step) => {
                         const state = getStepState(step);
                         const isActive = step.id === activeStep;
 
                         return (
-                            <li key={step.id}>
+                            <li key={step.id} className="min-w-0">
                                 <button
                                     type="button"
                                     onClick={() => goToStep(step.id)}
                                     aria-label={stepAriaLabel(step, state)}
                                     aria-current={isActive ? "step" : undefined}
+                                    title={step.label}
                                     className={cn(
-                                        "flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-start transition-colors",
+                                        "flex w-full flex-col items-center gap-1.5 rounded-lg px-0.5 py-1.5 transition-colors",
                                         isActive
                                             ? "bg-primary/10"
                                             : "hover:bg-muted"
@@ -297,16 +305,40 @@ const WizardProgress = () => {
                                 >
                                     <span
                                         className={cn(
-                                            "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold",
+                                            "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold",
                                             markerStyles[state]
                                         )}
                                     >
                                         {renderMarker(step, state, isActive)}
                                     </span>
 
+                                    {/*
+                                     * 12px, centred, up to three lines. It was
+                                     * 10px on two lines, which was simply too
+                                     * small to read; at 12px in a 76px column
+                                     * the longest label in the set —
+                                     * Portuguese "Informações de Pagamento" —
+                                     * needs the third line, and was being cut
+                                     * by 15px without it.
+                                     *
+                                     * `break-words` is load-bearing, not
+                                     * decoration: German "Zusammenfassung" is a
+                                     * single unbreakable word that overran the
+                                     * column by 12px and was then cut by
+                                     * line-clamp's overflow:hidden — silently,
+                                     * because the ellipsis only appears on the
+                                     * vertical clamp. Allowing a mid-word break
+                                     * turns that into a second line.
+                                     *
+                                     * `hyphens-auto` first, so that break lands
+                                     * somewhere a German reader expects rather
+                                     * than mid-syllable; <html lang> is set per
+                                     * locale, which is what the hyphenator
+                                     * keys off.
+                                     */}
                                     <span
                                         className={cn(
-                                            "min-w-0 flex-1 truncate text-[13px]",
+                                            "line-clamp-3 w-full hyphens-auto break-words text-balance text-center text-xs leading-tight",
                                             isActive
                                                 ? "font-semibold text-foreground"
                                                 : cn(
@@ -322,7 +354,6 @@ const WizardProgress = () => {
                         );
                     })}
                 </ol>
-                </div>
             )}
         </nav>
     );
