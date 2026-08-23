@@ -31,7 +31,7 @@ export default function BoldHeader(props: TemplateProps) {
                 style={{ backgroundColor: theme.accentColor, color: onAccent }}
             >
                 <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
+                    <div data-edit-field="sender.name">
                         <div style={{ filter: onAccent === "#ffffff" ? "brightness(0) invert(1)" : "none" }}>
                             <Logo {...ctx} />
                         </div>
@@ -57,6 +57,7 @@ export default function BoldHeader(props: TemplateProps) {
                 <div className="grid gap-6 sm:grid-cols-2">
                     <PartyBlock
                         ctx={ctx}
+                        field="receiver"
                         party={data.receiver}
                         heading={labels.billTo}
                     />

@@ -47,6 +47,19 @@ function collectProblems(page: Page, problems: string[]) {
     });
 }
 
+/**
+ * Pre-populates the saved draft so a test starts from a filled invoice.
+ *
+ * Deliberately not the dev-only "Fill in the form" button: these tests run
+ * against the production build, where that button does not exist. Providers
+ * hydrates the form from this key on mount.
+ */
+async function seedDraft(page: Page) {
+    await page.addInitScript((invoice) => {
+        window.localStorage.setItem("invoify:invoiceDraft", JSON.stringify(invoice));
+    }, SAMPLE_INVOICE);
+}
+
 /** Measures every element that sticks out past the viewport horizontally. */
 async function horizontalOverflow(page: Page) {
     return page.evaluate(() => {
@@ -155,6 +168,95 @@ test.describe("invoice builder", () => {
         await expect(dialog).toBeHidden();
 
         await page.waitForTimeout(500);
+        expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
+    });
+
+    test("step is reflected in the URL and survives reload", async ({ page }) => {
+        const problems: string[] = [];
+        collectProblems(page, problems);
+
+        await page.goto("/en");
+
+        // Navigating updates the URL...
+        await page.locator("nav[aria-label] ol button").nth(3).click();
+        await expect(page).toHaveURL(/[?&]step=payment/);
+
+        // ...and a reload lands back on the same step rather than step 1.
+        await page.reload();
+        await expect(
+            page.locator("nav[aria-label] ol button").nth(3)
+        ).toHaveAttribute("aria-current", "step");
+
+        // Deep link straight to a step.
+        await page.goto("/en?step=items");
+        await expect(
+            page.locator("nav[aria-label] ol button").nth(2)
+        ).toHaveAttribute("aria-current", "step");
+
+        // Back returns to the previous step rather than leaving the app.
+        await page.goBack();
+        await expect(page).toHaveURL(/[?&]step=payment/);
+
+        expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
+    });
+
+    test("editing after generating returns to the live preview", async ({ page }) => {
+        test.skip(
+            page.viewportSize()!.width < 1280,
+            "below xl the preview lives in a sheet, covered by its own test"
+        );
+
+        const problems: string[] = [];
+        collectProblems(page, problems);
+
+        await seedDraft(page);
+        await page.goto("/en");
+
+        // Headings, not free text: "Back to Live Preview" is a button whose
+        // label also matches /live preview/, so matching on text alone would
+        // find the wrong node and pass for the wrong reason.
+        const livePreview = page.getByRole("heading", { name: /live preview/i });
+        const finalPdf = page.getByRole("heading", { name: /final pdf/i });
+
+        await expect(livePreview).toBeVisible();
+
+        await page.getByRole("button", { name: "Generate PDF" }).click();
+        await expect(finalPdf).toBeVisible({ timeout: 60_000 });
+
+        // One character of editing should hand the preview back on its own.
+        await page.locator("nav[aria-label] ol button").nth(0).click();
+        await page.locator('input[name="sender.name"]').fill("Edited Name Ltd");
+
+        await expect(livePreview).toBeVisible();
+        await expect(finalPdf).toBeHidden();
+
+        expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
+    });
+
+    test("clicking the preview jumps to the field behind it", async ({ page }) => {
+        test.skip(
+            page.viewportSize()!.width < 1280,
+            "the live preview is behind a sheet on mobile"
+        );
+
+        const problems: string[] = [];
+        collectProblems(page, problems);
+
+        await seedDraft(page);
+        await page.goto("/en?step=summary");
+
+        const region = page
+            .locator('.invoice-live-preview [data-edit-field="receiver.name"]')
+            .first();
+
+        // Wait for the preview to actually render the seeded invoice rather
+        // than guessing at a timeout.
+        await expect(region).toBeVisible({ timeout: 15_000 });
+        await region.click();
+
+        await expect(page).toHaveURL(/[?&]step=from-and-to/);
+        await expect(page.locator('input[name="receiver.name"]')).toBeFocused();
+
         expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
     });
 

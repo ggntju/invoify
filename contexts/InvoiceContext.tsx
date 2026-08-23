@@ -197,6 +197,30 @@ export const InvoiceContextProvider = ({
   }, [watch, flushDraft]);
 
   /*
+   * Editing returns you to the live preview.
+   *
+   * The preview column switches on `invoicePdf.size`, so once a PDF existed the
+   * user was stuck looking at it: the only ways back were a "Back to live
+   * preview" button in the corner and resetting the whole form. Generating was
+   * effectively a mode you had to know how to leave, which is what made the two
+   * preview surfaces confusing.
+   *
+   * Now the first edit after a generation drops the PDF. Generating becomes an
+   * action with a result rather than a state you enter.
+   */
+  useEffect(() => {
+    if (invoicePdf.size === 0) return;
+
+    const subscription = watch((_value, { type }) => {
+      // `type` is undefined for programmatic reset()/setValue() calls made
+      // during hydration; only a real user change should discard the PDF.
+      if (type === "change") setInvoicePdf(new Blob());
+    });
+
+    return () => subscription.unsubscribe();
+  }, [invoicePdf.size, watch]);
+
+  /*
    * Object URL for the generated PDF.
    *
    * This was a `useMemo` that created a URL and never revoked it, so every

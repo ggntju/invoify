@@ -32,7 +32,7 @@ export default function TwoTone(props: TemplateProps) {
                 style={{ backgroundColor: soft }}
             >
                 <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
+                    <div data-edit-field="sender.name">
                         <Logo {...ctx} />
                         <p className={`${scale.name} mt-2 font-semibold text-gray-900`}>
                             {data.sender.name}
@@ -53,6 +53,7 @@ export default function TwoTone(props: TemplateProps) {
             <div className={`flex flex-1 flex-col ${scale.page}`}>
                 <PartyBlock
                     ctx={ctx}
+                    field="receiver"
                     party={data.receiver}
                     heading={labels.billTo}
                 />

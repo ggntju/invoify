@@ -10,7 +10,8 @@
       "paymentInfo": "Info Pembayaran",
       "summary": "Ringkasan",
       "next": "Selanjutnya",
-      "back": "Kembali"
+      "back": "Kembali",
+      "upNext": "Berikutnya"
     },
     "steps": {
       "fromAndTo": {

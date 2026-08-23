@@ -41,13 +41,6 @@ export enum SignatureTabs {
     UPLOAD = "upload",
 }
 
-// Wizard types
-export type WizardStepType = {
-    id: number;
-    label: string;
-    isValid?: boolean;
-};
-
 // Export types
 export enum ExportTypes {
     JSON = "JSON",

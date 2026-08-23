@@ -1,16 +1,23 @@
 "use client";
 
-// RHF
-import { useFormContext, useWatch } from "react-hook-form";
+import { useMemo } from "react";
 
-// React Wizard
-import { WizardValues } from "react-use-wizard";
+// RHF
+import { useFormContext, useWatch, type FieldErrors } from "react-hook-form";
 
 // ShadCn
 import { Progress } from "@/components/ui/progress";
 
 // Contexts
+import { useWizard } from "@/contexts/WizardContext";
 import { useTranslationContext } from "@/contexts/TranslationContext";
+
+// Steps
+import {
+    WIZARD_STEPS,
+    WIZARD_WATCHED_FIELDS,
+    isItemsStep,
+} from "@/lib/wizardSteps";
 
 // Utils
 import { cn } from "@/lib/utils";
@@ -19,11 +26,7 @@ import { cn } from "@/lib/utils";
 import { AlertCircle, Check } from "lucide-react";
 
 // Types
-import { InvoiceType, WizardStepType } from "@/types";
-
-type WizardProgressProps = {
-    wizard: WizardValues;
-};
+import { InvoiceType, ItemType } from "@/types";
 
 /**
  * `partial` is the important one: a step the user has passed through but not
@@ -33,144 +36,93 @@ type WizardProgressProps = {
  */
 type StepState = "invalid" | "active" | "complete" | "partial" | "upcoming";
 
-const WizardProgress = ({ wizard }: WizardProgressProps) => {
-    const { activeStep, stepCount, goToStep } = wizard;
+const filled = (value: unknown) =>
+    typeof value === "string"
+        ? value.trim().length > 0
+        : value !== undefined && value !== null && value !== "";
+
+/** Walks a dotted path into the errors object. */
+function hasError(errors: FieldErrors<InvoiceType>, path: string): boolean {
+    let node: unknown = errors;
+    for (const key of path.split(".")) {
+        if (!node || typeof node !== "object") return false;
+        node = (node as Record<string, unknown>)[key];
+        if (node === undefined) return false;
+    }
+    return Boolean(node);
+}
+
+const WizardProgress = () => {
+    const { activeStep, stepCount, goToStep } = useWizard();
 
     const {
         control,
         formState: { errors },
     } = useFormContext<InvoiceType>();
 
-    /*
-     * Actual field values, so completeness reflects what the user filled in
-     * rather than merely the absence of validation errors.
-     *
-     * Narrowed from `useWatch({ control })`. The full-form version re-rendered
-     * this component — which every wizard step mounts — on every keystroke in
-     * the invoice, including fields no step's completeness depends on (the
-     * logo, the signature, the theme, the totals). These are the only paths
-     * the predicates below read.
-     */
-    const [
-        sender,
-        receiver,
-        invoiceNumber,
-        invoiceDate,
-        dueDate,
-        currency,
-        items,
-        paymentInformation,
-        paymentTerms,
-    ] = useWatch({
-        control,
-        name: [
-            "sender",
-            "receiver",
-            "details.invoiceNumber",
-            "details.invoiceDate",
-            "details.dueDate",
-            "details.currency",
-            "details.items",
-            "details.paymentInformation",
-            "details.paymentTerms",
-        ],
-    });
-
     const { _t } = useTranslationContext();
 
-    const filled = (value: unknown) =>
-        typeof value === "string"
-            ? value.trim().length > 0
-            : value !== undefined && value !== null && value !== "";
+    /*
+     * Narrow subscription driven by the step definitions, so adding a field to
+     * a step's completeness automatically widens the watch. This was a
+     * full-form `useWatch({ control })`, which re-rendered on every keystroke
+     * anywhere in the invoice — including the base64 logo.
+     */
+    const watched = useWatch({
+        control,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        name: WIZARD_WATCHED_FIELDS as any,
+    }) as unknown[];
 
-    const allFilled = (...vals: unknown[]) => vals.every(filled);
-    const anyFilled = (...vals: unknown[]) => vals.some(filled);
+    const values = useMemo(() => {
+        const map: Record<string, unknown> = {};
+        WIZARD_WATCHED_FIELDS.forEach((field, index) => {
+            map[field] = watched[index];
+        });
+        return map;
+    }, [watched]);
 
-    const partyFields = (p?: InvoiceType["sender"]) => [
-        p?.name,
-        p?.address,
-        p?.zipCode,
-        p?.city,
-        p?.country,
-        p?.email,
-        p?.phone,
-    ];
+    const steps = useMemo(() => {
+        const items = (values["details.items"] as ItemType[] | undefined) ?? [];
 
-    const step1Fields = [...partyFields(sender), ...partyFields(receiver)];
-    const step2Fields = [invoiceNumber, invoiceDate, dueDate, currency];
-    const lineItems = items ?? [];
-    const step3Complete =
-        lineItems.length > 0 &&
-        lineItems.every(
-            (i) =>
-                filled(i?.name) &&
-                Number(i?.quantity) > 0 &&
-                Number(i?.unitPrice) > 0
-        );
-    const step3Started = lineItems.some((i) => filled(i?.name));
-    const step4Fields = [
-        paymentInformation?.bankName,
-        paymentInformation?.accountName,
-        paymentInformation?.accountNumber,
-    ];
-    const step5Fields = [paymentTerms];
+        return WIZARD_STEPS.map((step) => {
+            const isValid = !step.errorPaths.some((path) =>
+                hasError(errors, path)
+            );
+            const label = _t(`form.wizard.${step.labelKey}`);
 
-    const step1Valid = !errors.sender && !errors.receiver;
-    const step2Valid =
-        !errors.details?.invoiceNumber &&
-        !errors.details?.dueDate &&
-        !errors.details?.invoiceDate &&
-        !errors.details?.currency;
+            if (isItemsStep(step.id)) {
+                return {
+                    ...step,
+                    label,
+                    isValid,
+                    isComplete:
+                        items.length > 0 &&
+                        items.every(
+                            (item) =>
+                                filled(item?.name) &&
+                                Number(item?.quantity) > 0 &&
+                                Number(item?.unitPrice) > 0
+                        ),
+                    isStarted: items.some((item) => filled(item?.name)),
+                };
+            }
 
-    const step3Valid = !errors.details?.items;
-    const step4Valid = !errors.details?.paymentInformation;
-    const step5Valid =
-        !errors.details?.paymentTerms &&
-        !errors.details?.subTotal &&
-        !errors.details?.totalAmount &&
-        !errors.details?.discountDetails?.amount &&
-        !errors.details?.taxDetails?.amount &&
-        !errors.details?.shippingDetails?.cost;
+            const fieldValues = step.requiredFields.map(
+                (field) => values[field]
+            );
 
-    type Step = WizardStepType & { isComplete: boolean; isStarted: boolean };
+            return {
+                ...step,
+                label,
+                isValid,
+                isComplete: fieldValues.every(filled),
+                isStarted: fieldValues.some(filled),
+            };
+        });
+    }, [values, errors, _t]);
 
-    const steps: Step[] = [
-        {
-            id: 0,
-            label: _t("form.wizard.fromAndTo"),
-            isValid: step1Valid,
-            isComplete: allFilled(...step1Fields),
-            isStarted: anyFilled(...step1Fields),
-        },
-        {
-            id: 1,
-            label: _t("form.wizard.invoiceDetails"),
-            isValid: step2Valid,
-            isComplete: allFilled(...step2Fields),
-            isStarted: anyFilled(...step2Fields),
-        },
-        {
-            id: 2,
-            label: _t("form.wizard.lineItems"),
-            isValid: step3Valid,
-            isComplete: step3Complete,
-            isStarted: step3Started,
-        },
-        {
-            id: 3,
-            label: _t("form.wizard.paymentInfo"),
-            isValid: step4Valid,
-            isComplete: allFilled(...step4Fields),
-            isStarted: anyFilled(...step4Fields),
-        },
-        {
-            id: 4,
-            label: _t("form.wizard.summary"),
-            isValid: step5Valid,
-            isComplete: allFilled(...step5Fields),
-            isStarted: anyFilled(...step5Fields),
-        },
-    ];
+    type Step = (typeof steps)[number];
 
     /**
      * Resolves the visual state of a step. Invalid always wins so a step with
@@ -184,7 +136,8 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
         return "upcoming";
     };
 
-    const dotStyles: Record<StepState, string> = {
+    /** Colours for the numbered marker. */
+    const markerStyles: Record<StepState, string> = {
         invalid: "border-destructive bg-destructive text-destructive-foreground",
         active: "border-primary bg-primary text-primary-foreground",
         complete: "border-success bg-success text-success-foreground",
@@ -193,16 +146,21 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
         upcoming: "border-border bg-muted text-muted-foreground",
     };
 
+    /** Colours for the label beside it, from sm up. */
+    const labelStyles: Record<StepState, string> = {
+        invalid: "text-destructive",
+        active: "text-foreground",
+        complete: "text-foreground",
+        partial: "text-muted-foreground",
+        upcoming: "text-muted-foreground",
+    };
+
     const activeStepData = steps[activeStep];
     const activeStepState = activeStepData
         ? getStepState(activeStepData)
         : "upcoming";
 
-    const renderDotContent = (
-        step: Step,
-        state: StepState,
-        isActive: boolean
-    ) => {
+    const renderMarker = (step: Step, state: StepState, isActive: boolean) => {
         if (isActive) return step.id + 1;
         if (state === "invalid") return <AlertCircle className="h-3.5 w-3.5" />;
         if (state === "complete") return <Check className="h-3.5 w-3.5" />;
@@ -221,13 +179,14 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
         }`;
 
     /*
-     * Direction A: the stepper is deliberately quiet. It used to be a row of
-     * five full-label buttons plus connector lines — a band of chrome above
-     * every step. It is now a single progress rule with the current step named
-     * beside it, and small state dots for jumping.
+     * The stepper stays deliberately quiet: one progress rule with the current
+     * step named beside it, then the step markers.
      *
-     * The four-state colouring is kept, because that is what tells you whether
-     * a step is genuinely finished; it just no longer shouts.
+     * The markers now carry their names from sm up. Numbers alone meant there
+     * was no way to tell what step 4 held without going to it — the label
+     * existed only in a title attribute, invisible on touch and to anyone not
+     * hovering. On phones they stay dots, because five labels do not fit in
+     * 375px and the active step is already named directly above.
      */
     return (
         <nav aria-label={_t("form.wizard.progressLabel")} className="mb-6">
@@ -247,30 +206,39 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
                 )}
             />
 
-            <ol className="mt-3 flex items-center gap-1.5">
+            <ol className="mt-3 flex items-center gap-1.5 sm:gap-2">
                 {steps.map((step) => {
                     const state = getStepState(step);
                     const isActive = step.id === activeStep;
 
                     return (
-                        <li key={step.id}>
+                        <li key={step.id} className="min-w-0 sm:flex-1">
                             <button
                                 type="button"
                                 onClick={() => goToStep(step.id)}
                                 aria-label={stepAriaLabel(step, state)}
                                 aria-current={isActive ? "step" : undefined}
                                 title={step.label}
-                                className={cn(
-                                    "flex items-center justify-center rounded-full border text-[11px] font-semibold transition-all",
-                                    // The active step is a labelled pill; the
-                                    // rest are dots, so the row stays calm.
-                                    isActive
-                                        ? "h-6 px-2.5"
-                                        : "h-6 w-6 hover:opacity-80",
-                                    dotStyles[state]
-                                )}
+                                className="flex w-full items-center gap-1.5 rounded-md transition-opacity hover:opacity-80"
                             >
-                                {renderDotContent(step, state, isActive)}
+                                <span
+                                    className={cn(
+                                        "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold",
+                                        markerStyles[state]
+                                    )}
+                                >
+                                    {renderMarker(step, state, isActive)}
+                                </span>
+
+                                <span
+                                    className={cn(
+                                        "hidden min-w-0 truncate text-left text-xs sm:inline",
+                                        isActive ? "font-semibold" : "font-medium",
+                                        labelStyles[state]
+                                    )}
+                                >
+                                    {step.label}
+                                </span>
                             </button>
                         </li>
                     );

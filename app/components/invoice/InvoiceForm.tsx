@@ -5,9 +5,6 @@ import { useMemo } from "react";
 // RHF
 import { useFormContext, useWatch } from "react-hook-form";
 
-// React Wizard
-import { Wizard } from "react-use-wizard";
-
 // Components
 import {
     WizardStep,
@@ -67,46 +64,45 @@ const InvoiceForm = () => {
                     </p>
                 </header>
 
-                <Wizard>
-                    <WizardStep>
-                        {/*
-                         * `flex` alone does not wrap, so these two sections used
-                         * to stay side by side and get crushed on narrow screens.
-                         */}
-                        {/*
-                         * Two columns on tablet, but back to one at xl: the
-                         * form column is now the narrower half of the page, so
-                         * splitting it again would crush both sub-forms. The
-                         * divider carries the separation instead of a border
-                         * box around each.
-                         */}
-                        <div className="grid grid-cols-1 divide-y divide-border md:grid-cols-2 md:gap-8 md:divide-y-0 xl:grid-cols-1 xl:gap-0 xl:divide-y">
-                            <div className="pb-8 md:pb-0 xl:pb-8">
-                                <BillFromSection />
-                            </div>
-
-                            <div className="pt-8 md:pt-0 xl:pt-8">
-                                <BillToSection />
-                            </div>
+                {/*
+                 * react-use-wizard is gone; the active step lives in
+                 * WizardContext. `step` indexes into WIZARD_STEPS, which is
+                 * now the single source of order and labels.
+                 */}
+                <WizardStep step={0}>
+                    {/*
+                     * Two columns on tablet, but back to one at xl: the form
+                     * column is the narrower half of the page there, so
+                     * splitting it again would crush both sub-forms. The
+                     * divider carries the separation instead of a border box
+                     * around each.
+                     */}
+                    <div className="grid grid-cols-1 divide-y divide-border md:grid-cols-2 md:gap-8 md:divide-y-0 xl:grid-cols-1 xl:gap-0 xl:divide-y">
+                        <div className="pb-8 md:pb-0 xl:pb-8">
+                            <BillFromSection />
                         </div>
-                    </WizardStep>
 
-                    <WizardStep>
-                        <InvoiceDetails />
-                    </WizardStep>
+                        <div className="pt-8 md:pt-0 xl:pt-8">
+                            <BillToSection />
+                        </div>
+                    </div>
+                </WizardStep>
 
-                    <WizardStep>
-                        <Items />
-                    </WizardStep>
+                <WizardStep step={1}>
+                    <InvoiceDetails />
+                </WizardStep>
 
-                    <WizardStep>
-                        <PaymentInformation />
-                    </WizardStep>
+                <WizardStep step={2}>
+                    <Items />
+                </WizardStep>
 
-                    <WizardStep>
-                        <InvoiceSummary />
-                    </WizardStep>
-                </Wizard>
+                <WizardStep step={3}>
+                    <PaymentInformation />
+                </WizardStep>
+
+                <WizardStep step={4}>
+                    <InvoiceSummary />
+                </WizardStep>
             </div>
         </div>
     );

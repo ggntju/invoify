@@ -56,7 +56,6 @@
     "react-email": "^4.0.16",
     "react-hook-form": "^7.46.1",
     "react-signature-canvas": "^1.0.6",
-    "react-use-wizard": "^2.2.4",
     "sharp": "^0.33.0",
     "tailwind-merge": "^1.14.0",
     "tailwindcss": "3.3.5",

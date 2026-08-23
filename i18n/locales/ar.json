@@ -10,7 +10,8 @@
       "paymentInfo": "معلومات الدفع",
       "summary": "الملخص",
       "next": "التالي",
-      "back": "السابق"
+      "back": "السابق",
+      "upNext": "التالي"
     },
     "steps": {
       "fromAndTo": {

@@ -10,7 +10,8 @@
       "paymentInfo": "Ödeme Bilgileri",
       "summary": "Özet",
       "next": "İleri",
-      "back": "Geri"
+      "back": "Geri",
+      "upNext": "Sıradaki"
     },
     "steps": {
       "fromAndTo": {

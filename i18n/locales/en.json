@@ -17,7 +17,8 @@
       "backTooltip": "Go back to the previous step",
       "nextTooltip": "Go to the next step",
       "stateComplete": "complete",
-      "stateIncomplete": "incomplete"
+      "stateIncomplete": "incomplete",
+      "upNext": "Up next"
     },
     "steps": {
       "fromAndTo": {

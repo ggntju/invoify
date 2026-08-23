@@ -20,6 +20,13 @@ import type { InvoiceType } from "@/types";
  *
  * These are plain functions of their props: no hooks, no context, because the
  * same components render server-side through renderToStaticMarkup for the PDF.
+ *
+ * Several parts carry a `data-edit-field` attribute naming the form field that
+ * produced them. The live preview delegates a single click handler over the
+ * whole document and uses it to jump to that field, which is how clicking the
+ * invoice edits it. Plain data attributes rather than callbacks threaded
+ * through PartCtx, so the PDF render path is untouched — it simply emits a few
+ * inert attributes it never reads.
  */
 export type PartCtx = {
     data: InvoiceType;
@@ -53,15 +60,21 @@ export function PartyBlock({
     party,
     heading,
     align = "left",
+    field,
 }: {
     ctx: PartCtx;
     party: InvoiceType["sender"] | InvoiceType["receiver"];
     heading?: string;
     align?: "left" | "right";
+    /** Which party this is, for click-to-edit. */
+    field?: "sender" | "receiver";
 }) {
     const { scale } = ctx;
     return (
-        <div className={align === "right" ? "text-right" : ""}>
+        <div
+            className={align === "right" ? "text-right" : ""}
+            data-edit-field={field ? `${field}.name` : undefined}
+        >
             {heading && (
                 <p
                     className={`${scale.label} font-semibold uppercase tracking-wider text-gray-500`}
@@ -115,17 +128,18 @@ export function DocumentMeta({
     const { data, labels, scale } = ctx;
     const { details } = data;
 
-    const rows = [
-        [labels.invoiceNumber, details.invoiceNumber],
-        [labels.invoiceDate, formatDate(details.invoiceDate)],
-        [labels.dueDate, formatDate(details.dueDate)],
+    const rows: [string, string, string][] = [
+        [labels.invoiceNumber, details.invoiceNumber, "details.invoiceNumber"],
+        [labels.invoiceDate, formatDate(details.invoiceDate), "details.invoiceDate"],
+        [labels.dueDate, formatDate(details.dueDate), "details.dueDate"],
     ];
 
     return (
         <div className={align === "right" ? "text-right" : ""}>
-            {rows.map(([label, value]) => (
+            {rows.map(([label, value, field]) => (
                 <div
                     key={label}
+                    data-edit-field={field}
                     className={`${scale.body} flex gap-3 ${
                         align === "right" ? "justify-end" : ""
                     }`}
@@ -191,6 +205,9 @@ export function ItemsTable({ ctx, variant = "rule" }: ItemsTableProps) {
                 {details.items.map((item, index) => (
                     <tr
                         key={index}
+                        // Row-level, so clicking a line in the preview lands on
+                        // that line's name field rather than the first one.
+                        data-edit-field={`details.items.${index}.name`}
                         className={
                             variant === "plain"
                                 ? ""
@@ -325,7 +342,7 @@ export function PaymentBlock({ ctx }: { ctx: PartCtx }) {
     if (!pay?.bankName && !pay?.accountName && !pay?.accountNumber) return null;
 
     return (
-        <div>
+        <div data-edit-field="details.paymentInformation.bankName">
             <p
                 className={`${scale.label} font-semibold uppercase tracking-wider text-gray-500`}
             >
@@ -360,7 +377,7 @@ export function NotesBlock({ ctx }: { ctx: PartCtx }) {
     return (
         <div className="space-y-2">
             {details.paymentTerms && (
-                <div>
+                <div data-edit-field="details.paymentTerms">
                     <p
                         className={`${scale.label} font-semibold uppercase tracking-wider text-gray-500`}
                     >
@@ -372,7 +389,7 @@ export function NotesBlock({ ctx }: { ctx: PartCtx }) {
                 </div>
             )}
             {details.additionalNotes && (
-                <div>
+                <div data-edit-field="details.additionalNotes">
                     <p
                         className={`${scale.label} font-semibold uppercase tracking-wider text-gray-500`}
                     >

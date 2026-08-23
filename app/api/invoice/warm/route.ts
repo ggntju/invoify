@@ -19,9 +19,12 @@ export const maxDuration = 30;
  * anything.
  */
 export async function GET(req: NextRequest) {
-    // Cheap for us, but it does start a browser — so it is not a free endpoint
-    // to hammer.
-    const limited = rateLimit(`warm:${getClientKey(req)}`, 10, 60_000);
+    /*
+     * Bounded, but not tight: the client pings this on every mount, so a normal
+     * session with a few reloads or a language switch legitimately produces
+     * several a minute. At 10/min the suite tripped it on its own traffic.
+     */
+    const limited = rateLimit(`warm:${getClientKey(req)}`, 30, 60_000);
 
     if (!limited.allowed) {
         return NextResponse.json(

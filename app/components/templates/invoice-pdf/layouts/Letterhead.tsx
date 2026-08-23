@@ -28,10 +28,13 @@ export default function Letterhead(props: TemplateProps) {
                 <div className="flex justify-center">
                     <Logo {...ctx} />
                 </div>
-                <p className={`${scale.name} mt-2 font-semibold tracking-wide text-gray-900`}>
+                <p
+                    data-edit-field="sender.name"
+                    className={`${scale.name} mt-2 font-semibold tracking-wide text-gray-900`}
+                >
                     {data.sender.name}
                 </p>
-                <p className={`${scale.body} text-gray-500`}>
+                <p data-edit-field="sender.address" className={`${scale.body} text-gray-500`}>
                     {[
                         data.sender.address,
                         data.sender.city,
@@ -56,6 +59,7 @@ export default function Letterhead(props: TemplateProps) {
             <div className={`${scale.sectionGap} flex flex-wrap justify-between gap-6`}>
                 <PartyBlock
                     ctx={ctx}
+                    field="receiver"
                     party={data.receiver}
                     heading={labels.billTo}
                 />

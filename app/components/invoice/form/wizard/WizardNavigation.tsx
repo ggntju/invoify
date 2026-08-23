@@ -1,21 +1,27 @@
 "use client";
 
-// React Wizard
-import { useWizard } from "react-use-wizard";
+// Contexts
+import { useWizard } from "@/contexts/WizardContext";
+import { useTranslationContext } from "@/contexts/TranslationContext";
 
 // Components
 import { BaseButton } from "@/app/components";
 
-// Contexts
-import { useTranslationContext } from "@/contexts/TranslationContext";
+// Steps
+import { WIZARD_STEPS } from "@/lib/wizardSteps";
 
 // Icons
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const WizardNavigation = () => {
-    const { isFirstStep, isLastStep, previousStep, nextStep } = useWizard();
+    const { activeStep, isFirstStep, isLastStep, previousStep, nextStep } =
+        useWizard();
 
     const { _t } = useTranslationContext();
+
+    const nextLabel = WIZARD_STEPS[activeStep + 1]
+        ? _t(`form.wizard.${WIZARD_STEPS[activeStep + 1].labelKey}`)
+        : null;
 
     /*
      * A single hairline instead of the bordered footer this used to sit in.
@@ -39,13 +45,27 @@ const WizardNavigation = () => {
             )}
 
             {!isLastStep && (
-                <BaseButton
-                    tooltipLabel={_t("form.wizard.nextTooltip")}
-                    onClick={nextStep}
-                >
-                    {_t("form.wizard.next")}
-                    <ArrowRight className="h-4 w-4" />
-                </BaseButton>
+                <div className="flex items-center gap-3">
+                    {/*
+                     * Names what comes next. The stepper showed numbers only,
+                     * so there was no way to know what the next section was
+                     * without going there. Hidden on the narrowest screens,
+                     * where it would push the button off the row.
+                     */}
+                    {nextLabel && (
+                        <span className="hidden text-sm text-muted-foreground sm:inline">
+                            {_t("form.wizard.upNext")}: {nextLabel}
+                        </span>
+                    )}
+
+                    <BaseButton
+                        tooltipLabel={_t("form.wizard.nextTooltip")}
+                        onClick={nextStep}
+                    >
+                        {_t("form.wizard.next")}
+                        <ArrowRight className="h-4 w-4" />
+                    </BaseButton>
+                </div>
             )}
         </div>
     );

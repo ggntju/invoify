@@ -48,12 +48,14 @@ export default function Sidebar(props: TemplateProps) {
                         <Logo {...ctx} />
                     </div>
                     <p
+                        data-edit-field="sender.name"
                         className={`${scale.name} mt-3 font-semibold`}
                         style={{ color: onAccent }}
                     >
                         {data.sender.name}
                     </p>
                     <address
+                        data-edit-field="sender.address"
                         className={`${scale.body} mt-1 not-italic leading-relaxed`}
                         style={{ color: onAccent, opacity: 0.85 }}
                     >
@@ -89,6 +91,7 @@ export default function Sidebar(props: TemplateProps) {
                     <div className="mt-5">
                         <PartyBlock
                             ctx={ctx}
+                            field="receiver"
                             party={data.receiver}
                             heading={labels.billTo}
                         />

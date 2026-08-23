@@ -10,7 +10,8 @@
       "paymentInfo": "Zahlung",
       "summary": "Zusammenfassung",
       "next": "Weiter",
-      "back": "Zurück"
+      "back": "Zurück",
+      "upNext": "Als Nächstes"
     },
     "steps": {
       "fromAndTo": {
