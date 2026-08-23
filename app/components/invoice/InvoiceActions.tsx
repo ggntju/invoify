@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 // ShadCn
 import {
     Popover,
@@ -30,6 +32,8 @@ import {
     FileInput,
     FolderUp,
     Import,
+    Maximize2,
+    Minimize2,
     MoreHorizontal,
     Plus,
     RotateCcw,
@@ -47,6 +51,16 @@ const InvoiceActions = () => {
      * still mount and re-render it on phones.
      */
     const isDesktop = useIsDesktop();
+
+    /*
+     * Fit the whole invoice into the pane, or show it at full size and scroll.
+     *
+     * Fit is the default because seeing the entire document at a glance is the
+     * point of a preview — but an A4 page in a ~672px pane is about 60% scale,
+     * which is fine for judging layout and too small for reading. Hence a
+     * toggle rather than a single mode.
+     */
+    const [fitToPane, setFitToPane] = useState(true);
 
     /*
      * Direction A + B: on desktop this column is the invoice, not a control
@@ -135,6 +149,32 @@ const InvoiceActions = () => {
                     )}
 
                     <div className="flex shrink-0 items-center gap-2">
+                        {/* Fit / actual size — shell only, where the pane has a
+                            fixed height to fit against. */}
+                        <BaseButton
+                            variant="ghost"
+                            size="icon"
+                            className="hidden shell:inline-flex"
+                            aria-pressed={fitToPane}
+                            tooltipLabel={
+                                fitToPane
+                                    ? _t("actions.actualSize")
+                                    : _t("actions.fitToScreen")
+                            }
+                            aria-label={
+                                fitToPane
+                                    ? _t("actions.actualSize")
+                                    : _t("actions.fitToScreen")
+                            }
+                            onClick={() => setFitToPane((value) => !value)}
+                        >
+                            {fitToPane ? (
+                                <Maximize2 className="h-4 w-4" />
+                            ) : (
+                                <Minimize2 className="h-4 w-4" />
+                            )}
+                        </BaseButton>
+
                         <Popover>
                             <PopoverTrigger asChild>
                                 <BaseButton
@@ -173,7 +213,7 @@ const InvoiceActions = () => {
                  */}
                 <div className="hidden xl:block shell:min-h-0 shell:flex-1 shell:overflow-y-auto shell:overscroll-contain shell:px-8 shell:pb-8">
                     {isDesktop ? (
-                        <PdfViewer />
+                        <PdfViewer fit={fitToPane} />
                     ) : (
                         <Skeleton className="min-h-[30rem] w-full rounded-xl" />
                     )}

@@ -98,7 +98,9 @@
     "exportInvoice": "Faturayı Dışa Aktar",
     "newInvoice": "Yeni Fatura",
     "generatePdf": "PDF Oluştur",
-    "pdfView": "PDF Görünümü"
+    "pdfView": "PDF Görünümü",
+    "fitToScreen": "Ekrana sığdır",
+    "actualSize": "Gerçek boyut"
   },
   "footer": {
     "developedBy": "Oluşturan"

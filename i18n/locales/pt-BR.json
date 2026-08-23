@@ -105,7 +105,9 @@
     "exportInvoice": "Exportar Fatura",
     "newInvoice": "Nova Fatura",
     "generatePdf": "Gerar PDF",
-    "pdfView": "Visualização em PDF"
+    "pdfView": "Visualização em PDF",
+    "fitToScreen": "Ajustar à tela",
+    "actualSize": "Tamanho real"
   },
   "footer": {
     "developedBy": "Desenvolvido por"

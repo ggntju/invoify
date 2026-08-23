@@ -66,8 +66,14 @@ const InvoiceMain = () => {
                          * border there rather than floating apart.
                          */
                         "xl:grid-cols-[minmax(0,40fr)_minmax(0,60fr)] xl:gap-12",
-                        "shell:h-[calc(100dvh-9rem)] shell:grid-cols-[minmax(0,34fr)_minmax(0,66fr)] shell:items-stretch shell:gap-0 shell:overflow-hidden",
-                        "shell:overflow-hidden shell:rounded-xl shell:border shell:border-border",
+                        /*
+                         * No card. Option B has no frame around the panes —
+                         * they meet the window, divided only by the hairline
+                         * on the form column. The height subtracts just the
+                         * 4rem navbar now, because the page gutter is dropped
+                         * at this breakpoint too (see [locale]/page.tsx).
+                         */
+                        "shell:h-[calc(100dvh-4rem)] shell:grid-cols-[minmax(0,34fr)_minmax(0,66fr)] shell:items-stretch shell:gap-0 shell:overflow-hidden",
                     ].join(" ")}
                 >
                     <InvoiceForm />

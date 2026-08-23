@@ -27,8 +27,20 @@
  * rail, which is a large part of why the form felt like a dense table. A grid
  * keeps the value next to its label at any label length.
  */
-export const fieldRow =
-    "flex flex-col gap-1.5 text-sm @xl:grid @xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] @xl:items-center @xl:gap-4";
+export const fieldRow = [
+    "flex flex-col gap-1.5 text-sm",
+    /*
+     * Inside the desktop rail the row pairs up rather than stacking, even
+     * though the column is only ~420px. A stacked row is ~78px; paired it is
+     * ~46px, which is the difference between a step you scroll and a step you
+     * see. `shell:` rather than a container query because this is specifically
+     * about the pinned two-pane layout, not about width in general — at the
+     * same 420px on a phone, stacked is still right.
+     */
+    "shell:grid shell:grid-cols-[minmax(0,7rem)_minmax(0,1fr)] shell:items-center shell:gap-3",
+    // Above the rail width, back to the proportional pairing.
+    "@xl:grid @xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] @xl:items-center @xl:gap-4",
+].join(" ");
 
 /** Control column: fluid on mobile, the grid's second track from sm up. */
 export const fieldControl = "w-full min-w-0";

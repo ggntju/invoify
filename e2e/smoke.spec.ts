@@ -898,6 +898,11 @@ test.describe("invoice builder", () => {
     });
 
     test("no template filters the logo away", async ({ page }) => {
+        test.skip(
+            page.viewportSize()!.width < 1280,
+            "below xl the preview lives in a sheet that is not mounted until opened"
+        );
+
         /*
          * Sidebar and BoldHeader used to wrap the logo in
          * `filter: brightness(0) invert(1)` to make a dark monochrome mark

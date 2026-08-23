@@ -98,7 +98,9 @@
     "exportInvoice": "Exporter la facture",
     "newInvoice": "Nouvelle facture",
     "generatePdf": "Générer un PDF",
-    "pdfView": "Vue PDF"
+    "pdfView": "Vue PDF",
+    "fitToScreen": "Ajuster à l'écran",
+    "actualSize": "Taille réelle"
   },
   "footer": {
     "developedBy": "Développé par"

@@ -24,7 +24,7 @@ import { InvoiceType } from "@/types";
  * including the <iframe> in FinalPdf, which has no business re-rendering
  * because someone edited a field.
  */
-const LivePreviewWatcher = () => {
+const LivePreviewWatcher = ({ fit }: { fit: boolean }) => {
     const { control } = useFormContext<InvoiceType>();
 
     /*
@@ -40,15 +40,26 @@ const LivePreviewWatcher = () => {
     const formValues = useWatch({ control }) as InvoiceType;
     const [debouncedValues] = useDebounce(formValues, 400);
 
-    return <LivePreview data={debouncedValues} />;
+    return <LivePreview data={debouncedValues} fit={fit} />;
 };
 
-const PdfViewer = () => {
+type PdfViewerProps = {
+    /** Scale the live preview so the whole page fits the pane. */
+    fit?: boolean;
+};
+
+const PdfViewer = ({ fit = true }: PdfViewerProps) => {
     const { invoicePdf } = useInvoiceContext();
 
     return (
-        <div className="my-3">
-            {invoicePdf.size == 0 ? <LivePreviewWatcher /> : <FinalPdf />}
+        // No vertical margin in the shell: the pane owns its own padding, and
+        // a margin here would be counted against the height the fit measures.
+        <div className="my-3 shell:my-0 shell:h-full">
+            {invoicePdf.size == 0 ? (
+                <LivePreviewWatcher fit={fit} />
+            ) : (
+                <FinalPdf />
+            )}
         </div>
     );
 };

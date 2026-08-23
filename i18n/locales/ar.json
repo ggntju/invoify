@@ -87,7 +87,9 @@
     "exportInvoice": "تصدير الفاتورة",
     "newInvoice": "فاتورة جديدة",
     "generatePdf": "إنشاء PDF",
-    "pdfView": "عرض PDF"
+    "pdfView": "عرض PDF",
+    "fitToScreen": "ملاءمة الشاشة",
+    "actualSize": "الحجم الفعلي"
   },
   "footer": {
     "developedBy": "تم تطويره بواسطة"

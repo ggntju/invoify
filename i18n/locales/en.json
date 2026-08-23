@@ -136,7 +136,9 @@
     "sendToMailTooltip": "Send invoice PDF to mail",
     "importJson": "Import JSON",
     "importJsonTooltip": "Import a JSON invoice file",
-    "moreActions": "More actions"
+    "moreActions": "More actions",
+    "fitToScreen": "Fit to screen",
+    "actualSize": "Actual size"
   },
   "footer": {
     "developedBy": "Developed by"

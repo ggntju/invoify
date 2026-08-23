@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 // Next Intl
 import { useLocale, useMessages } from "next-intl";
@@ -18,6 +18,10 @@ import { buildInvoiceLabels } from "@/app/components/templates/invoice-pdf/invoi
 import { useTranslationContext } from "@/contexts/TranslationContext";
 import { useWizard } from "@/contexts/WizardContext";
 
+// Hooks
+import { useIsShell } from "@/hooks/useMediaQuery";
+import { useFitScale } from "@/hooks/useFitScale";
+
 // Steps
 import { stepIdForField } from "@/lib/wizardSteps";
 
@@ -26,9 +30,11 @@ import { InvoiceType } from "@/types";
 
 type LivePreviewProps = {
     data: InvoiceType;
+    /** Scale the sheet down so the whole page fits the pane. */
+    fit?: boolean;
 };
 
-function LivePreview({ data }: LivePreviewProps) {
+function LivePreview({ data, fit = true }: LivePreviewProps) {
     const { _t } = useTranslationContext();
     const { activeStep, goToStep } = useWizard();
     const { setFocus } = useFormContext<InvoiceType>();
@@ -59,7 +65,17 @@ function LivePreview({ data }: LivePreviewProps) {
      * them.
      */
     const [pendingFocus, setPendingFocus] = useState<string | null>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
+
+    /*
+     * Fit-to-pane, and only inside the shell — below it the preview is a
+     * normal block in a scrolling document, where shrinking it would just make
+     * it hard to read for no gain.
+     */
+    const isShell = useIsShell();
+    const { paneRef, contentRef, scale, scaledHeight } = useFitScale<
+        HTMLDivElement,
+        HTMLDivElement
+    >({ enabled: isShell && fit });
 
     const handleClick = useCallback(
         (event: React.MouseEvent<HTMLDivElement>) => {
@@ -106,20 +122,50 @@ function LivePreview({ data }: LivePreviewProps) {
                 <Subheading>{_t("actions.livePreview")}:</Subheading>
             </div>
 
-            <div
-                ref={containerRef}
-                onClick={handleClick}
-                /*
-                 * The hover affordance is scoped to this container, so the same
-                 * markup rendered into the PDF or into a gallery miniature
-                 * shows no interactive styling.
-                 *
-                 * In the shell this is the "paper": bounded width, centred on
-                 * the ground, with a shadow so it lifts off it.
-                 */
-                className="invoice-live-preview my-1 overflow-hidden rounded-xl border border-border shell:mx-auto shell:my-0 shell:max-w-[44rem] shell:border-black/5 shell:shadow-elevated"
-            >
-                <DynamicInvoiceTemplate {...data} labels={labels} locale={locale} />
+            {/*
+             * Three nested boxes, each doing one job:
+             *   pane      — fills the scroll container, so the hook has a
+             *               height to fit against
+             *   reserve   — takes the *scaled* height, so the pane does not
+             *               keep a scrollbar for space the transform gave back
+             *   content   — the sheet itself, scaled from its top edge
+             */}
+            <div ref={paneRef} className="shell:h-full">
+                <div
+                    style={
+                        isShell && scaledHeight
+                            ? { height: scaledHeight }
+                            : undefined
+                    }
+                >
+                    <div
+                        ref={contentRef}
+                        onClick={handleClick}
+                        style={
+                            isShell
+                                ? {
+                                      transform: `scale(${scale})`,
+                                      transformOrigin: "top center",
+                                  }
+                                : undefined
+                        }
+                        /*
+                         * The hover affordance is scoped to this container, so
+                         * the same markup rendered into the PDF or into a
+                         * gallery miniature shows no interactive styling.
+                         *
+                         * In the shell this is the "paper": bounded width,
+                         * centred on the ground, with a shadow so it lifts.
+                         */
+                        className="invoice-live-preview my-1 overflow-hidden rounded-xl border border-border shell:mx-auto shell:my-0 shell:w-[46rem] shell:border-black/5 shell:shadow-elevated"
+                    >
+                        <DynamicInvoiceTemplate
+                            {...data}
+                            labels={labels}
+                            locale={locale}
+                        />
+                    </div>
+                </div>
             </div>
         </>
     );

@@ -136,7 +136,9 @@
     "sendToMailTooltip": "Qaimənin PDF faylını e-poçta göndərin",
     "importJson": "JSON idxal et",
     "importJsonTooltip": "JSON formatında qaimə faylı idxal edin",
-    "moreActions": "Digər əməliyyatlar"
+    "moreActions": "Digər əməliyyatlar",
+    "fitToScreen": "Ekrana sığdır",
+    "actualSize": "Əsl ölçü"
   },
   "footer": {
     "developedBy": "Hazırlayan"

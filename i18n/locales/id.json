@@ -98,7 +98,9 @@
     "exportInvoice": "Ekspor Faktur",
     "newInvoice": "Faktur Baru",
     "generatePdf": "Buat PDF",
-    "pdfView": "Tampilan PDF"
+    "pdfView": "Tampilan PDF",
+    "fitToScreen": "Sesuaikan layar",
+    "actualSize": "Ukuran asli"
   },
   "footer": {
     "developedBy": "Dikembangkan oleh"
