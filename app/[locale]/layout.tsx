@@ -20,7 +20,12 @@ import {
     ROOTKEYWORDS,
 } from "@/lib/seo";
 // Variables
-import { BASE_URL, GOOGLE_SC_VERIFICATION, LOCALES } from "@/lib/variables";
+import {
+    BASE_URL,
+    dirForLocale,
+    GOOGLE_SC_VERIFICATION,
+    LOCALES,
+} from "@/lib/variables";
 // Vercel Analytics
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
@@ -118,7 +123,16 @@ export default async function LocaleLayout(props: {
     }
 
     return (
-        <html lang={locale} suppressHydrationWarning>
+        /*
+         * `dir` was missing entirely. Arabic has been in LOCALES since before
+         * this branch and rendered right-to-left text inside a left-to-right
+         * document the whole time.
+         */
+        <html
+            lang={locale}
+            dir={dirForLocale(locale)}
+            suppressHydrationWarning
+        >
             <head suppressHydrationWarning>
                 <script
                     type="application/ld+json"

@@ -49,7 +49,7 @@ export default function Bordered(props: TemplateProps) {
 
                 <div className="grid border-b sm:grid-cols-2" style={{ borderColor: theme.accentColor }}>
                     <div
-                        className="border-b p-4 sm:border-b-0 sm:border-r"
+                        className="border-b p-4 sm:border-b-0 sm:border-e"
                         style={{ borderColor: theme.accentColor }}
                     >
                         <PartyBlock ctx={ctx} field="sender" party={data.sender} heading={labels.from} />

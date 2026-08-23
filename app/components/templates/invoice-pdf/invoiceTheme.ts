@@ -64,7 +64,8 @@ export const ACCENT_PRESETS = [
  * ship rather than a system one. CSS font fallback is per-character, so
  * everything else still renders in the chosen family.
  */
-const GLYPH_FALLBACK = "'IBM Plex Sans', system-ui, sans-serif";
+const GLYPH_FALLBACK =
+    "'IBM Plex Sans', 'Noto Sans Hebrew', 'Noto Sans Arabic', system-ui, sans-serif";
 
 export const INVOICE_FONTS: {
     id: InvoiceFontId;
@@ -82,7 +83,7 @@ export const INVOICE_FONTS: {
         id: "plexSans",
         name: "IBM Plex Sans",
         description: "Neutral sans",
-        stack: "'IBM Plex Sans', system-ui, sans-serif",
+        stack: GLYPH_FALLBACK,
     },
     {
         id: "sourceSerif",

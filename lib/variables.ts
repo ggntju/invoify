@@ -92,8 +92,22 @@ export const LOCALES = [
   // here, so those locales were unreachable and fell back to the default.
   { code: "id", name: "Bahasa Indonesia" },
   { code: "sr", name: "Српски" },
+  { code: "he", name: "עברית" },
 ];
 export const DEFAULT_LOCALE = LOCALES[0].code;
+
+/**
+ * Writing direction per locale.
+ *
+ * Arabic has been in LOCALES since before this branch and has been rendering
+ * right-to-left text inside a left-to-right layout the whole time — <html> was
+ * emitted with `lang` but no `dir` at all. Hebrew joins it here, and both now
+ * get a real direction.
+ */
+export const RTL_LOCALES = new Set(["ar", "he"]);
+
+export const dirForLocale = (locale: string): "rtl" | "ltr" =>
+  RTL_LOCALES.has(locale) ? "rtl" : "ltr";
 
 /**
  * Signature variables

@@ -224,16 +224,64 @@ const fileToBuffer = async (file: File) => {
  * @param {string} fallback - Shown when the value is missing or unparseable
  * @returns {string} The formatted date, or the fallback
  */
+/**
+ * Azerbaijani month names, written out.
+ *
+ * Chromium's bundled ICU has no date data for `az`: Intl there returns
+ * "2026 M01 15" rather than "15 yanvar 2026". That matters more than it
+ * sounds, because Chromium is what renders the PDF — so an Azerbaijani invoice
+ * would have carried a placeholder where its date should be. Node has full ICU
+ * and formats it correctly, which is exactly why this only shows up in the
+ * output and not in any server-side check.
+ *
+ * Twelve strings is a smaller price than either shipping that or making the
+ * PDF depend on a particular ICU build.
+ */
+const AZ_MONTHS = [
+    "yanvar",
+    "fevral",
+    "mart",
+    "aprel",
+    "may",
+    "iyun",
+    "iyul",
+    "avqust",
+    "sentyabr",
+    "oktyabr",
+    "noyabr",
+    "dekabr",
+];
+
+const formatAzerbaijaniDate = (date: Date): string =>
+    `${date.getDate()} ${AZ_MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+
 const formatDate = (
     value: string | Date | undefined | null,
+    locale = "en-US",
     fallback = "—"
 ): string => {
     if (!value) return fallback;
 
+    /*
+     * The value arriving here is normally the en-US string the schema
+     * transform produces, which is why it is re-parsed rather than used as-is:
+     * a German invoice showed "January 15, 2026" because the date had already
+     * been rendered in English before the template ever saw it.
+     *
+     * Keeping the stored form en-US is deliberate — it is the wire format, and
+     * it is the one string Date can be relied on to parse back. Only the
+     * display is localised.
+     */
     const date = value instanceof Date ? value : new Date(value);
     if (Number.isNaN(date.getTime())) return fallback;
 
-    return date.toLocaleDateString("en-US", DATE_OPTIONS);
+    if (locale.startsWith("az")) return formatAzerbaijaniDate(date);
+
+    try {
+        return date.toLocaleDateString(locale, DATE_OPTIONS);
+    } catch {
+        return date.toLocaleDateString("en-US", DATE_OPTIONS);
+    }
 };
 
 

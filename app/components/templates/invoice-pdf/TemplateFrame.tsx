@@ -4,7 +4,7 @@ import React, { ReactNode } from "react";
 import { DEFAULT_INVOICE_LABELS, type InvoiceTemplateExtras } from "./invoiceLabels";
 
 // Variables
-import { DEFAULT_LOCALE } from "@/lib/variables";
+import { DEFAULT_LOCALE, dirForLocale } from "@/lib/variables";
 import {
     densityScale,
     fontStack,
@@ -40,6 +40,7 @@ export function templateCtx(data: TemplateProps): PartCtx {
         // Defaults to English so a template rendered without one (a gallery
         // miniature, a test) still formats money rather than throwing.
         locale: data.locale ?? DEFAULT_LOCALE,
+        dir: dirForLocale(data.locale ?? DEFAULT_LOCALE),
     };
 }
 
@@ -70,10 +71,13 @@ export default function TemplateFrame({
     /** Skips the page padding, for layouts that paint edge-to-edge. */
     bare?: boolean;
 }) {
-    const { theme, scale } = ctx;
+    const { theme, scale, dir } = ctx;
 
     return (
         <section
+            // The PDF is standalone HTML with no surrounding document to
+            // inherit direction from, so the sheet declares its own.
+            dir={dir}
             style={{ fontFamily: fontStack(theme.fontId), color: "#111827" }}
         >
             <div

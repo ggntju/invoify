@@ -20,12 +20,12 @@ import { formatDate } from "@/lib/helpers";
  */
 export default function Compact(props: TemplateProps) {
     const ctx = templateCtx(props);
-    const { data, labels, theme, scale } = ctx;
+    const { data, labels, theme, scale, locale } = ctx;
 
     const strip = [
         [labels.invoiceNumber, data.details.invoiceNumber],
-        [labels.invoiceDate, formatDate(data.details.invoiceDate)],
-        [labels.dueDate, formatDate(data.details.dueDate)],
+        [labels.invoiceDate, formatDate(data.details.invoiceDate, locale)],
+        [labels.dueDate, formatDate(data.details.dueDate, locale)],
     ];
 
     return (

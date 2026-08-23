@@ -22,12 +22,12 @@ import { tint } from "../invoiceTheme";
  */
 export default function Statement(props: TemplateProps) {
     const ctx = templateCtx(props);
-    const { data, labels, theme, scale } = ctx;
+    const { data, labels, theme, scale, locale } = ctx;
     const soft = tint(theme.accentColor, 0.92);
 
     const summary = [
         [labels.invoiceNumber, data.details.invoiceNumber],
-        [labels.dueDate, formatDate(data.details.dueDate)],
+        [labels.dueDate, formatDate(data.details.dueDate, locale)],
         [
             labels.total,
             `${formatNumberWithCommas(Number(data.details.totalAmount ?? 0))} ${data.details.currency}`,

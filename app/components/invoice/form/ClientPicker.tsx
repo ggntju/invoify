@@ -136,7 +136,7 @@ const ClientPicker = () => {
                                 <button
                                     type="button"
                                     onClick={() => handlePick(client)}
-                                    className="min-w-0 flex-1 px-2 py-1.5 text-left"
+                                    className="min-w-0 flex-1 px-2 py-1.5 text-start"
                                 >
                                     <span className="block truncate text-sm font-medium">
                                         {client.name}
@@ -157,7 +157,7 @@ const ClientPicker = () => {
                                     }
                                     aria-label={`${_t("clients.remove")} ${client.name}`}
                                     className={cn(
-                                        "mr-1 rounded p-1.5 text-muted-foreground transition-colors",
+                                        "me-1 rounded p-1.5 text-muted-foreground transition-colors",
                                         "hover:bg-destructive/10 hover:text-destructive"
                                     )}
                                 >

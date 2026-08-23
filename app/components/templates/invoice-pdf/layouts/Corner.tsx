@@ -22,7 +22,7 @@ import { readableOn } from "../invoiceTheme";
  */
 export default function Corner(props: TemplateProps) {
     const ctx = templateCtx(props);
-    const { data, labels, theme, scale } = ctx;
+    const { data, labels, theme, scale, locale } = ctx;
     const onAccent = readableOn(theme.accentColor);
 
     return (
@@ -42,7 +42,7 @@ export default function Corner(props: TemplateProps) {
                 </div>
 
                 <div
-                    className="shrink-0 rounded-bl-2xl px-6 py-5 text-right sm:px-8 sm:py-6"
+                    className="shrink-0 rounded-es-2xl px-6 py-5 text-end sm:px-8 sm:py-6"
                     style={{ backgroundColor: theme.accentColor, color: onAccent }}
                 >
                     <p
@@ -56,7 +56,7 @@ export default function Corner(props: TemplateProps) {
                         {data.details.currency}
                     </p>
                     <p className={`${scale.label} mt-1`} style={{ opacity: 0.8 }}>
-                        {labels.dueDate}: {formatDate(data.details.dueDate)}
+                        {labels.dueDate}: {formatDate(data.details.dueDate, locale)}
                     </p>
                 </div>
             </div>

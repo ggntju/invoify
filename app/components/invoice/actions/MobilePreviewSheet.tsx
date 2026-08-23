@@ -40,7 +40,7 @@ const MobilePreviewSheet = ({ children }: MobilePreviewSheetProps) => {
                 side="bottom"
                 className="flex h-[92dvh] flex-col rounded-t-xl p-0"
             >
-                <SheetHeader className="shrink-0 border-b px-4 py-3 text-left">
+                <SheetHeader className="shrink-0 border-b px-4 py-3 text-start">
                     <SheetTitle>{_t("actions.previewTitle")}</SheetTitle>
                 </SheetHeader>
 

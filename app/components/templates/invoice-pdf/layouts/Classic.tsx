@@ -35,7 +35,7 @@ export default function Classic(props: TemplateProps) {
                         {data.sender.name}
                     </p>
                 </div>
-                <div className="text-right">
+                <div className="text-end">
                     <div
                         className={`${scale.heading} font-semibold uppercase tracking-tight text-gray-900`}
                     >

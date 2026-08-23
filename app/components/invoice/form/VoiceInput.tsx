@@ -508,7 +508,7 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                                         onClick={resetAll}
                                         className="h-6 px-2 text-xs"
                                     >
-                                        <X className="h-3 w-3 mr-1" />
+                                        <X className="h-3 w-3 me-1" />
                                         {_t('voiceInput.clear') || '清除'}
                                     </Button>
                                 </div>
@@ -528,14 +528,14 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                                     onClick={startListening}
                                     className="flex-1"
                                 >
-                                    <Mic className="h-4 w-4 mr-2" />
+                                    <Mic className="h-4 w-4 me-2" />
                                     {_t('voiceInput.continueRecording') || '继续录音'}
                                 </Button>
                                 <Button
                                     onClick={parseTranscript}
                                     className="flex-1"
                                 >
-                                    <Check className="h-4 w-4 mr-2" />
+                                    <Check className="h-4 w-4 me-2" />
                                     {_t('voiceInput.parse') || '解析商品'}
                                 </Button>
                             </div>
@@ -546,7 +546,7 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                                 <div className="flex items-center justify-between">
                                     <h3 className="text-sm font-medium">
                                         {_t('voiceInput.parsedItems') || '解析结果'}
-                                        <Badge variant="secondary" className="ml-2">
+                                        <Badge variant="secondary" className="ms-2">
                                             {parsedItems.length}
                                         </Badge>
                                     </h3>
@@ -632,7 +632,7 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                                 onClick={confirmItems}
                                 className="bg-green-500 hover:bg-green-600"
                             >
-                                <Check className="h-4 w-4 mr-2" />
+                                <Check className="h-4 w-4 me-2" />
                                 {_t('voiceInput.confirm') || '确认添加'} ({parsedItems.length})
                             </Button>
                         )}

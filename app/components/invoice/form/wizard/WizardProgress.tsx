@@ -252,7 +252,7 @@ const WizardProgress = () => {
 
                                     <span
                                         className={cn(
-                                            "hidden min-w-0 truncate text-left text-[11px] leading-tight sm:inline",
+                                            "hidden min-w-0 truncate text-start text-[11px] leading-tight sm:inline",
                                             isActive
                                                 ? "font-semibold"
                                                 : "font-medium",
@@ -289,7 +289,7 @@ const WizardProgress = () => {
                                     aria-label={stepAriaLabel(step, state)}
                                     aria-current={isActive ? "step" : undefined}
                                     className={cn(
-                                        "flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors",
+                                        "flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-start transition-colors",
                                         isActive
                                             ? "bg-primary/10"
                                             : "hover:bg-muted"

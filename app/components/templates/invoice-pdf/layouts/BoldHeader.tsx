@@ -39,7 +39,7 @@ export default function BoldHeader(props: TemplateProps) {
                             {data.sender.name}
                         </p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                         <p
                             className="text-3xl font-bold uppercase tracking-[0.2em] sm:text-4xl"
                             style={{ opacity: 0.9 }}

@@ -30,6 +30,8 @@ export type InvoiceTemplateExtras = {
      * resolved by different mechanisms.
      */
     locale?: string;
+    /** Overrides the direction derived from `locale`. */
+    dir?: "ltr" | "rtl";
     /**
      * Presentation options. Optional and individually defaulted, so invoices
      * saved before theming existed still render.

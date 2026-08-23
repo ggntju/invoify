@@ -154,7 +154,7 @@ const Charges = () => {
                 <span className="font-medium">
                     {_t("form.steps.summary.totalAmount")}
                 </span>
-                <div className="text-right">
+                <div className="text-end">
                     <p className="text-lg font-semibold tabular-nums">
                         {formatNumberWithCommas(totalAmount)} {currency}
                     </p>

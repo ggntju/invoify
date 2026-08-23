@@ -20,7 +20,7 @@ import { readableOn } from "../invoiceTheme";
  */
 export default function Sidebar(props: TemplateProps) {
     const ctx = templateCtx(props);
-    const { data, labels, theme, scale } = ctx;
+    const { data, labels, theme, scale, locale } = ctx;
     const onAccent = readableOn(theme.accentColor);
 
     const railRow = (label: string, value: string) => (
@@ -75,9 +75,9 @@ export default function Sidebar(props: TemplateProps) {
                     {railRow(labels.invoiceNumber, data.details.invoiceNumber)}
                     {railRow(
                         labels.invoiceDate,
-                        formatDate(data.details.invoiceDate)
+                        formatDate(data.details.invoiceDate, locale)
                     )}
-                    {railRow(labels.dueDate, formatDate(data.details.dueDate))}
+                    {railRow(labels.dueDate, formatDate(data.details.dueDate, locale))}
                 </aside>
 
                 <main className="flex min-w-0 flex-1 flex-col p-6 sm:p-8">

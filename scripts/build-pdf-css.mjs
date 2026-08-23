@@ -53,9 +53,31 @@ const UNICODE_RANGES = {
         "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304," +
         "U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB," +
         "U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+    hebrew: "U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F",
+    arabic:
+        "U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1," +
+        "U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF," +
+        "U+FE70-FE74,U+FE76-FEFC",
 };
 
 const SUBSETS = ["latin", "latin-ext"];
+
+/**
+ * Script fonts for the right-to-left locales.
+ *
+ * None of the four body families above contain a single Hebrew or Arabic
+ * glyph, and the PDF embeds its fonts and makes no network requests — so
+ * without these, a Hebrew invoice renders as tofu boxes on any machine with no
+ * system font to fall back to, which includes the Lambda that generates them.
+ *
+ * Only the script subset is embedded: the Latin coverage in these families
+ * duplicates what is already here, and `unicode-range` means Chromium only
+ * reaches for them when the document actually contains those characters.
+ */
+const SCRIPT_FACES = [
+    { family: "Noto Sans Hebrew", pkg: "noto-sans-hebrew", subset: "hebrew", weights: [400, 700] },
+    { family: "Noto Sans Arabic", pkg: "noto-sans-arabic", subset: "arabic", weights: [400, 700] },
+];
 
 /**
  * Only the weights the templates actually use. Each weight is ~15-20kB of
@@ -93,6 +115,24 @@ async function buildFontFaces() {
                         `src:url(data:font/woff2;base64,${base64}) format('woff2');}`
                 );
             }
+        }
+    }
+
+    for (const { family, pkg, subset, weights } of SCRIPT_FACES) {
+        for (const weight of weights) {
+            const file = resolve(
+                projectRoot,
+                `node_modules/@fontsource/${pkg}/files/${pkg}-${subset}-${weight}-normal.woff2`
+            );
+
+            const base64 = (await readFile(file)).toString("base64");
+
+            rules.push(
+                `@font-face{font-family:'${family}';font-style:normal;` +
+                    `font-weight:${weight};font-display:block;` +
+                    `unicode-range:${UNICODE_RANGES[subset]};` +
+                    `src:url(data:font/woff2;base64,${base64}) format('woff2');}`
+            );
         }
     }
 

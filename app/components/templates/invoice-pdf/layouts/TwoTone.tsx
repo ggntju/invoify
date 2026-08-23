@@ -38,7 +38,7 @@ export default function TwoTone(props: TemplateProps) {
                             {data.sender.name}
                         </p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                         <div
                             className={`${scale.heading} font-bold uppercase tracking-tight`}
                             style={{ color: theme.accentColor }}

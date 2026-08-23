@@ -55,7 +55,7 @@ const InvoiceForm = () => {
         // of this column rather than the viewport. Without it, a `sm:` class
         // fires on a 1440px desktop even though the form itself is a ~420px
         // rail, which is how a 12-column line-item grid ends up in 420px.
-        <div className="@container min-w-0 shell:flex shell:min-h-0 shell:flex-col shell:border-r shell:border-border shell:bg-card">
+        <div className="@container min-w-0 shell:flex shell:min-h-0 shell:flex-col shell:border-e shell:border-border shell:bg-card">
             <div className="mx-auto max-w-2xl shell:min-h-0 shell:overflow-y-auto shell:p-5 xl:mx-0">
                 <header className="mb-6">
                     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">

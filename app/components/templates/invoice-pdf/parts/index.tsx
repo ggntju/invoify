@@ -41,6 +41,12 @@ export type PartCtx = {
     scale: InvoiceScale;
     /** BCP-47 tag used for number and currency formatting. */
     locale: string;
+    /**
+     * Writing direction. The layouts use logical properties (text-start,
+     * ms-, pe-…), which resolve against this — so the sided templates mirror
+     * without needing an RTL variant of each.
+     */
+    dir: "ltr" | "rtl";
 };
 
 /**
@@ -111,10 +117,10 @@ export function PartyBlock({
     /** Which party this is, for click-to-edit. */
     field?: "sender" | "receiver";
 }) {
-    const { scale } = ctx;
+    const { scale, locale } = ctx;
     return (
         <div
-            className={align === "right" ? "text-right" : ""}
+            className={align === "right" ? "text-end" : ""}
             data-edit-field={field ? `${field}.name` : undefined}
         >
             {heading && (
@@ -167,17 +173,17 @@ export function DocumentMeta({
     ctx: PartCtx;
     align?: "left" | "right";
 }) {
-    const { data, labels, scale } = ctx;
+    const { data, labels, scale, locale } = ctx;
     const { details } = data;
 
     const rows: [string, string, string][] = [
         [labels.invoiceNumber, details.invoiceNumber, "details.invoiceNumber"],
-        [labels.invoiceDate, formatDate(details.invoiceDate), "details.invoiceDate"],
-        [labels.dueDate, formatDate(details.dueDate), "details.dueDate"],
+        [labels.invoiceDate, formatDate(details.invoiceDate, locale), "details.invoiceDate"],
+        [labels.dueDate, formatDate(details.dueDate, locale), "details.dueDate"],
     ];
 
     return (
-        <div className={align === "right" ? "text-right" : ""}>
+        <div className={align === "right" ? "text-end" : ""}>
             {rows.map(([label, value, field]) => (
                 <div
                     key={label}
@@ -226,7 +232,7 @@ export function ItemsTable({ ctx, variant = "rule" }: ItemsTableProps) {
                                     scale.label,
                                     "font-semibold uppercase tracking-wider",
                                     headFilled ? "px-2 py-2" : "pb-2",
-                                    i === 0 ? "text-left" : "text-right",
+                                    i === 0 ? "text-start" : "text-end",
                                     variant === "rule"
                                         ? "border-b-2 border-gray-300"
                                         : "",
@@ -271,17 +277,17 @@ export function ItemsTable({ ctx, variant = "rule" }: ItemsTableProps) {
                             )}
                         </td>
                         <td
-                            className={`${scale.rowY} ${scale.body} whitespace-nowrap text-right align-top tabular-nums text-gray-700`}
+                            className={`${scale.rowY} ${scale.body} whitespace-nowrap text-end align-top tabular-nums text-gray-700`}
                         >
                             {item.quantity}
                         </td>
                         <td
-                            className={`${scale.rowY} ${scale.body} whitespace-nowrap text-right align-top tabular-nums text-gray-700`}
+                            className={`${scale.rowY} ${scale.body} whitespace-nowrap text-end align-top tabular-nums text-gray-700`}
                         >
                             {money(item.unitPrice, details.currency, locale)}
                         </td>
                         <td
-                            className={`${scale.rowY} ${headFilled ? "px-2" : ""} ${scale.body} whitespace-nowrap text-right align-top font-medium tabular-nums text-gray-900`}
+                            className={`${scale.rowY} ${headFilled ? "px-2" : ""} ${scale.body} whitespace-nowrap text-end align-top font-medium tabular-nums text-gray-900`}
                         >
                             {money(item.total, details.currency, locale)}
                         </td>
@@ -379,7 +385,7 @@ export function TotalsBlock({
 /* ------------------------------------------------------------------ */
 
 export function PaymentBlock({ ctx }: { ctx: PartCtx }) {
-    const { data, labels, scale } = ctx;
+    const { data, labels, scale, locale } = ctx;
     const pay = data.details.paymentInformation;
     if (!pay?.bankName && !pay?.accountName && !pay?.accountNumber) return null;
 
@@ -412,7 +418,7 @@ export function PaymentBlock({ ctx }: { ctx: PartCtx }) {
 }
 
 export function NotesBlock({ ctx }: { ctx: PartCtx }) {
-    const { data, labels, scale } = ctx;
+    const { data, labels, scale, locale } = ctx;
     const { details } = data;
     if (!details.additionalNotes && !details.paymentTerms) return null;
 
@@ -449,7 +455,7 @@ export function NotesBlock({ ctx }: { ctx: PartCtx }) {
 }
 
 export function SignatureBlock({ ctx }: { ctx: PartCtx }) {
-    const { data, labels, scale } = ctx;
+    const { data, labels, scale, locale } = ctx;
     const { details, sender } = data;
     const signature = details.signature?.data;
     if (!signature) return null;
@@ -486,7 +492,7 @@ export function SignatureBlock({ ctx }: { ctx: PartCtx }) {
 }
 
 export function ContactFooter({ ctx }: { ctx: PartCtx }) {
-    const { data, labels, scale } = ctx;
+    const { data, labels, scale, locale } = ctx;
     const { sender } = data;
     return (
         <div className={`${scale.label} text-gray-500`}>

@@ -72,7 +72,7 @@ const DatePickerFormField = ({ name, label }: DatePickerFormFieldProps) => {
                                                         "text-muted-foreground"
                                                 )}
                                             >
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                <CalendarIcon className="me-2 h-4 w-4" />
                                                 {field.value ? (
                                                     new Date(
                                                         field.value

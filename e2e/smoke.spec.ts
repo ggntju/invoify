@@ -794,6 +794,109 @@ test.describe("invoice builder", () => {
         expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
     });
 
+    test("right-to-left locales mirror and do not overflow", async ({ page }) => {
+        const problems: string[] = [];
+        collectProblems(page, problems);
+
+        await seedDraft(page);
+
+        const read = async (locale: string) => {
+            await page.goto(`/${locale}`);
+            await page.waitForTimeout(900);
+            return page.evaluate(() => {
+                const paper = document.querySelector(".invoice-live-preview");
+                const left = (sel: string) => {
+                    const el = paper?.querySelector(sel);
+                    return el ? Math.round(el.getBoundingClientRect().left) : null;
+                };
+                return {
+                    dir: document.documentElement.getAttribute("dir"),
+                    sender: left('[data-edit-field="sender.name"]'),
+                    receiver: left('[data-edit-field="receiver.name"]'),
+                };
+            });
+        };
+
+        const ltr = await read("en");
+        expect(ltr.dir).toBe("ltr");
+
+        for (const locale of ["he", "ar"]) {
+            const rtl = await read(locale);
+
+            // `dir` was missing entirely before this: Arabic shipped for
+            // months rendering right-to-left text in a left-to-right document.
+            expect(rtl.dir, `${locale} should be rtl`).toBe("rtl");
+
+            // The parties swap sides, which is what proves the logical
+            // properties resolved rather than the page merely claiming rtl.
+            if (ltr.sender !== null && ltr.receiver !== null) {
+                expect(ltr.sender).toBeLessThan(ltr.receiver);
+                expect(rtl.sender!).toBeGreaterThan(rtl.receiver!);
+            }
+
+            const { offenders } = await horizontalOverflow(page);
+            expect(
+                offenders,
+                `${locale} overflows: ${JSON.stringify(offenders, null, 2)}`
+            ).toEqual([]);
+        }
+
+        expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
+    });
+
+    test("rtl PDFs embed their script fonts", async ({ request }) => {
+        /*
+         * The PDF embeds its fonts and issues no network requests, and none of
+         * the four Latin body families contains a Hebrew or Arabic glyph — so
+         * without the Noto subsets these render as tofu on any machine with no
+         * system font, which includes the Lambda that generates them.
+         */
+        const CASES: [string, string][] = [
+            ["he", "סטודיו נורת׳ווינד"],
+            ["ar", "شركة الشمال للتصميم"],
+        ];
+
+        for (const [locale, name] of CASES) {
+            const res = await request.post(
+                `/api/invoice/generate?locale=${locale}`,
+                {
+                    data: {
+                        ...SAMPLE_INVOICE,
+                        sender: { ...SAMPLE_INVOICE.sender, name },
+                        details: {
+                            ...SAMPLE_INVOICE.details,
+                            invoiceNumber: `RTL-${locale}`,
+                        },
+                    },
+                }
+            );
+
+            expect(res.status(), `${locale} failed to generate`).toBe(200);
+
+            const text = (await res.body()).toString("latin1");
+            const families = [
+                ...new Set(
+                    [...text.matchAll(/\/BaseFont\s*\/([A-Za-z0-9+\-,]+)/g)].map((m) =>
+                        m[1].replace(/^[A-Z]{6}\+/, "")
+                    )
+                ),
+            ];
+
+            expect(
+                families.some((f) => f.startsWith("NotoSans")),
+                `${locale} did not embed a script font: ${families.join(", ")}`
+            ).toBe(true);
+
+            const foreign = families.filter(
+                (f) => !/^(Outfit|IBMPlex|SourceSerif|NotoSans)/.test(f)
+            );
+            expect(
+                foreign,
+                `${locale} fell back to non-embedded fonts: ${foreign.join(", ")}`
+            ).toEqual([]);
+        }
+    });
+
     test("warm endpoint reports the renderer is ready", async ({ request }) => {
         const res = await request.get("/api/invoice/warm");
         expect(res.status()).toBe(200);

@@ -305,7 +305,7 @@ const TemplateGallery = ({ variant = "field" }: TemplateGalleryProps) => {
                 <button
                     type="button"
                     onClick={() => handleOpenChange(true)}
-                    className="flex w-full items-center gap-3 rounded-lg border border-border p-2 text-left transition-colors hover:border-primary/60"
+                    className="flex w-full items-center gap-3 rounded-lg border border-border p-2 text-start transition-colors hover:border-primary/60"
                 >
                     <div className="w-24 shrink-0 overflow-hidden rounded border border-border">
                         {triggerValues && (
@@ -337,7 +337,7 @@ const TemplateGallery = ({ variant = "field" }: TemplateGalleryProps) => {
 
             <Dialog open={open} onOpenChange={handleOpenChange}>
                 <DialogContent className="flex h-[92dvh] max-w-6xl flex-col gap-0 p-0 sm:max-w-6xl">
-                    <DialogHeader className="shrink-0 border-b px-5 py-4 text-left">
+                    <DialogHeader className="shrink-0 border-b px-5 py-4 text-start">
                         <DialogTitle>{_t("gallery.title")}</DialogTitle>
                         <DialogDescription>
                             {_t("gallery.description")}
@@ -380,7 +380,7 @@ const TemplateGallery = ({ variant = "field" }: TemplateGalleryProps) => {
                                         />
                                     ))}
                                     <label
-                                        className="ml-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-dashed border-border text-[10px] text-muted-foreground"
+                                        className="ms-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-dashed border-border text-[10px] text-muted-foreground"
                                         title={_t("gallery.customColor")}
                                         style={
                                             draftAccent
@@ -478,7 +478,7 @@ const TemplateGallery = ({ variant = "field" }: TemplateGalleryProps) => {
                             <BaseButton
                                 variant="ghost"
                                 size="sm"
-                                className="ml-auto text-muted-foreground"
+                                className="ms-auto text-muted-foreground"
                                 onClick={() =>
                                     setTheme(DEFAULT_INVOICE_THEME)
                                 }
@@ -507,14 +507,14 @@ const TemplateGallery = ({ variant = "field" }: TemplateGalleryProps) => {
                                             );
                                         }}
                                         className={cn(
-                                            "group relative overflow-hidden rounded-xl border-2 text-left transition-colors",
+                                            "group relative overflow-hidden rounded-xl border-2 text-start transition-colors",
                                             isSelected
                                                 ? "border-primary"
                                                 : "border-border hover:border-primary/50"
                                         )}
                                     >
                                         {isSelected && (
-                                            <span className="absolute right-2 top-2 z-10 rounded-full bg-primary p-1 text-primary-foreground shadow-card">
+                                            <span className="absolute end-2 top-2 z-10 rounded-full bg-primary p-1 text-primary-foreground shadow-card">
                                                 <Check className="h-3.5 w-3.5" />
                                             </span>
                                         )}

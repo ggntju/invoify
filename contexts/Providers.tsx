@@ -11,6 +11,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 // Schema
 import { InvoiceSchema } from "@/lib/schemas";
 
+// Radix
+import { DirectionProvider } from "@radix-ui/react-direction";
+
+// Next Intl
+import { useLocale } from "next-intl";
+
 // Context
 import { ThemeProvider } from "@/contexts/ThemeProvider";
 import { TranslationProvider } from "@/contexts/TranslationContext";
@@ -24,6 +30,7 @@ import { InvoiceType } from "@/types";
 import {
   FORM_DEFAULT_VALUES,
   LOCAL_STORAGE_INVOICE_DRAFT_KEY,
+  dirForLocale,
 } from "@/lib/variables";
 
 // Helpers
@@ -51,6 +58,13 @@ type ProvidersProps = {
 };
 
 const Providers = ({ children }: ProvidersProps) => {
+  /*
+   * Radix reads direction from its own context, not from the document, so
+   * without this its menus, popovers and tabs stay left-to-right on an RTL
+   * page while everything around them mirrors.
+   */
+  const dir = dirForLocale(useLocale());
+
   const form = useForm<InvoiceType>({
     resolver: zodResolver(InvoiceSchema),
     defaultValues: FORM_DEFAULT_VALUES,
@@ -73,6 +87,7 @@ const Providers = ({ children }: ProvidersProps) => {
   }, []);
 
   return (
+    <DirectionProvider dir={dir}>
     <ThemeProvider
       attribute="class"
       defaultTheme="system"
@@ -87,6 +102,7 @@ const Providers = ({ children }: ProvidersProps) => {
         </FormProvider>
       </TranslationProvider>
     </ThemeProvider>
+    </DirectionProvider>
   );
 };
 

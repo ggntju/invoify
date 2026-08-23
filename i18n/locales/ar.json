@@ -91,5 +91,32 @@
   },
   "footer": {
     "developedBy": "تم تطويره بواسطة"
+  },
+  "invoiceDocument": {
+    "invoiceNumber": "رقم الفاتورة",
+    "from": "من",
+    "billTo": "إلى",
+    "invoiceDate": "تاريخ الفاتورة",
+    "dueDate": "تاريخ الاستحقاق",
+    "item": "البند",
+    "qty": "الكمية",
+    "rate": "السعر",
+    "amount": "المبلغ",
+    "subtotal": "المجموع الفرعي",
+    "discount": "الخصم",
+    "tax": "الضريبة",
+    "shipping": "الشحن",
+    "total": "الإجمالي",
+    "totalInWords": "الإجمالي كتابةً",
+    "additionalNotes": "ملاحظات إضافية",
+    "paymentTerms": "شروط الدفع",
+    "signature": "التوقيع",
+    "paymentInfoHeading": "يرجى إرسال الدفعة إلى البيانات التالية",
+    "bankName": "البنك",
+    "accountName": "اسم الحساب",
+    "accountNumber": "رقم الحساب",
+    "contactHeading": "لأي استفسار بخصوص هذه الفاتورة، يرجى استخدام بيانات التواصل التالية:",
+    "logoAlt": "شعار {name}",
+    "signatureAlt": "توقيع {name}"
   }
 }
