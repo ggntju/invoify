@@ -97,5 +97,32 @@
   },
   "footer": {
     "developedBy": "Desenvolvido por"
+  },
+  "invoiceDocument": {
+    "invoiceNumber": "Fatura n.º",
+    "from": "De",
+    "billTo": "Faturar para",
+    "invoiceDate": "Data da fatura",
+    "dueDate": "Vencimento",
+    "item": "Descrição",
+    "qty": "Qtd.",
+    "rate": "Preço",
+    "amount": "Valor",
+    "subtotal": "Subtotal",
+    "discount": "Desconto",
+    "tax": "Impostos",
+    "shipping": "Frete",
+    "total": "Total",
+    "totalInWords": "Total por extenso",
+    "additionalNotes": "Observações",
+    "paymentTerms": "Condições de pagamento",
+    "signature": "Assinatura",
+    "paymentInfoHeading": "Envie o pagamento para os seguintes dados",
+    "bankName": "Banco",
+    "accountName": "Titular da conta",
+    "accountNumber": "N.º da conta",
+    "contactHeading": "Em caso de dúvidas sobre esta fatura, utilize os seguintes contatos:",
+    "logoAlt": "Logotipo de {name}",
+    "signatureAlt": "Assinatura de {name}"
   }
 }

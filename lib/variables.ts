@@ -61,6 +61,9 @@ export const NODEMAILER_PW = process.env.NODEMAILER_PW;
  */
 export const LOCALES = [
   { code: "en", name: "English" },
+  // Second by request, directly below English. DEFAULT_LOCALE reads
+  // LOCALES[0].code, so English remains the default.
+  { code: "az", name: "Azərbaycanca" },
   { code: "de", name: "Deutsch" },
   { code: "it", name: "Italiano" },
   { code: "es", name: "Español" },

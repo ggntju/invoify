@@ -63,7 +63,7 @@ export default function Corner(props: TemplateProps) {
 
             <div className={`flex flex-1 flex-col ${scale.page} pt-6`}>
                 <div className="grid gap-6 sm:grid-cols-2">
-                    <PartyBlock ctx={ctx} field="sender" party={data.sender} heading="From" />
+                    <PartyBlock ctx={ctx} field="sender" party={data.sender} heading={labels.from} />
                     <PartyBlock
                         ctx={ctx}
                         field="receiver"

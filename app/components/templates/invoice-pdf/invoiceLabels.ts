@@ -25,6 +25,12 @@ export const DEFAULT_INVOICE_LABELS =
 export type InvoiceTemplateExtras = {
     labels?: InvoiceLabels;
     /**
+     * BCP-47 locale for number and currency formatting inside the document.
+     * Separate from `labels` because the strings and the number formatting are
+     * resolved by different mechanisms.
+     */
+    locale?: string;
+    /**
      * Presentation options. Optional and individually defaulted, so invoices
      * saved before theming existed still render.
      */
@@ -34,6 +40,20 @@ export type InvoiceTemplateExtras = {
 /**
  * Builds a label set from a locale's raw messages, falling back per key to
  * English so an untranslated string never renders blank.
+ *
+ * Four locales deliberately have no `invoiceDocument` block and so fall back
+ * entirely:
+ *
+ *   ja, zh-CN  The PDF embeds only Latin fonts and makes no network requests,
+ *              so CJK text has no glyph to render with — on Vercel's Lambda,
+ *              which ships no system fonts, it would come out as tofu boxes.
+ *              English in a correct typeface beats a translated blank.
+ *   ar, he     Right-to-left. Translating the labels into a left-to-right
+ *              document produces a worse result than English, and the script
+ *              fonts are missing for the same reason as above.
+ *
+ * Both are their own piece of work — an embedded CJK subset and RTL template
+ * support respectively — not something to half-ship here.
  */
 export function buildInvoiceLabels(
     messages: Record<string, unknown> | undefined

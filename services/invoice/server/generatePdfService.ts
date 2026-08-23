@@ -85,6 +85,8 @@ export async function generatePdfService(req: NextRequest) {
             React.createElement(InvoiceTemplate, {
                 ...body,
                 labels: buildInvoiceLabels(messages),
+                // Drives Intl number/currency formatting inside the document.
+                locale,
             })
         );
 

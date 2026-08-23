@@ -90,5 +90,32 @@
   },
   "footer": {
     "developedBy": "Utviklet av"
+  },
+  "invoiceDocument": {
+    "invoiceNumber": "Faktura nr.",
+    "from": "Fra",
+    "billTo": "Faktureres til",
+    "invoiceDate": "Fakturadato",
+    "dueDate": "Forfallsdato",
+    "item": "Beskrivelse",
+    "qty": "Ant.",
+    "rate": "Pris",
+    "amount": "Beløp",
+    "subtotal": "Delsum",
+    "discount": "Rabatt",
+    "tax": "Mva.",
+    "shipping": "Frakt",
+    "total": "Totalt",
+    "totalInWords": "Totalt med bokstaver",
+    "additionalNotes": "Tilleggsnotater",
+    "paymentTerms": "Betalingsbetingelser",
+    "signature": "Signatur",
+    "paymentInfoHeading": "Vennligst send betalingen til denne kontoen",
+    "bankName": "Bank",
+    "accountName": "Kontonavn",
+    "accountNumber": "Kontonummer",
+    "contactHeading": "Har du spørsmål om denne fakturaen, bruk kontaktinformasjonen nedenfor:",
+    "logoAlt": "Logo til {name}",
+    "signatureAlt": "Signatur til {name}"
   }
 }

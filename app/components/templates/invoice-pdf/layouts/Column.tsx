@@ -43,7 +43,7 @@ export default function Column(props: TemplateProps) {
 
             <div className={`${scale.sectionGap} grid flex-1 gap-8 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)]`}>
                 <aside className="space-y-5 border-gray-200 sm:border-r sm:pr-6">
-                    <PartyBlock ctx={ctx} field="sender" party={data.sender} heading="From" />
+                    <PartyBlock ctx={ctx} field="sender" party={data.sender} heading={labels.from} />
                     <PartyBlock
                         ctx={ctx}
                         field="receiver"

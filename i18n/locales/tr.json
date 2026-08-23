@@ -90,5 +90,32 @@
   },
   "footer": {
     "developedBy": "Oluşturan"
+  },
+  "invoiceDocument": {
+    "invoiceNumber": "Fatura No",
+    "from": "Gönderen",
+    "billTo": "Alıcı",
+    "invoiceDate": "Fatura tarihi",
+    "dueDate": "Son ödeme tarihi",
+    "item": "Açıklama",
+    "qty": "Miktar",
+    "rate": "Birim fiyat",
+    "amount": "Tutar",
+    "subtotal": "Ara toplam",
+    "discount": "İndirim",
+    "tax": "Vergi",
+    "shipping": "Kargo",
+    "total": "Genel toplam",
+    "totalInWords": "Yazıyla toplam",
+    "additionalNotes": "Ek notlar",
+    "paymentTerms": "Ödeme koşulları",
+    "signature": "İmza",
+    "paymentInfoHeading": "Lütfen ödemeyi aşağıdaki hesaba gönderin",
+    "bankName": "Banka",
+    "accountName": "Hesap adı",
+    "accountNumber": "Hesap no",
+    "contactHeading": "Bu faturayla ilgili sorularınız için aşağıdaki iletişim bilgilerini kullanın:",
+    "logoAlt": "{name} logosu",
+    "signatureAlt": "{name} imzası"
   }
 }

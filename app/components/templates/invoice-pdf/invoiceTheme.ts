@@ -43,6 +43,24 @@ export const ACCENT_PRESETS = [
  * scripts/build-pdf-css.mjs, so the PDF renders with the chosen face rather
  * than silently falling back.
  */
+/*
+ * Glyph fallback for the embedded PDF fonts.
+ *
+ * The PDF makes zero network requests — every font is base64'd into the
+ * generated stylesheet — so a character with no glyph in the chosen family has
+ * nowhere to go and Chromium reaches for whatever the render machine happens
+ * to have (Segoe UI on Windows, something else on Lambda). That is both ugly
+ * and non-deterministic.
+ *
+ * Outfit in particular has no schwa (U+0259 / U+018F) in either of its
+ * subsets, and the schwa is one of the most common letters in Azerbaijani.
+ * IBM Plex Sans is already embedded and does have it, so naming it here means
+ * only the missing character changes typeface, and it changes to a font we
+ * ship rather than a system one. CSS font fallback is per-character, so
+ * everything else still renders in the chosen family.
+ */
+const GLYPH_FALLBACK = "'IBM Plex Sans', system-ui, sans-serif";
+
 export const INVOICE_FONTS: {
     id: InvoiceFontId;
     name: string;
@@ -53,7 +71,7 @@ export const INVOICE_FONTS: {
         id: "outfit",
         name: "Outfit",
         description: "Geometric sans",
-        stack: "'Outfit', system-ui, sans-serif",
+        stack: `'Outfit', ${GLYPH_FALLBACK}`,
     },
     {
         id: "plexSans",
@@ -65,13 +83,13 @@ export const INVOICE_FONTS: {
         id: "sourceSerif",
         name: "Source Serif",
         description: "Classic serif",
-        stack: "'Source Serif 4', Georgia, serif",
+        stack: `'Source Serif 4', ${GLYPH_FALLBACK}`,
     },
     {
         id: "plexMono",
         name: "IBM Plex Mono",
         description: "Technical mono",
-        stack: "'IBM Plex Mono', ui-monospace, monospace",
+        stack: `'IBM Plex Mono', ${GLYPH_FALLBACK}`,
     },
 ];
 

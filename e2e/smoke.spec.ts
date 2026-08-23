@@ -427,6 +427,72 @@ test.describe("invoice builder", () => {
         }
     });
 
+    test("extended-Latin locales embed every glyph they need", async ({ request }) => {
+        /*
+         * The PDF embeds its fonts and issues no network requests, so a
+         * character with no glyph in the embedded set falls back to whatever
+         * the render machine happens to have — Segoe UI locally, nothing at all
+         * on Lambda. This shipped silently for Turkish and Polish until the
+         * latin-ext subsets were added, so it is worth a tripwire.
+         */
+        const CASES: [string, string, string][] = [
+            ["az", "Şirkət Əməkdaşlıq MMC", "Ənbər ölçü ğıışə"],
+            ["tr", "Yılmaz Şirketi Ltd. Şti.", "Çğıöşü ürün"],
+            ["pl", "Firma Łąka Spółka z o.o.", "Zażółć gęślą jaźń"],
+            ["de", "Müller & Söhne GmbH", "Größe Straße"],
+            ["fr", "Société Générale SARL", "Éphémère à côté"],
+        ];
+
+        for (const [locale, sender, item] of CASES) {
+            const res = await request.post(
+                `/api/invoice/generate?locale=${locale}`,
+                {
+                    data: {
+                        ...SAMPLE_INVOICE,
+                        sender: { ...SAMPLE_INVOICE.sender, name: sender },
+                        details: {
+                            ...SAMPLE_INVOICE.details,
+                            invoiceNumber: `GLYPH-${locale}`,
+                            items: [
+                                {
+                                    name: item,
+                                    description: item,
+                                    quantity: 2,
+                                    unitPrice: 1234.5,
+                                    total: 2469,
+                                },
+                            ],
+                            subTotal: 2469,
+                            totalAmount: 2469,
+                        },
+                    },
+                }
+            );
+
+            expect(res.status(), `${locale} failed to generate`).toBe(200);
+
+            const text = (await res.body()).toString("latin1");
+            const families = [
+                ...new Set(
+                    [...text.matchAll(/\/BaseFont\s*\/([A-Za-z0-9+\-,]+)/g)].map((m) =>
+                        m[1].replace(/^[A-Z]{6}\+/, "")
+                    )
+                ),
+            ];
+
+            // Only the families the build embeds. Anything else means Chromium
+            // reached for a system font because a glyph was missing.
+            const foreign = families.filter(
+                (f) => !/^(Outfit|IBMPlex|SourceSerif)/.test(f)
+            );
+
+            expect(
+                foreign,
+                `${locale} fell back to non-embedded fonts: ${foreign.join(", ")}`
+            ).toEqual([]);
+        }
+    });
+
     test("warm endpoint reports the renderer is ready", async ({ request }) => {
         const res = await request.get("/api/invoice/warm");
         expect(res.status()).toBe(200);

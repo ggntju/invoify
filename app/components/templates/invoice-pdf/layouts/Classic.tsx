@@ -48,7 +48,7 @@ export default function Classic(props: TemplateProps) {
             </header>
 
             <div className={`${scale.sectionGap} grid gap-6 sm:grid-cols-2`}>
-                <PartyBlock ctx={ctx} field="sender" party={data.sender} heading={labels.billTo === undefined ? undefined : "From"} />
+                <PartyBlock ctx={ctx} field="sender" party={data.sender} heading={labels.from} />
                 <PartyBlock
                     ctx={ctx}
                     field="receiver"

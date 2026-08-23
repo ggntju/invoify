@@ -3,7 +3,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // Next Intl
-import { useMessages } from "next-intl";
+import { useLocale, useMessages } from "next-intl";
 
 // RHF
 import { useFormContext } from "react-hook-form";
@@ -39,6 +39,7 @@ function LivePreview({ data }: LivePreviewProps) {
      * renderToStaticMarkup for the PDF, where next-intl's hooks are not
      * available. See invoiceLabels.ts
      */
+    const locale = useLocale();
     const messages = useMessages();
     const labels = useMemo(
         () => buildInvoiceLabels(messages as Record<string, unknown>),
@@ -107,7 +108,7 @@ function LivePreview({ data }: LivePreviewProps) {
                  */
                 className="invoice-live-preview my-1 overflow-hidden rounded-xl border border-border"
             >
-                <DynamicInvoiceTemplate {...data} labels={labels} />
+                <DynamicInvoiceTemplate {...data} labels={labels} locale={locale} />
             </div>
         </>
     );

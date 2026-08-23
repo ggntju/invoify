@@ -2,6 +2,9 @@
 
 import { memo, useEffect, useMemo, useState } from "react";
 
+// Next Intl
+import { useLocale } from "next-intl";
+
 // RHF
 import { useFormContext, useWatch } from "react-hook-form";
 
@@ -58,11 +61,13 @@ import type { InvoiceType } from "@/types";
 const TemplatePreview = memo(function TemplatePreview({
     values,
     templateId,
+    locale,
     scale = 0.34,
     height = 250,
 }: {
     values: InvoiceType;
     templateId: number;
+    locale: string;
     scale?: number;
     height?: number;
 }) {
@@ -87,7 +92,7 @@ const TemplatePreview = memo(function TemplatePreview({
                     transformOrigin: "top left",
                 }}
             >
-                <DynamicInvoiceTemplate {...previewValues} />
+                <DynamicInvoiceTemplate {...previewValues} locale={locale} />
             </div>
         </div>
     );
@@ -96,6 +101,7 @@ const TemplatePreview = memo(function TemplatePreview({
 const TemplateGallery = () => {
     const { control, setValue, getValues } = useFormContext<InvoiceType>();
     const { _t } = useTranslationContext();
+    const locale = useLocale();
 
     const [open, setOpen] = useState(false);
 
@@ -185,6 +191,7 @@ const TemplateGallery = () => {
                                 <TemplatePreview
                                     values={triggerValues}
                                     templateId={activeId}
+                                    locale={locale}
                                     scale={0.12}
                                     height={64}
                                 />
@@ -383,6 +390,7 @@ const TemplateGallery = () => {
                                             <TemplatePreview
                                                 values={previewBase}
                                                 templateId={template.id}
+                                                locale={locale}
                                             />
                                         )}
 

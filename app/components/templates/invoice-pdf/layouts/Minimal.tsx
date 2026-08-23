@@ -36,7 +36,7 @@ export default function Minimal(props: TemplateProps) {
             </header>
 
             <div className="grid gap-8 sm:grid-cols-3">
-                <PartyBlock ctx={ctx} field="sender" party={data.sender} heading="From" />
+                <PartyBlock ctx={ctx} field="sender" party={data.sender} heading={labels.from} />
                 <PartyBlock
                     ctx={ctx}
                     field="receiver"

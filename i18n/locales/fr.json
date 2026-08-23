@@ -90,5 +90,32 @@
   },
   "footer": {
     "developedBy": "Développé par"
+  },
+  "invoiceDocument": {
+    "invoiceNumber": "Facture n°",
+    "from": "De",
+    "billTo": "Facturer à",
+    "invoiceDate": "Date de facture",
+    "dueDate": "Date d'échéance",
+    "item": "Désignation",
+    "qty": "Qté",
+    "rate": "Prix unitaire",
+    "amount": "Montant",
+    "subtotal": "Sous-total",
+    "discount": "Remise",
+    "tax": "TVA",
+    "shipping": "Livraison",
+    "total": "Total",
+    "totalInWords": "Total en toutes lettres",
+    "additionalNotes": "Notes complémentaires",
+    "paymentTerms": "Conditions de paiement",
+    "signature": "Signature",
+    "paymentInfoHeading": "Veuillez effectuer le paiement sur les coordonnées suivantes",
+    "bankName": "Banque",
+    "accountName": "Titulaire du compte",
+    "accountNumber": "N° de compte",
+    "contactHeading": "Pour toute question concernant cette facture, veuillez utiliser les coordonnées suivantes :",
+    "logoAlt": "Logo de {name}",
+    "signatureAlt": "Signature de {name}"
   }
 }

@@ -90,5 +90,32 @@
   },
   "footer": {
     "developedBy": "Dikembangkan oleh"
+  },
+  "invoiceDocument": {
+    "invoiceNumber": "Faktur No.",
+    "from": "Dari",
+    "billTo": "Ditagihkan kepada",
+    "invoiceDate": "Tanggal faktur",
+    "dueDate": "Jatuh tempo",
+    "item": "Deskripsi",
+    "qty": "Jml",
+    "rate": "Harga",
+    "amount": "Jumlah",
+    "subtotal": "Subtotal",
+    "discount": "Diskon",
+    "tax": "Pajak",
+    "shipping": "Pengiriman",
+    "total": "Total",
+    "totalInWords": "Total dalam huruf",
+    "additionalNotes": "Catatan tambahan",
+    "paymentTerms": "Syarat pembayaran",
+    "signature": "Tanda tangan",
+    "paymentInfoHeading": "Silakan kirim pembayaran ke rekening berikut",
+    "bankName": "Bank",
+    "accountName": "Nama rekening",
+    "accountNumber": "No. rekening",
+    "contactHeading": "Jika ada pertanyaan mengenai faktur ini, gunakan informasi kontak berikut:",
+    "logoAlt": "Logo {name}",
+    "signatureAlt": "Tanda tangan {name}"
   }
 }

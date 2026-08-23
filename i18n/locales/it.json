@@ -90,5 +90,32 @@
   },
   "footer": {
     "developedBy": "Sviluppato da"
+  },
+  "invoiceDocument": {
+    "invoiceNumber": "Fattura n.",
+    "from": "Da",
+    "billTo": "Fatturare a",
+    "invoiceDate": "Data fattura",
+    "dueDate": "Scadenza",
+    "item": "Descrizione",
+    "qty": "Qtà",
+    "rate": "Prezzo",
+    "amount": "Importo",
+    "subtotal": "Subtotale",
+    "discount": "Sconto",
+    "tax": "IVA",
+    "shipping": "Spedizione",
+    "total": "Totale",
+    "totalInWords": "Totale in lettere",
+    "additionalNotes": "Note aggiuntive",
+    "paymentTerms": "Termini di pagamento",
+    "signature": "Firma",
+    "paymentInfoHeading": "Si prega di effettuare il pagamento sulle seguenti coordinate",
+    "bankName": "Banca",
+    "accountName": "Intestatario del conto",
+    "accountNumber": "N. conto",
+    "contactHeading": "Per qualsiasi domanda su questa fattura, utilizzare i seguenti recapiti:",
+    "logoAlt": "Logo di {name}",
+    "signatureAlt": "Firma di {name}"
   }
 }

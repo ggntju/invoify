@@ -2,6 +2,9 @@ import React, { ReactNode } from "react";
 
 // Labels & theme
 import { DEFAULT_INVOICE_LABELS, type InvoiceTemplateExtras } from "./invoiceLabels";
+
+// Variables
+import { DEFAULT_LOCALE } from "@/lib/variables";
 import {
     densityScale,
     fontStack,
@@ -34,6 +37,9 @@ export function templateCtx(data: TemplateProps): PartCtx {
         labels: data.labels ?? DEFAULT_INVOICE_LABELS,
         theme,
         scale: densityScale(theme.density),
+        // Defaults to English so a template rendered without one (a gallery
+        // miniature, a test) still formats money rather than throwing.
+        locale: data.locale ?? DEFAULT_LOCALE,
     };
 }
 

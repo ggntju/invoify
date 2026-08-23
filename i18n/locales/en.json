@@ -164,6 +164,7 @@
   },
   "invoiceDocument": {
     "invoiceNumber": "Invoice #",
+    "from": "From",
     "billTo": "Bill to",
     "invoiceDate": "Invoice date",
     "dueDate": "Due date",
@@ -184,7 +185,9 @@
     "bankName": "Bank",
     "accountName": "Account name",
     "accountNumber": "Account no",
-    "contactHeading": "If you have any questions concerning this invoice, use the following contact information:"
+    "contactHeading": "If you have any questions concerning this invoice, use the following contact information:",
+    "logoAlt": "Logo of {name}",
+    "signatureAlt": "Signature of {name}"
   },
   "gallery": {
     "title": "Choose a template",

@@ -49,7 +49,7 @@ export default function LeftRail(props: TemplateProps) {
                     </header>
 
                     <div className={`${scale.sectionGap} grid gap-6 sm:grid-cols-[1fr_1fr_auto]`}>
-                        <PartyBlock ctx={ctx} field="sender" party={data.sender} heading="From" />
+                        <PartyBlock ctx={ctx} field="sender" party={data.sender} heading={labels.from} />
                         <PartyBlock
                             ctx={ctx}
                             field="receiver"

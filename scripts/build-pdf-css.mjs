@@ -32,8 +32,34 @@ const projectRoot = resolve(__dirname, "..");
 const outFile = resolve(projectRoot, "lib/pdfStyles.generated.ts");
 
 /**
- * Only the weights the templates actually use, latin subset only. Each extra
- * weight is ~15-20kB of base64 in the generated module.
+ * Unicode ranges, copied from what Google Fonts serves for these families.
+ *
+ * The `latin` subset stops at Latin-1. That leaves no glyph at all for the
+ * characters several shipped locales need — Azerbaijani `e-schwa`, Turkish
+ * dotless-i and s-cedilla, Polish l-stroke and ogoneks, Serbian-latin carons —
+ * and since the PDF embeds its fonts and makes zero network requests, there is
+ * no fallback to rescue them. Turkish and Polish invoices were already
+ * rendering those characters as missing glyphs.
+ *
+ * Emitting both subsets with a `unicode-range` lets Chromium load only the one
+ * a given document actually needs, so the common case costs nothing extra.
+ */
+const UNICODE_RANGES = {
+    latin:
+        "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC," +
+        "U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193," +
+        "U+2212,U+2215,U+FEFF,U+FFFD",
+    "latin-ext":
+        "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304," +
+        "U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB," +
+        "U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+};
+
+const SUBSETS = ["latin", "latin-ext"];
+
+/**
+ * Only the weights the templates actually use. Each weight is ~15-20kB of
+ * base64 per subset in the generated module, which is server-only.
  */
 const FONT_FACES = [
     { family: "Outfit", pkg: "outfit", weights: [400, 500, 600, 700] },
@@ -52,18 +78,21 @@ async function buildFontFaces() {
 
     for (const { family, pkg, weights } of FONT_FACES) {
         for (const weight of weights) {
-            const file = resolve(
-                projectRoot,
-                `node_modules/@fontsource/${pkg}/files/${pkg}-latin-${weight}-normal.woff2`
-            );
+            for (const subset of SUBSETS) {
+                const file = resolve(
+                    projectRoot,
+                    `node_modules/@fontsource/${pkg}/files/${pkg}-${subset}-${weight}-normal.woff2`
+                );
 
-            const base64 = (await readFile(file)).toString("base64");
+                const base64 = (await readFile(file)).toString("base64");
 
-            rules.push(
-                `@font-face{font-family:'${family}';font-style:normal;` +
-                    `font-weight:${weight};font-display:block;` +
-                    `src:url(data:font/woff2;base64,${base64}) format('woff2');}`
-            );
+                rules.push(
+                    `@font-face{font-family:'${family}';font-style:normal;` +
+                        `font-weight:${weight};font-display:block;` +
+                        `unicode-range:${UNICODE_RANGES[subset]};` +
+                        `src:url(data:font/woff2;base64,${base64}) format('woff2');}`
+                );
+            }
         }
     }
 

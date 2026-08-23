@@ -33,14 +33,50 @@ export type PartCtx = {
     labels: InvoiceLabels;
     theme: InvoiceTheme;
     scale: InvoiceScale;
+    /** BCP-47 tag used for number and currency formatting. */
+    locale: string;
 };
 
-const money = (value: unknown, currency: string) =>
-    `${formatNumberWithCommas(Number(value ?? 0))} ${currency}`;
+/**
+ * Formats an amount in the document's locale.
+ *
+ * This used to be `${grouped} ${code}` with hardcoded English grouping, so a
+ * German invoice showed "1,234.50 EUR" where it should read "1.234,50 EUR".
+ * Intl gets the separators, the grouping and the placement right per locale.
+ *
+ * `currencyDisplay: "code"` is deliberate, for two reasons.
+ *
+ * The PDF embeds its fonts and makes no network requests, so a currency symbol
+ * with no glyph in the embedded set has nowhere to go and Chromium substitutes
+ * whatever the render machine has — which on Vercel's Lambda is nothing.
+ * Auditing all 170 offered currencies across every locale turns up real
+ * casualties: the manat sign for az/AZN, the baht sign, the fullwidth yen and
+ * won. ISO codes are ASCII and always render.
+ *
+ * It is also the better choice on an invoice regardless: "$" is ambiguous
+ * across USD, CAD, AUD, and half a dozen others, while "USD" is not. This is
+ * also what the app displayed before, so it is not a surprising change — only
+ * the number formatting around it is now correct.
+ *
+ * Falls back to the old format if `currency` is not a valid ISO 4217 code — it
+ * is a free string on the invoice and Intl throws rather than degrading.
+ */
+const money = (value: unknown, currency: string, locale: string) => {
+    const amount = Number(value ?? 0);
+    try {
+        return new Intl.NumberFormat(locale, {
+            style: "currency",
+            currency,
+            currencyDisplay: "code",
+        }).format(amount);
+    } catch {
+        return `${formatNumberWithCommas(amount)} ${currency}`;
+    }
+};
 
 /* ------------------------------------------------------------------ */
 
-export function Logo({ data }: PartCtx) {
+export function Logo({ data, labels }: PartCtx) {
     const { details, sender } = data;
     if (!details.invoiceLogo) return null;
     return (
@@ -48,7 +84,7 @@ export function Logo({ data }: PartCtx) {
             src={details.invoiceLogo}
             width={140}
             height={100}
-            alt={`Logo of ${sender.name}`}
+            alt={labels.logoAlt.replace("{name}", sender.name)}
             style={{ maxHeight: 64, width: "auto", objectFit: "contain" }}
         />
     );
@@ -161,7 +197,7 @@ export type ItemsTableProps = {
 };
 
 export function ItemsTable({ ctx, variant = "rule" }: ItemsTableProps) {
-    const { data, labels, theme, scale } = ctx;
+    const { data, labels, theme, scale, locale } = ctx;
     const { details } = data;
 
     const headFilled = variant === "filled";
@@ -236,12 +272,12 @@ export function ItemsTable({ ctx, variant = "rule" }: ItemsTableProps) {
                         <td
                             className={`${scale.rowY} ${scale.body} whitespace-nowrap text-right align-top tabular-nums text-gray-700`}
                         >
-                            {money(item.unitPrice, details.currency)}
+                            {money(item.unitPrice, details.currency, locale)}
                         </td>
                         <td
                             className={`${scale.rowY} ${headFilled ? "px-2" : ""} ${scale.body} whitespace-nowrap text-right align-top font-medium tabular-nums text-gray-900`}
                         >
-                            {money(item.total, details.currency)}
+                            {money(item.total, details.currency, locale)}
                         </td>
                     </tr>
                 ))}
@@ -260,18 +296,18 @@ export function TotalsBlock({
     /** `fill` paints the grand total row with a tint of the accent. */
     emphasis?: "rule" | "fill";
 }) {
-    const { data, labels, theme, scale } = ctx;
+    const { data, labels, theme, scale, locale } = ctx;
     const { details } = data;
 
     const rows: [string, string][] = [
-        [labels.subtotal, money(details.subTotal, details.currency)],
+        [labels.subtotal, money(details.subTotal, details.currency, locale)],
     ];
 
     if (details.discountDetails?.amount) {
         rows.push([
             labels.discount,
             details.discountDetails.amountType === "amount"
-                ? `- ${money(details.discountDetails.amount, details.currency)}`
+                ? `- ${money(details.discountDetails.amount, details.currency, locale)}`
                 : `- ${details.discountDetails.amount}%`,
         ]);
     }
@@ -279,7 +315,7 @@ export function TotalsBlock({
         rows.push([
             labels.tax,
             details.taxDetails.amountType === "amount"
-                ? `+ ${money(details.taxDetails.amount, details.currency)}`
+                ? `+ ${money(details.taxDetails.amount, details.currency, locale)}`
                 : `+ ${details.taxDetails.amount}%`,
         ]);
     }
@@ -287,7 +323,7 @@ export function TotalsBlock({
         rows.push([
             labels.shipping,
             details.shippingDetails.costType === "amount"
-                ? `+ ${money(details.shippingDetails.cost, details.currency)}`
+                ? `+ ${money(details.shippingDetails.cost, details.currency, locale)}`
                 : `+ ${details.shippingDetails.cost}%`,
         ]);
     }
@@ -320,7 +356,7 @@ export function TotalsBlock({
                     {labels.total}
                 </span>
                 <span className={`${scale.total} font-bold tabular-nums`}>
-                    {money(details.totalAmount, details.currency)}
+                    {money(details.totalAmount, details.currency, locale)}
                 </span>
             </div>
 
@@ -424,7 +460,7 @@ export function SignatureBlock({ ctx }: { ctx: PartCtx }) {
                     src={signature}
                     width={120}
                     height={60}
-                    alt={`Signature of ${sender.name}`}
+                    alt={labels.signatureAlt.replace("{name}", sender.name)}
                     style={{ maxHeight: 56, width: "auto" }}
                 />
             ) : (

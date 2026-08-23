@@ -65,7 +65,7 @@ export default function Compact(props: TemplateProps) {
             </div>
 
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <PartyBlock ctx={ctx} field="sender" party={data.sender} heading="From" />
+                <PartyBlock ctx={ctx} field="sender" party={data.sender} heading={labels.from} />
                 <PartyBlock
                     ctx={ctx}
                     field="receiver"

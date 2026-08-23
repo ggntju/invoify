@@ -90,5 +90,32 @@
   },
   "footer": {
     "developedBy": "Opracowane przez"
+  },
+  "invoiceDocument": {
+    "invoiceNumber": "Faktura nr",
+    "from": "Sprzedawca",
+    "billTo": "Nabywca",
+    "invoiceDate": "Data wystawienia",
+    "dueDate": "Termin płatności",
+    "item": "Nazwa",
+    "qty": "Ilość",
+    "rate": "Cena jedn.",
+    "amount": "Wartość",
+    "subtotal": "Suma częściowa",
+    "discount": "Rabat",
+    "tax": "Podatek",
+    "shipping": "Dostawa",
+    "total": "Razem",
+    "totalInWords": "Słownie",
+    "additionalNotes": "Uwagi dodatkowe",
+    "paymentTerms": "Warunki płatności",
+    "signature": "Podpis",
+    "paymentInfoHeading": "Prosimy o dokonanie płatności na poniższy rachunek",
+    "bankName": "Bank",
+    "accountName": "Nazwa rachunku",
+    "accountNumber": "Nr rachunku",
+    "contactHeading": "W razie pytań dotyczących tej faktury prosimy o kontakt:",
+    "logoAlt": "Logo {name}",
+    "signatureAlt": "Podpis {name}"
   }
 }

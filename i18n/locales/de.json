@@ -93,6 +93,7 @@
   },
   "invoiceDocument": {
     "invoiceNumber": "Rechnung #",
+    "from": "Von",
     "billTo": "Rechnung an",
     "invoiceDate": "Rechnungsdatum",
     "dueDate": "Fälligkeitsdatum",
@@ -113,6 +114,8 @@
     "bankName": "Bank",
     "accountName": "Kontoinhaber",
     "accountNumber": "Kontonummer",
-    "contactHeading": "Bei Fragen zu dieser Rechnung verwenden Sie bitte die folgenden Kontaktdaten:"
+    "contactHeading": "Bei Fragen zu dieser Rechnung verwenden Sie bitte die folgenden Kontaktdaten:",
+    "logoAlt": "Logo von {name}",
+    "signatureAlt": "Unterschrift von {name}"
   }
 }
