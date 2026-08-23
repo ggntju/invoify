@@ -11,16 +11,18 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         type={type}
         className={cn(
           /*
-           * Quiet at rest, defined on interaction.
+           * One field surface across the form.
            *
-           * A visible border on every field turned the form into a stack of
-           * boxes — with fifteen fields on screen that is fifteen rectangles
-           * competing with the invoice beside them. The field is now a soft
-           * fill that gains a border on hover and a ring on focus, so
-           * structure appears where the user is actually working.
+           * This was a soft `bg-muted/50` fill with a transparent border,
+           * chosen so fifteen bordered rectangles would not compete with the
+           * invoice beside them. But the date pickers are `Button
+           * variant="outline"` and the currency picker is a `SelectTrigger`,
+           * and both of those are `border-input bg-background` — so a single
+           * form row could show three different surfaces. Consistency between
+           * controls that sit next to each other beats a quieter field.
            */
-          "flex h-10 w-full rounded-md border border-transparent bg-muted/50 px-3 py-2 text-sm ring-offset-background transition-colors",
-          "hover:border-input focus-visible:border-input focus-visible:bg-background",
+          "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-colors",
+          "hover:border-primary/50",
           "file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           "disabled:cursor-not-allowed disabled:opacity-50",
