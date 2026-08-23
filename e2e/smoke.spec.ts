@@ -675,7 +675,7 @@ test.describe("invoice builder", () => {
 
         // There is prose on the page at all.
         const text = enHtml
-            .replace(/<script[\s\S]*?<\/script>/g, " ")
+            .replace(/<script[\s\S]*?<\/script\s*>/gi, " ")
             .replace(/<[^>]+>/g, " ")
             .replace(/\s+/g, " ")
             .trim();
@@ -1089,7 +1089,7 @@ test.describe("invoice builder", () => {
         // Both still carry real prose.
         const prose = (html: string) =>
             html
-                .replace(/<script[\s\S]*?<\/script>/g, " ")
+                .replace(/<script[\s\S]*?<\/script\s*>/gi, " ")
                 .replace(/<[^>]+>/g, " ")
                 .replace(/\s+/g, " ")
                 .trim().length;
