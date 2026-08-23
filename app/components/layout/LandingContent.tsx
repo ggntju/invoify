@@ -12,6 +12,9 @@ type Faq = { q: string; a: string };
 type Landing = {
     h1: string;
     intro: string;
+    /** The guide's own heading and lede, so the two pages are not duplicates. */
+    guideH1?: string;
+    guideIntro?: string;
     featuresHeading: string;
     features: Record<string, Feature>;
     howHeading: string;
@@ -36,13 +39,31 @@ type Landing = {
  * scroll internally, so nothing here competes with the builder or pushes it
  * around; you only meet it if you scroll past the tool.
  */
-export default async function LandingContent({ locale }: { locale: string }) {
+type Variant = "home" | "guide";
+
+/**
+ * `home` keeps the page rankable without burying the builder: the heading, the
+ * intro and the FAQ, whose schema is the part that earns a rich result.
+ * `guide` carries the long-form sections on their own page.
+ *
+ * One component and one set of message keys serve both, so the two cannot
+ * drift apart.
+ */
+export default async function LandingContent({
+    locale,
+    variant = "home",
+}: {
+    locale: string;
+    variant?: Variant;
+}) {
     const messages = await getMessages(locale);
     const landing = (messages as Record<string, unknown>)?.landing as
         | Landing
         | undefined;
 
     if (!landing) return null;
+
+    const isGuide = variant === "guide";
 
     return (
         <section className="border-t border-border bg-card">
@@ -55,14 +76,22 @@ export default async function LandingContent({ locale }: { locale: string }) {
                      * which meant the document had several competing h1s made
                      * of the user's own data.
                      */}
+                    {/*
+                     * Distinct heading and lede per page. Serving the same h1
+                     * and the same opening paragraph on two URLs is
+                     * near-duplicate content, and the two would compete.
+                     */}
                     <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
-                        {landing.h1}
+                        {isGuide ? (landing.guideH1 ?? landing.h1) : landing.h1}
                     </h1>
                     <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-                        {landing.intro}
+                        {isGuide
+                            ? (landing.guideIntro ?? landing.intro)
+                            : landing.intro}
                     </p>
                 </div>
 
+                {isGuide && (
                 <div className="mx-auto mt-16 max-w-5xl">
                     <h2 className="text-xl font-semibold tracking-tight">
                         {landing.featuresHeading}
@@ -80,7 +109,9 @@ export default async function LandingContent({ locale }: { locale: string }) {
                         ))}
                     </div>
                 </div>
+                )}
 
+                {isGuide && (
                 <div className="mx-auto mt-16 max-w-5xl">
                     <h2 className="text-xl font-semibold tracking-tight">
                         {landing.howHeading}
@@ -101,7 +132,14 @@ export default async function LandingContent({ locale }: { locale: string }) {
                         ))}
                     </ol>
                 </div>
+                )}
 
+                {/*
+                 * The FAQ, and its schema, live on the homepage only. Emitting
+                 * the same FAQPage from two URLs makes them compete for the
+                 * same rich result rather than reinforcing each other.
+                 */}
+                {!isGuide && (
                 <div className="mx-auto mt-16 max-w-3xl">
                     <h2 className="text-xl font-semibold tracking-tight">
                         {landing.faqHeading}
@@ -119,6 +157,7 @@ export default async function LandingContent({ locale }: { locale: string }) {
                         ))}
                     </dl>
                 </div>
+                )}
             </div>
 
             {/*
@@ -126,12 +165,16 @@ export default async function LandingContent({ locale }: { locale: string }) {
              * above — so the markup and the schema can never disagree, which is
              * what Google's rich-results guidance actually requires.
              */}
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify(buildFaqJsonLd(Object.values(landing.faq))),
-                }}
-            />
+            {!isGuide && (
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify(
+                            buildFaqJsonLd(Object.values(landing.faq))
+                        ),
+                    }}
+                />
+            )}
         </section>
     );
 }

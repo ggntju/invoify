@@ -141,7 +141,8 @@
     "actualSize": "Actual size"
   },
   "footer": {
-    "developedBy": "Developed by"
+    "developedBy": "Developed by",
+    "guide": "How it works"
   },
   "voiceInput": {
     "voiceInput": "Voice Input",
@@ -228,6 +229,8 @@
   "landing": {
     "h1": "Free invoice generator",
     "intro": "Invoify builds a professional invoice in your browser and hands you a PDF. Choose one of thirteen templates, set your accent colour and typeface, add your logo and signature, and download or email the result. Nothing is uploaded to an account, because there are no accounts.",
+    "guideH1": "How Invoify works",
+    "guideIntro": "A walk through what the invoice generator does and how to use it: the thirteen templates, the things you can change about them, and the three steps from an empty form to a finished PDF.",
     "featuresHeading": "What you get",
     "features": {
       "1": {

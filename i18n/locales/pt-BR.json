@@ -110,7 +110,8 @@
     "actualSize": "Tamanho real"
   },
   "footer": {
-    "developedBy": "Desenvolvido por"
+    "developedBy": "Desenvolvido por",
+    "guide": "Como funciona"
   },
   "invoiceDocument": {
     "invoiceNumber": "Fatura n.º",

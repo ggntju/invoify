@@ -103,7 +103,8 @@
     "actualSize": "Originalgröße"
   },
   "footer": {
-    "developedBy": "Entwickelt von"
+    "developedBy": "Entwickelt von",
+    "guide": "So funktioniert es"
   },
   "invoiceDocument": {
     "invoiceNumber": "Rechnung #",

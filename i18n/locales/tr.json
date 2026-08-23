@@ -103,7 +103,8 @@
     "actualSize": "Gerçek boyut"
   },
   "footer": {
-    "developedBy": "Oluşturan"
+    "developedBy": "Oluşturan",
+    "guide": "Nasıl çalışır"
   },
   "invoiceDocument": {
     "invoiceNumber": "Fatura No",

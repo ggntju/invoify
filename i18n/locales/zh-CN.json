@@ -90,7 +90,8 @@
     "pdfView": "PDF视图"
   },
   "footer": {
-    "developedBy": "开发人员"
+    "developedBy": "开发人员",
+    "guide": "使用方法"
   },
   "voiceInput": {
     "voiceInput": "语音录入",

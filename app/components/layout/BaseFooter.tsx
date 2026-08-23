@@ -2,6 +2,9 @@
 
 import { useTranslationContext } from "@/contexts/TranslationContext";
 
+// Next Intl
+import { Link } from "@/i18n/navigation";
+
 // Variables
 import { AUTHOR_GITHUB } from "@/lib/variables";
 
@@ -23,6 +26,15 @@ const BaseFooter = () => {
                         Ali Abbasov
                     </a>
                 </p>
+
+                <nav>
+                    <Link
+                        href="/guide"
+                        className="font-medium text-foreground underline underline-offset-4 transition-colors hover:text-primary"
+                    >
+                        {_t("footer.guide")}
+                    </Link>
+                </nav>
             </div>
         </footer>
     );

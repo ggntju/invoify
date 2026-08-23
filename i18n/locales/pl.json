@@ -103,7 +103,8 @@
     "actualSize": "Rozmiar rzeczywisty"
   },
   "footer": {
-    "developedBy": "Opracowane przez"
+    "developedBy": "Opracowane przez",
+    "guide": "Jak to działa"
   },
   "invoiceDocument": {
     "invoiceNumber": "Faktura nr",

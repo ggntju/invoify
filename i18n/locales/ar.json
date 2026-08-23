@@ -92,7 +92,8 @@
     "actualSize": "الحجم الفعلي"
   },
   "footer": {
-    "developedBy": "تم تطويره بواسطة"
+    "developedBy": "تم تطويره بواسطة",
+    "guide": "كيف يعمل"
   },
   "invoiceDocument": {
     "invoiceNumber": "رقم الفاتورة",

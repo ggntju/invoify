@@ -34,6 +34,10 @@ export default async function Home(props: {
              * Below the fold, and below the viewport-height shell — the app
              * never scrolls past its own work, but there is now something on
              * the page for a crawler to read.
+             *
+             * The trimmed variant: heading, intro and FAQ. The long-form
+             * sections live at /guide so the homepage stays short without the
+             * page going back to having no prose at all.
              */}
             <LandingContent locale={locale} />
         </>

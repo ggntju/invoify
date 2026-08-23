@@ -90,6 +90,7 @@
     "pdfView": "PDFビュー"
   },
   "footer": {
-    "developedBy": "開発者"
+    "developedBy": "開発者",
+    "guide": "使い方"
   }
 }

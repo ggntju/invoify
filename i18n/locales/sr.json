@@ -90,6 +90,7 @@
     "pdfView": "Pogledaj PDF"
   },
   "footer": {
-    "developedBy": "Napravljeno od strane"
+    "developedBy": "Napravljeno od strane",
+    "guide": "Како функционише"
   }
 }

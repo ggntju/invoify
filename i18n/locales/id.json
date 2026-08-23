@@ -103,7 +103,8 @@
     "actualSize": "Ukuran asli"
   },
   "footer": {
-    "developedBy": "Dikembangkan oleh"
+    "developedBy": "Dikembangkan oleh",
+    "guide": "Cara kerjanya"
   },
   "invoiceDocument": {
     "invoiceNumber": "Faktur No.",

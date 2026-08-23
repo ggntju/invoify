@@ -13,18 +13,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const languages = languageAlternates();
     const lastModified = new Date();
 
-    return LOCALES.map(({ code }) => ({
-        url: `${BASE_URL}${localePath(code)}`,
+    const entry = (path: string, priority: number, suffix = "") => ({
+        url: `${BASE_URL}${path}${suffix}`,
         lastModified,
         changeFrequency: "weekly" as const,
-        priority: code === "en" ? 1 : 0.8,
+        priority,
         alternates: {
             languages: Object.fromEntries(
-                Object.entries(languages).map(([lang, path]) => [
+                Object.entries(languages).map(([lang, p]) => [
                     lang,
-                    `${BASE_URL}${path}`,
+                    `${BASE_URL}${p}${suffix}`,
                 ])
             ),
         },
-    }));
+    });
+
+    return LOCALES.flatMap(({ code }) => [
+        entry(localePath(code), code === "en" ? 1 : 0.8),
+        // The long-form copy, its own indexable page since round 4.
+        entry(localePath(code), code === "en" ? 0.7 : 0.6, "/guide"),
+    ]);
 }

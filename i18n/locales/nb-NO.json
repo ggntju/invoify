@@ -103,7 +103,8 @@
     "actualSize": "Faktisk størrelse"
   },
   "footer": {
-    "developedBy": "Utviklet av"
+    "developedBy": "Utviklet av",
+    "guide": "Slik fungerer det"
   },
   "invoiceDocument": {
     "invoiceNumber": "Faktura nr.",

@@ -141,7 +141,8 @@
     "actualSize": "Əsl ölçü"
   },
   "footer": {
-    "developedBy": "Hazırlayan"
+    "developedBy": "Hazırlayan",
+    "guide": "Necə işləyir"
   },
   "voiceInput": {
     "voiceInput": "Səslə daxiletmə",
@@ -228,6 +229,8 @@
   "landing": {
     "h1": "Pulsuz qaimə yaradıcısı",
     "intro": "Invoify brauzerinizdə peşəkar qaimə hazırlayır və sizə PDF verir. On üç şablondan birini seçin, vurğu rəngini və şrifti təyin edin, loqonuzu və imzanızı əlavə edin, nəticəni endirin və ya e-poçtla göndərin. Heç nə hesaba yüklənmir, çünki hesab anlayışı yoxdur.",
+    "guideH1": "Invoify necə işləyir",
+    "guideIntro": "Qaimə yaradıcısının nə etdiyini və ondan necə istifadə olunduğunu addım-addım izah edir: on üç şablon, onlarda dəyişə biləcəyiniz şeylər və boş formadan hazır PDF-ə qədər üç addım.",
     "featuresHeading": "Nə əldə edirsiniz",
     "features": {
       "1": {

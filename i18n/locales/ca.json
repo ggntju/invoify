@@ -103,7 +103,8 @@
     "actualSize": "Mida real"
   },
   "footer": {
-    "developedBy": "Desenvolupat per"
+    "developedBy": "Desenvolupat per",
+    "guide": "Com funciona"
   },
   "invoiceDocument": {
     "invoiceNumber": "Factura núm.",

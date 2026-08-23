@@ -141,7 +141,8 @@
     "actualSize": "גודל מקורי"
   },
   "footer": {
-    "developedBy": "פותח על ידי"
+    "developedBy": "פותח על ידי",
+    "guide": "איך זה עובד"
   },
   "voiceInput": {
     "voiceInput": "Voice Input",
