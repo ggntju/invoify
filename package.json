@@ -77,6 +77,7 @@
     "@next/bundle-analyzer": "^14.0.4",
     "@playwright/test": "^1.62.1",
     "@sparticuz/chromium": "138.0.2",
+    "@tailwindcss/container-queries": "^0.1.1",
     "@types/nodemailer": "^6.4.14",
     "@types/number-to-words": "^1.2.1",
     "@types/react": "^18.2.22",

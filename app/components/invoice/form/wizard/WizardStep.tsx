@@ -27,7 +27,7 @@ const WizardStep = ({ step, children }: WizardStepProps) => {
     if (activeStep !== step) return null;
 
     return (
-        <div className="flex min-h-[18rem] flex-col md:min-h-[22rem]">
+        <div className="flex min-h-[18rem] flex-col @2xl:min-h-[22rem]">
             <WizardProgress />
             <div className="flex-1">{children}</div>
             <WizardNavigation />

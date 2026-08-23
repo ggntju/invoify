@@ -50,11 +50,15 @@ const InvoiceForm = () => {
     return (
         // `min-h-0` is what actually lets a grid child shrink and scroll; without
         // it the pane grows to its content and the page scrolls instead.
-        <div className="min-w-0 shell:flex shell:min-h-0 shell:flex-col">
+        // `@container` scopes every responsive rule inside the form to the width
+        // of this column rather than the viewport. Without it, a `sm:` class
+        // fires on a 1440px desktop even though the form itself is a ~420px
+        // rail, which is how a 12-column line-item grid ends up in 420px.
+        <div className="@container min-w-0 shell:flex shell:min-h-0 shell:flex-col">
             <div className="mx-auto max-w-2xl shell:min-h-0 shell:overflow-y-auto shell:pr-4 xl:mx-0">
                 <header className="mb-6">
                     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                        <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
+                        <h1 className="text-xl font-semibold tracking-tight @2xl:text-2xl">
                             {_t("form.title")}
                         </h1>
                         <span className="text-sm text-muted-foreground">
@@ -73,18 +77,19 @@ const InvoiceForm = () => {
                  */}
                 <WizardStep step={0}>
                     {/*
-                     * Two columns on tablet, but back to one at xl: the form
-                     * column is the narrower half of the page there, so
-                     * splitting it again would crush both sub-forms. The
-                     * divider carries the separation instead of a border box
-                     * around each.
+                     * Two columns when the form column is wide enough to hold
+                     * them, one when it is not. This used to be `md:` plus an
+                     * `xl:` override undoing it, because the viewport said
+                     * "wide" while the form column was actually the narrow half
+                     * of a split layout. A container query states the real rule
+                     * once: split at 672px of column, stack below.
                      */}
-                    <div className="grid grid-cols-1 divide-y divide-border md:grid-cols-2 md:gap-8 md:divide-y-0 xl:grid-cols-1 xl:gap-0 xl:divide-y">
-                        <div className="pb-8 md:pb-0 xl:pb-8">
+                    <div className="grid grid-cols-1 divide-y divide-border @2xl:grid-cols-2 @2xl:gap-8 @2xl:divide-y-0">
+                        <div className="pb-8 @2xl:pb-0">
                             <BillFromSection />
                         </div>
 
-                        <div className="pt-8 md:pt-0 xl:pt-8">
+                        <div className="pt-8 @2xl:pt-0">
                             <BillToSection />
                         </div>
                     </div>

@@ -53,7 +53,7 @@ const WizardNavigation = () => {
                      * where it would push the button off the row.
                      */}
                     {nextLabel && (
-                        <span className="hidden text-sm text-muted-foreground sm:inline">
+                        <span className="hidden text-sm text-muted-foreground @xl:inline">
                             {_t("form.wizard.upNext")}: {nextLabel}
                         </span>
                     )}

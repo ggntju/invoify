@@ -3,12 +3,18 @@
  *
  * Every field used to hardcode a pixel width (`w-[13rem]`) inside a
  * non-wrapping flex row, which overflowed the viewport on phones. The rule
- * here is: stack label above control on mobile, pair them from `sm` up, and
- * never let the control have a fixed width below `sm`.
+ * is: stack label above control when the column is narrow, pair them when it
+ * is wide.
  *
- * IMPORTANT: the mobile branch of these classes is signed off and must not
- * change. Every rule below `sm:` is what a phone gets; desktop refinements
- * belong in the `sm:` half only.
+ * These are CONTAINER queries (`@xl:`), not viewport queries. The form is a
+ * ~420px rail on a 1440px desktop, so a viewport-based `sm:` would fire there
+ * and lay a two-column grid into a column too narrow to hold it. `@xl` is
+ * 576px of container, which reproduces exactly what `sm:` (640px viewport,
+ * ~592px of container) did before: phones and the desktop rail stack, tablets
+ * and a full-width column pair.
+ *
+ * IMPORTANT: the stacked branch is what phones get and is signed off. It must
+ * not change.
  */
 
 /*
@@ -22,7 +28,7 @@
  * keeps the value next to its label at any label length.
  */
 export const fieldRow =
-    "flex flex-col gap-1.5 text-sm sm:grid sm:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] sm:items-center sm:gap-4";
+    "flex flex-col gap-1.5 text-sm @xl:grid @xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] @xl:items-center @xl:gap-4";
 
 /** Control column: fluid on mobile, the grid's second track from sm up. */
 export const fieldControl = "w-full min-w-0";

@@ -163,10 +163,11 @@ const SingleItem = ({
              * beneath it. From sm up all four sit on one 12-column line.
              */}
             <div
-                className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-12"
+                // Container query: a 12-column grid cannot fit the ~420px desktop rail.
+                className="grid grid-cols-2 gap-x-3 gap-y-4 @xl:grid-cols-12"
                 key={index}
             >
-                <div className="col-span-2 min-w-0 sm:col-span-5">
+                <div className="col-span-2 min-w-0 @xl:col-span-5">
                     <FormInput
                         name={`${name}[${index}].name`}
                         label={_t("form.steps.lineItems.name")}
@@ -175,7 +176,7 @@ const SingleItem = ({
                     />
                 </div>
 
-                <div className="min-w-0 sm:col-span-2">
+                <div className="min-w-0 @xl:col-span-2">
                     <FormInput
                         name={`${name}[${index}].quantity`}
                         type="number"
@@ -185,7 +186,7 @@ const SingleItem = ({
                     />
                 </div>
 
-                <div className="min-w-0 sm:col-span-2">
+                <div className="min-w-0 @xl:col-span-2">
                     <FormInput
                         name={`${name}[${index}].unitPrice`}
                         type="number"
@@ -196,7 +197,7 @@ const SingleItem = ({
                     />
                 </div>
 
-                <div className="col-span-2 flex min-w-0 flex-col gap-2 sm:col-span-3">
+                <div className="col-span-2 flex min-w-0 flex-col gap-2 @xl:col-span-3">
                     <Label>{_t("form.steps.lineItems.total")}</Label>
                     <Input
                         value={`${total} ${currency}`}

@@ -50,7 +50,7 @@ const FormTextarea = ({
                             rows={4}
                             placeholder={placeholder}
                             className={cn(
-                                "min-h-[6rem] w-full resize-y sm:max-w-[20rem]",
+                                "min-h-[6rem] w-full resize-y @xl:max-w-[20rem]",
                                 className
                             )}
                             {...props}

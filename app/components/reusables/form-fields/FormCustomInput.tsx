@@ -20,7 +20,7 @@ const FormCustomInput = ({
     return (
         <>
             <div className="flex items-start gap-2">
-                <div className="w-[38%] min-w-0 sm:w-[8rem]">
+                <div className="w-[38%] min-w-0 @xl:w-[8rem]">
                     <FormInput
                         name={nameKey}
                         placeholder="Name"

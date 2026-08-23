@@ -107,5 +107,14 @@ module.exports = {
             },
         },
     },
-    plugins: [require("tailwindcss-animate")],
+    plugins: [
+        require("tailwindcss-animate"),
+        /*
+         * Container queries. The form column is a ~420px rail on a 1440px
+         * desktop, so viewport breakpoints inside it describe the wrong box —
+         * `sm:` fires while the column is narrower than a phone. See
+         * app/components/invoice/InvoiceForm.tsx
+         */
+        require("@tailwindcss/container-queries"),
+    ],
 };
