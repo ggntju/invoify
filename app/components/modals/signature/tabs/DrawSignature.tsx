@@ -91,8 +91,28 @@ const DrawSignature = ({ handleSaveSignature }: DrawSignatureProps) => {
             }
         };
 
-        const rect = canvas.getBoundingClientRect();
-        applySize(rect.width, rect.height);
+        /*
+         * clientWidth/clientHeight, not getBoundingClientRect().
+         *
+         * The dialog opens with a `zoom-95` transform, and getBoundingClientRect
+         * reports the *transformed* box — so the first measurement came in at
+         * 95% and the observer immediately corrected it, sizing the bitmap
+         * twice and re-encoding the drawing in between. The layout properties
+         * ignore transforms, matching what the observer's contentRect reports,
+         * so the size settles on the first call.
+         */
+        applySize(canvas.clientWidth, canvas.clientHeight);
+
+        /*
+         * Restore an existing signature here rather than from a timer in
+         * SignatureModal. That version fired 50ms after open — inside the 200ms
+         * animation — so a base64 PNG decode landed on the main thread while
+         * the dialog was still animating. Doing it at this point means the
+         * canvas is already correctly sized, so the decode happens once.
+         */
+        if (signatureData && pad.isEmpty()) {
+            pad.fromDataURL(signatureData);
+        }
 
         const observer = new ResizeObserver((entries) => {
             const box = entries[0]?.contentRect;
@@ -100,6 +120,9 @@ const DrawSignature = ({ handleSaveSignature }: DrawSignatureProps) => {
         });
         observer.observe(canvas);
         return () => observer.disconnect();
+        // signatureData is read once on mount to seed the canvas; it must not
+        // re-run the effect, or every stroke would reset the pad mid-drawing.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [signatureRef]);
 
     return (

@@ -15,9 +15,16 @@ import { useInvoiceContext } from "@/contexts/InvoiceContext";
 // Types
 import { InvoiceType } from "@/types";
 
-const PdfViewer = () => {
-    const { invoicePdf } = useInvoiceContext();
-
+/**
+ * Owns the full-form subscription.
+ *
+ * Split out of PdfViewer so the watch only exists while the live preview is on
+ * screen. Previously PdfViewer itself subscribed to every field, so while the
+ * generated PDF was showing, each keystroke still re-rendered this subtree —
+ * including the <iframe> in FinalPdf, which has no business re-rendering
+ * because someone edited a field.
+ */
+const LivePreviewWatcher = () => {
     const { control } = useFormContext<InvoiceType>();
 
     /*
@@ -33,13 +40,15 @@ const PdfViewer = () => {
     const formValues = useWatch({ control }) as InvoiceType;
     const [debouncedValues] = useDebounce(formValues, 400);
 
+    return <LivePreview data={debouncedValues} />;
+};
+
+const PdfViewer = () => {
+    const { invoicePdf } = useInvoiceContext();
+
     return (
         <div className="my-3">
-            {invoicePdf.size == 0 ? (
-                <LivePreview data={debouncedValues} />
-            ) : (
-                <FinalPdf />
-            )}
+            {invoicePdf.size == 0 ? <LivePreviewWatcher /> : <FinalPdf />}
         </div>
     );
 };

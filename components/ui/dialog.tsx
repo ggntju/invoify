@@ -19,7 +19,14 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-background/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      /*
+       * No backdrop-blur. A blurred full-viewport overlay has to recomposite
+       * whenever anything behind it repaints, and what sits behind it here is
+       * the live invoice preview, which repaints on every keystroke. That made
+       * every modal in the app feel heavy. A flat translucent scrim reads the
+       * same and costs nothing.
+       */
+      "fixed inset-0 z-50 bg-background/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}

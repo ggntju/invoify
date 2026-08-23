@@ -1,7 +1,5 @@
 import type { Browser } from "puppeteer-core";
 
-// Variables
-import { ENV } from "@/lib/variables";
 
 /**
  * Shared headless-Chromium instance.
@@ -16,8 +14,25 @@ import { ENV } from "@/lib/variables";
  */
 let browserPromise: Promise<Browser> | null = null;
 
+/**
+ * True only on a serverless platform, where the bundled Chromium binary from
+ * @sparticuz/chromium is the right (and only) option.
+ *
+ * This used to test `ENV === "production"`, which is true for *any* production
+ * build — including `next start` on a normal machine, where that Lambda-targeted
+ * binary cannot run at all. That made the production bundle untestable locally,
+ * and would equally have broken a self-hosted deployment.
+ */
+function isServerless(): boolean {
+    return Boolean(
+        process.env.AWS_LAMBDA_FUNCTION_NAME ||
+            process.env.VERCEL ||
+            process.env.NETLIFY
+    );
+}
+
 async function launchBrowser(): Promise<Browser> {
-    if (ENV === "production") {
+    if (isServerless()) {
         const chromium = (await import("@sparticuz/chromium")).default;
         const puppeteer = (await import("puppeteer-core")).default;
 
@@ -30,7 +45,8 @@ async function launchBrowser(): Promise<Browser> {
         });
     }
 
-    // Dev uses the full `puppeteer` package, which ships its own Chromium.
+    // Everywhere else — local dev, `next start`, a self-hosted server, CI —
+    // use the full `puppeteer` package, which ships its own Chromium.
     const puppeteer = (await import("puppeteer")).default;
     return puppeteer.launch({
         args: ["--no-sandbox", "--disable-setuid-sandbox"],

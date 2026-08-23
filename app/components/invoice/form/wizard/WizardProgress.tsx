@@ -41,9 +41,40 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
         formState: { errors },
     } = useFormContext<InvoiceType>();
 
-    // Actual field values, so completeness reflects what the user filled in
-    // rather than merely the absence of validation errors.
-    const values = useWatch({ control }) as InvoiceType;
+    /*
+     * Actual field values, so completeness reflects what the user filled in
+     * rather than merely the absence of validation errors.
+     *
+     * Narrowed from `useWatch({ control })`. The full-form version re-rendered
+     * this component — which every wizard step mounts — on every keystroke in
+     * the invoice, including fields no step's completeness depends on (the
+     * logo, the signature, the theme, the totals). These are the only paths
+     * the predicates below read.
+     */
+    const [
+        sender,
+        receiver,
+        invoiceNumber,
+        invoiceDate,
+        dueDate,
+        currency,
+        items,
+        paymentInformation,
+        paymentTerms,
+    ] = useWatch({
+        control,
+        name: [
+            "sender",
+            "receiver",
+            "details.invoiceNumber",
+            "details.invoiceDate",
+            "details.dueDate",
+            "details.currency",
+            "details.items",
+            "details.paymentInformation",
+            "details.paymentTerms",
+        ],
+    });
 
     const { _t } = useTranslationContext();
 
@@ -54,10 +85,6 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
 
     const allFilled = (...vals: unknown[]) => vals.every(filled);
     const anyFilled = (...vals: unknown[]) => vals.some(filled);
-
-    const sender = values?.sender;
-    const receiver = values?.receiver;
-    const d = values?.details;
 
     const partyFields = (p?: InvoiceType["sender"]) => [
         p?.name,
@@ -70,25 +97,23 @@ const WizardProgress = ({ wizard }: WizardProgressProps) => {
     ];
 
     const step1Fields = [...partyFields(sender), ...partyFields(receiver)];
-    const step2Fields = [
-        d?.invoiceNumber,
-        d?.invoiceDate,
-        d?.dueDate,
-        d?.currency,
-    ];
-    const items = d?.items ?? [];
+    const step2Fields = [invoiceNumber, invoiceDate, dueDate, currency];
+    const lineItems = items ?? [];
     const step3Complete =
-        items.length > 0 &&
-        items.every(
+        lineItems.length > 0 &&
+        lineItems.every(
             (i) =>
                 filled(i?.name) &&
                 Number(i?.quantity) > 0 &&
                 Number(i?.unitPrice) > 0
         );
-    const step3Started = items.some((i) => filled(i?.name));
-    const pay = d?.paymentInformation;
-    const step4Fields = [pay?.bankName, pay?.accountName, pay?.accountNumber];
-    const step5Fields = [d?.paymentTerms];
+    const step3Started = lineItems.some((i) => filled(i?.name));
+    const step4Fields = [
+        paymentInformation?.bankName,
+        paymentInformation?.accountName,
+        paymentInformation?.accountNumber,
+    ];
+    const step5Fields = [paymentTerms];
 
     const step1Valid = !errors.sender && !errors.receiver;
     const step2Valid =

@@ -32,6 +32,13 @@ export const CURRENCIES_API =
 export const LOCAL_STORAGE_INVOICE_DRAFT_KEY = "invoify:invoiceDraft";
 
 /**
+ * Trailing debounce for the draft autosave. Long enough that ordinary typing
+ * never triggers a write, short enough that the "Saved" indicator settles while
+ * the user is still looking at it.
+ */
+export const DRAFT_SAVE_DEBOUNCE_MS = 600;
+
+/**
  * Tailwind
  */
 export const TAILWIND_CDN =

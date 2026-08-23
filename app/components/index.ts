@@ -72,8 +72,15 @@ import SavedInvoicesList from "./modals/invoice/components/SavedInvoicesList";
 // Signature
 import SignatureModal from "./modals/signature/SignatureModal";
 
-// Signature / Tabs
-import DrawSignature from "./modals/signature/tabs/DrawSignature";
+/*
+ * Signature / Tabs
+ *
+ * DrawSignature is deliberately NOT re-exported here. This barrel is imported
+ * by nearly every component, so a static export of the drawing tab pulled
+ * react-signature-canvas and signature_pad into the initial client bundle even
+ * though the canvas only ever renders inside the signature modal. SignatureModal
+ * loads it through next/dynamic from its own path instead.
+ */
 import TypeSignature from "./modals/signature/tabs/TypeSignature";
 import UploadSignature from "./modals/signature/tabs/UploadSignature";
 
@@ -139,7 +146,6 @@ export {
     InvoiceExportModal,
     ImportJsonButton,
     SignatureModal,
-    DrawSignature,
     TypeSignature,
     UploadSignature,
     SignatureColorSelector,

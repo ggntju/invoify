@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 
 // RHF
 import { useFormContext, useWatch } from "react-hook-form";
@@ -112,9 +112,31 @@ const TemplateGallery = () => {
      */
     const [snapshot, setSnapshot] = useState<InvoiceType | null>(null);
 
-    const values = useWatch({ control }) as InvoiceType;
-    const activeId = values?.details?.pdfTemplate ?? DEFAULT_TEMPLATE_ID;
-    const theme = resolveTheme(values?.details?.theme);
+    /*
+     * Narrow subscription. This was `useWatch({ control })` with no name — a
+     * full-form watch that re-rendered the gallery on every keystroke anywhere
+     * in the invoice, to read two fields. The component is permanently mounted
+     * in the details step, so that cost was paid constantly.
+     */
+    const [activeIdRaw, themeRaw] = useWatch({
+        control,
+        name: ["details.pdfTemplate", "details.theme"],
+    });
+
+    const activeId = activeIdRaw ?? DEFAULT_TEMPLATE_ID;
+    const theme = resolveTheme(themeRaw);
+
+    /*
+     * The trigger thumbnail is 64px tall at 0.12 scale — nothing typed into the
+     * form is legible in it. It refreshes when the template or theme changes,
+     * which is all it exists to show, rather than re-rendering a whole invoice
+     * template per character.
+     */
+    const [triggerValues, setTriggerValues] = useState<InvoiceType | null>(null);
+
+    useEffect(() => {
+        setTriggerValues(getValues());
+    }, [activeId, theme.accentColor, theme.fontId, theme.density, getValues]);
 
     const activeName =
         getTemplateEntry(activeId)?.name ??
@@ -159,12 +181,14 @@ const TemplateGallery = () => {
                         className="flex w-full items-center gap-3 rounded-lg border border-border p-2 text-left transition-colors hover:border-primary/60"
                     >
                         <div className="w-24 shrink-0 overflow-hidden rounded border border-border">
-                            <TemplatePreview
-                                values={values}
-                                templateId={activeId}
-                                scale={0.12}
-                                height={64}
-                            />
+                            {triggerValues && (
+                                <TemplatePreview
+                                    values={triggerValues}
+                                    templateId={activeId}
+                                    scale={0.12}
+                                    height={64}
+                                />
+                            )}
                         </div>
                         <span className="min-w-0 flex-1">
                             <span className="block truncate text-sm font-medium">

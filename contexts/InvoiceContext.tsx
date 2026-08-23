@@ -5,7 +5,6 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -34,6 +33,7 @@ import {
   SEND_PDF_API,
   SHORT_DATE_OPTIONS,
   LOCAL_STORAGE_INVOICE_DRAFT_KEY,
+  DRAFT_SAVE_DEBOUNCE_MS,
 } from "@/lib/variables";
 
 // Types
@@ -44,6 +44,10 @@ const defaultInvoiceContext = {
   invoicePdfLoading: false,
   savedInvoices: [] as InvoiceType[],
   pdfUrl: null as string | null,
+  /** Timestamp of the last successful draft write, for the autosave indicator. */
+  draftSavedAt: null as number | null,
+  /** True while edits are sitting in the debounce window, unwritten. */
+  draftPending: false,
   onFormSubmit: (values: InvoiceType) => {},
   newInvoice: () => {},
   generatePdf: async (data: InvoiceType) => {},
@@ -112,26 +116,88 @@ export const InvoiceContextProvider = ({
     }
   }, []);
 
-  // Persist full form state with debounce
+  /**
+   * Draft autosave.
+   *
+   * This used to `JSON.stringify` the entire invoice inside the `watch`
+   * callback — i.e. on every keystroke, synchronously. The invoice carries
+   * `details.invoiceLogo`, a base64 data URL allowed up to 3,000,000
+   * characters, so with a logo uploaded each character typed serialised
+   * megabytes on the main thread. That was the single largest source of the
+   * typing lag, and it was also what made modals feel slow: they open while
+   * the user is mid-interaction, so the two costs landed together.
+   *
+   * Now the latest value is parked in a ref and written on a trailing timer.
+   * The flush also runs when the tab is hidden or unloaded, so nothing is lost
+   * if the user leaves inside the debounce window.
+   */
+  const [draftSavedAt, setDraftSavedAt] = useState<number | null>(null);
+  const [draftPending, setDraftPending] = useState(false);
+  const pendingDraftRef = useRef<unknown>(null);
+
+  const flushDraft = useCallback(() => {
+    if (pendingDraftRef.current === null) return;
+    try {
+      window.localStorage.setItem(
+        LOCAL_STORAGE_INVOICE_DRAFT_KEY,
+        JSON.stringify(pendingDraftRef.current)
+      );
+      setDraftSavedAt(Date.now());
+    } catch {
+      // Quota exceeded or storage disabled — the draft is a convenience, not
+      // a guarantee, so a failure here must not break editing.
+    }
+    pendingDraftRef.current = null;
+    setDraftPending(false);
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const subscription = watch((value) => {
-      try {
-        window.localStorage.setItem(
-          LOCAL_STORAGE_INVOICE_DRAFT_KEY,
-          JSON.stringify(value)
-        );
-      } catch {}
-    });
-    return () => subscription.unsubscribe();
-  }, [watch]);
 
-  // Get pdf url from blob
-  const pdfUrl = useMemo(() => {
-    if (invoicePdf.size > 0) {
-      return window.URL.createObjectURL(invoicePdf);
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const subscription = watch((value) => {
+      pendingDraftRef.current = value;
+      setDraftPending(true);
+
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(flushDraft, DRAFT_SAVE_DEBOUNCE_MS);
+    });
+
+    // `pagehide` rather than `unload`, which is ignored on mobile Safari and
+    // blocks the back/forward cache everywhere else.
+    const onHide = () => flushDraft();
+    window.addEventListener("pagehide", onHide);
+    document.addEventListener("visibilitychange", onHide);
+
+    return () => {
+      subscription.unsubscribe();
+      if (timer) clearTimeout(timer);
+      window.removeEventListener("pagehide", onHide);
+      document.removeEventListener("visibilitychange", onHide);
+      flushDraft();
+    };
+  }, [watch, flushDraft]);
+
+  /*
+   * Object URL for the generated PDF.
+   *
+   * This was a `useMemo` that created a URL and never revoked it, so every
+   * generation leaked the whole PDF for the lifetime of the page. Held in
+   * state instead, with the previous URL revoked on replace and on unmount.
+   */
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (invoicePdf.size === 0) {
+      setPdfUrl(null);
+      return;
     }
-    return null;
+
+    const url = window.URL.createObjectURL(invoicePdf);
+    setPdfUrl(url);
+
+    return () => window.URL.revokeObjectURL(url);
   }, [invoicePdf]);
 
   /**
@@ -234,9 +300,11 @@ export const InvoiceContextProvider = ({
    * Generates a preview of a PDF file and opens it in a new browser tab.
    */
   const previewPdfInTab = () => {
-    if (invoicePdf) {
-      const url = window.URL.createObjectURL(invoicePdf);
-      window.open(url, "_blank");
+    // Reuses the managed URL rather than minting a second one. The previous
+    // version created a fresh object URL per click and never revoked it —
+    // revoking here is not an option either, since the new tab still needs it.
+    if (pdfUrl) {
+      window.open(pdfUrl, "_blank");
     }
   };
 
@@ -267,8 +335,7 @@ export const InvoiceContextProvider = ({
    * Prints a PDF file.
    */
   const printPdf = () => {
-    if (invoicePdf) {
-      const pdfUrl = URL.createObjectURL(invoicePdf);
+    if (pdfUrl) {
       const printWindow = window.open(pdfUrl, "_blank");
       if (printWindow) {
         printWindow.onload = () => {
@@ -451,6 +518,8 @@ export const InvoiceContextProvider = ({
         invoicePdfLoading,
         savedInvoices,
         pdfUrl,
+        draftSavedAt,
+        draftPending,
         onFormSubmit,
         newInvoice,
         generatePdf,

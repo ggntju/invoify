@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+
+// Next
+import dynamic from "next/dynamic";
 
 // RHF
 import { useFormContext, useWatch } from "react-hook-form";
@@ -17,11 +20,23 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 
 // Components
-import {
-    DrawSignature,
-    TypeSignature,
-    UploadSignature,
-} from "@/app/components";
+import { TypeSignature, UploadSignature } from "@/app/components";
+
+/*
+ * Imported from its own path rather than the component barrel, and lazily, so
+ * react-signature-canvas + signature_pad load with the modal instead of sitting
+ * in the initial bundle. ssr:false because the canvas has no server rendering
+ * to do — it measures a live DOM node.
+ */
+const DrawSignature = dynamic(
+    () => import("./tabs/DrawSignature"),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="mx-auto h-[12rem] w-full max-w-[600px] animate-pulse rounded-[10px] bg-muted sm:h-[15rem]" />
+        ),
+    }
+);
 
 // Contexts
 import { useTranslationContext } from "@/contexts/TranslationContext";
@@ -45,7 +60,6 @@ const SignatureModal = () => {
         typedSignature,
         selectedFont,
         uploadSignatureImg,
-        signatureRef,
     } = useSignatureContext();
 
     const { _t } = useTranslationContext();
@@ -103,19 +117,13 @@ const SignatureModal = () => {
         }
     };
 
-    // When opening modal or switching tabs, apply signatureData to the canvas when it's available
-    // Persists the signature
-    useEffect(() => {
-        if (open && signatureData) {
-            // Access the canvas element and draw the signature
-            setTimeout(() => {
-                const canvas = signatureRef?.current;
-                if (canvas) {
-                    canvas.fromDataURL(signatureData);
-                }
-            }, 50);
-        }
-    }, [open, tab]);
+    /*
+     * Restoring the existing signature onto the canvas used to live here, as a
+     * `setTimeout(…, 50)` — i.e. a base64 PNG decode landing 50ms into the
+     * dialog's 200ms open animation, every time the modal opened or a tab was
+     * switched. DrawSignature now does it itself, once, at the point the canvas
+     * has been sized. See the comment there.
+     */
 
     return (
         <>
@@ -180,20 +188,31 @@ const SignatureModal = () => {
                             </TabsTrigger>
                         </TabsList>
 
-                        {/* DRAW */}
-                        <DrawSignature
-                            handleSaveSignature={handleSaveSignature}
-                        />
+                        {/*
+                          * Only the active tab is rendered. Radix already keeps
+                          * inactive TabsContent out of the DOM, but the tab
+                          * components themselves still ran — mounting effects,
+                          * subscribing to context and, for the draw tab,
+                          * requesting its chunk — for panels the user may never
+                          * open.
+                          */}
+                        {tab === SignatureTabs.DRAW && (
+                            <DrawSignature
+                                handleSaveSignature={handleSaveSignature}
+                            />
+                        )}
 
-                        {/* TYPE */}
-                        <TypeSignature
-                            handleSaveSignature={handleSaveSignature}
-                        />
+                        {tab === SignatureTabs.TYPE && (
+                            <TypeSignature
+                                handleSaveSignature={handleSaveSignature}
+                            />
+                        )}
 
-                        {/* UPLOAD */}
-                        <UploadSignature
-                            handleSaveSignature={handleSaveSignature}
-                        />
+                        {tab === SignatureTabs.UPLOAD && (
+                            <UploadSignature
+                                handleSaveSignature={handleSaveSignature}
+                            />
+                        )}
                     </Tabs>
                 </DialogContent>
             </Dialog>
