@@ -3,6 +3,7 @@
    ========================= */
 import BaseNavbar from "./layout/BaseNavbar";
 import BaseFooter from "./layout/BaseFooter";
+import MobileActionBar from "./layout/MobileActionBar";
 
 /* =========================
    * Invoice
@@ -18,7 +19,10 @@ import InvoiceActions from "./invoice/InvoiceActions";
 // Form components
 import SingleItem from "./invoice/form/SingleItem";
 import Charges from "./invoice/form/Charges";
-import TemplateSelector from "./invoice/form/TemplateSelector";
+import PartyPicker from "./invoice/form/PartyPicker";
+import PaymentTermPresets from "./invoice/form/PaymentTermPresets";
+import AutosaveIndicator from "./invoice/form/AutosaveIndicator";
+import TemplateGallery from "./invoice/form/TemplateGallery";
 import VoiceInput from "./invoice/form/VoiceInput";
 
 // Form / Wizard
@@ -39,6 +43,7 @@ import ImportJsonButton from "./invoice/form/sections/ImportJsonButton";
 import PdfViewer from "./invoice/actions/PdfViewer";
 import LivePreview from "./invoice/actions/LivePreview";
 import FinalPdf from "./invoice/actions/FinalPdf";
+import MobilePreviewSheet from "./invoice/actions/MobilePreviewSheet";
 
 // * Reusable components
 // Form fields
@@ -70,8 +75,15 @@ import SavedInvoicesList from "./modals/invoice/components/SavedInvoicesList";
 // Signature
 import SignatureModal from "./modals/signature/SignatureModal";
 
-// Signature / Tabs
-import DrawSignature from "./modals/signature/tabs/DrawSignature";
+/*
+ * Signature / Tabs
+ *
+ * DrawSignature is deliberately NOT re-exported here. This barrel is imported
+ * by nearly every component, so a static export of the drawing tab pulled
+ * react-signature-canvas and signature_pad into the initial client bundle even
+ * though the canvas only ever renders inside the signature modal. SignatureModal
+ * loads it through next/dynamic from its own path instead.
+ */
 import TypeSignature from "./modals/signature/tabs/TypeSignature";
 import UploadSignature from "./modals/signature/tabs/UploadSignature";
 
@@ -87,9 +99,6 @@ import NewInvoiceAlert from "./modals/alerts/NewInvoiceAlert";
    ========================= */
 // Invoice templates
 import DynamicInvoiceTemplate from "./templates/invoice-pdf/DynamicInvoiceTemplate";
-import InvoiceLayout from "./templates/invoice-pdf/InvoiceLayout";
-import InvoiceTemplate1 from "./templates/invoice-pdf/InvoiceTemplate1";
-import InvoiceTemplate2 from "./templates/invoice-pdf/InvoiceTemplate2";
 
 // Email templates
 import SendPdfEmail from "./templates/email/SendPdfEmail";
@@ -102,6 +111,7 @@ import DevDebug from "./dev/DevDebug";
 export {
     BaseNavbar,
     BaseFooter,
+    MobileActionBar,
     InvoiceMain,
     InvoiceForm,
     InvoiceActions,
@@ -111,7 +121,10 @@ export {
     Items,
     SingleItem,
     Charges,
-    TemplateSelector,
+    PartyPicker,
+    PaymentTermPresets,
+    AutosaveIndicator,
+    TemplateGallery,
     VoiceInput,
     WizardNavigation,
     WizardStep,
@@ -123,6 +136,7 @@ export {
     PdfViewer,
     LivePreview,
     FinalPdf,
+    MobilePreviewSheet,
     FormInput,
     FormTextarea,
     DatePickerFormField,
@@ -138,16 +152,12 @@ export {
     InvoiceExportModal,
     ImportJsonButton,
     SignatureModal,
-    DrawSignature,
     TypeSignature,
     UploadSignature,
     SignatureColorSelector,
     SignatureFontSelector,
     NewInvoiceAlert,
     DynamicInvoiceTemplate,
-    InvoiceLayout,
-    InvoiceTemplate1,
-    InvoiceTemplate2,
     SendPdfEmail,
     DevDebug,
 };

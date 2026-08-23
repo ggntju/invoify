@@ -43,40 +43,39 @@ const InvoiceExportModal = ({ children }: InvoiceExportModalType) => {
 
                 {/* Export options here */}
 
-                <div className="flex flex-wrap flex-row gap-5">
+                {/*
+                 * XLSX is deliberately absent: the server-side case for it has
+                 * been commented out, so the button only ever produced an
+                 * error. See the note in exportInvoiceService.
+                 */}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <BaseButton
                         tooltipLabel="Export Invoice as JSON"
                         variant="outline"
+                        className="w-full"
                         disabled={invoicePdfLoading}
                         onClick={() => exportInvoiceAs(ExportTypes.JSON)}
                     >
-                        Export as JSON
+                        JSON
                     </BaseButton>
                     <BaseButton
                         tooltipLabel="Export Invoice as CSV"
                         variant="outline"
+                        className="w-full"
                         disabled={invoicePdfLoading}
                         onClick={() => exportInvoiceAs(ExportTypes.CSV)}
                     >
-                        Export as CSV
+                        CSV
                     </BaseButton>
 
                     <BaseButton
                         tooltipLabel="Export Invoice as XML"
                         variant="outline"
+                        className="w-full"
                         disabled={invoicePdfLoading}
                         onClick={() => exportInvoiceAs(ExportTypes.XML)}
                     >
-                        Export as XML
-                    </BaseButton>
-
-                    <BaseButton
-                        tooltipLabel="Export Invoice as XLSX"
-                        variant="outline"
-                        disabled={invoicePdfLoading}
-                        onClick={() => exportInvoiceAs(ExportTypes.XLSX)}
-                    >
-                        Export as XLSX
+                        XML
                     </BaseButton>
                 </div>
             </DialogContent>

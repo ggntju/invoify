@@ -1,10 +1,25 @@
 import { z } from "zod";
 
-// Helpers
-import { formatNumberWithCommas } from "@/lib/helpers";
-
 // Variables
-import { DATE_OPTIONS } from "@/lib/variables";
+import { DATE_OPTIONS, SIGNATURE_FONTS } from "@/lib/variables";
+
+/**
+ * Roughly 2MB of binary once base64-decoded — generous for a logo, but bounded.
+ */
+const MAX_LOGO_CHARS = 3_000_000;
+
+/**
+ * The logo is rendered as `<img src>` inside the HTML handed to Puppeteer, so
+ * an arbitrary URL here means the server fetches it — a straightforward SSRF
+ * into cloud metadata endpoints or internal services. The app only ever
+ * produces base64 data URLs (see FormFile), so anything else is rejected.
+ */
+const imageDataUrl = z
+    .string()
+    .max(MAX_LOGO_CHARS, { message: "Logo is too large" })
+    .refine((value) => value === "" || /^data:image\/[a-z0-9.+-]+;base64,/i.test(value), {
+        message: "Logo must be an embedded image",
+    });
 
 // TODO: Refactor some of the validators. Ex: name and zipCode or address and country have same rules
 // Field Validators
@@ -41,9 +56,17 @@ const fieldValidators = {
             message: "Must be between 1 and 50 characters",
         }),
 
-    // Dates
+    /*
+     * Dates.
+     *
+     * On the client react-hook-form holds real Date objects, but JSON has no
+     * date type — over the wire these arrive as ISO strings. A bare `z.date()`
+     * therefore passes in the browser and fails on the server, so accept both
+     * and normalise. The `.pipe` keeps the existing display-string transform.
+     */
     date: z
-        .date()
+        .union([z.date(), z.string(), z.number()])
+        .pipe(z.coerce.date())
         .transform((date) =>
             new Date(date).toLocaleDateString("en-US", DATE_OPTIONS)
         ),
@@ -70,15 +93,6 @@ const fieldValidators = {
     nonNegativeNumber: z.coerce.number().nonnegative({
         message: "Must be a positive number",
     }),
-    // ! This is unused
-    numWithCommas: z.coerce
-        .number()
-        .nonnegative({
-            message: "Must be a positive number",
-        })
-        .transform((value) => {
-            return formatNumberWithCommas(value);
-        }),
 };
 
 const CustomInputSchema = z.object({
@@ -140,11 +154,35 @@ const ShippingDetailsSchema = z.object({
 
 const SignatureSchema = z.object({
     data: fieldValidators.string,
-    fontFamily: fieldValidators.string.optional(),
+    // Interpolated into a Google Fonts URL during PDF generation, so it is
+    // restricted to the fonts the UI actually offers.
+    fontFamily: z
+        .enum(SIGNATURE_FONTS.map((font) => font.name) as [string, ...string[]])
+        .optional(),
+});
+
+/**
+ * Presentation options. Every field optional with a default so existing saved
+ * invoices keep validating.
+ */
+const ThemeSchema = z.object({
+    // Restricted to a hex literal: the value is interpolated into inline
+    // styles in the templates, including in the PDF.
+    accentColor: z
+        .string()
+        .regex(/^#[0-9a-fA-F]{6}$/, { message: "Must be a hex colour" })
+        .optional(),
+    fontId: z
+        .enum(["outfit", "plexSans", "sourceSerif", "plexMono"])
+        .optional(),
+    // "spacious" is new; the two older values still validate, so invoices
+    // saved before it existed keep loading.
+    density: z.enum(["compact", "comfortable", "spacious"]).optional(),
 });
 
 const InvoiceDetailsSchema = z.object({
-    invoiceLogo: fieldValidators.stringOptional,
+    theme: ThemeSchema.optional(),
+    invoiceLogo: imageDataUrl.optional(),
     invoiceNumber: fieldValidators.stringMin1,
     invoiceDate: fieldValidators.date,
     dueDate: fieldValidators.date,

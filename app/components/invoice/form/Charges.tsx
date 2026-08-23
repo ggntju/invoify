@@ -4,11 +4,10 @@
 import { useFormContext } from "react-hook-form";
 
 // ShadCn
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 // Components
-import { ChargeInput } from "@/app/components";
+import { BaseButton, ChargeInput } from "@/app/components";
 
 // Contexts
 import { useChargesContext } from "@/contexts/ChargesContext";
@@ -16,6 +15,9 @@ import { useTranslationContext } from "@/contexts/TranslationContext";
 
 // Helpers
 import { formatNumberWithCommas } from "@/lib/helpers";
+
+// Icons
+import { Plus, X } from "lucide-react";
 
 // Types
 import { InvoiceType } from "@/types";
@@ -47,140 +49,134 @@ const Charges = () => {
         totalAmount,
     } = useChargesContext();
 
-    const switchAmountType = (
-        type: string,
-        setType: (type: string) => void
-    ) => {
+    const switchAmountType = (type: string, setType: (type: string) => void) => {
         if (type == "amount") {
             setType("percentage");
         } else {
             setType("amount");
         }
     };
+
+    /*
+     * Progressive disclosure.
+     *
+     * Discount, tax and shipping used to be three always-visible switches
+     * sitting above the totals, so every invoice paid the visual cost of three
+     * options most invoices never use. They are now "+ Add …" actions that
+     * reveal the input, and each revealed row can be removed again.
+     */
+    const optional = [
+        {
+            key: "discount",
+            label: _t("form.steps.summary.discount"),
+            on: discountSwitch,
+            setOn: setDiscountSwitch,
+            name: "details.discountDetails.amount",
+            type: discountType,
+            setType: setDiscountType,
+        },
+        {
+            key: "tax",
+            label: _t("form.steps.summary.tax"),
+            on: taxSwitch,
+            setOn: setTaxSwitch,
+            name: "details.taxDetails.amount",
+            type: taxType,
+            setType: setTaxType,
+        },
+        {
+            key: "shipping",
+            label: _t("form.steps.summary.shipping"),
+            on: shippingSwitch,
+            setOn: setShippingSwitch,
+            name: "details.shippingDetails.cost",
+            type: shippingType,
+            setType: setShippingType,
+        },
+    ] as const;
+
+    const hidden = optional.filter((o) => !o.on);
+
     return (
-        <>
-            {/* Charges */}
-            <div className="flex flex-col gap-3 min-w-[20rem]">
-                {/* Switches */}
-                <div className="flex justify-evenly pb-6">
-                    <div>
-                        <Label>{_t("form.steps.summary.discount")}</Label>
+        <div className="flex w-full min-w-0 flex-col gap-3">
+            <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                    {_t("form.steps.summary.subTotal")}
+                </span>
+                <span className="tabular-nums">
+                    {formatNumberWithCommas(subTotal)} {currency}
+                </span>
+            </div>
 
-                        <div>
-                            <div>
-                                <Switch
-                                    checked={discountSwitch}
-                                    onCheckedChange={(value) => {
-                                        setDiscountSwitch(value);
-                                    }}
-                                />
-                            </div>
+            {optional
+                .filter((o) => o.on)
+                .map((o) => (
+                    <div key={o.key} className="flex items-center gap-1">
+                        <div className="min-w-0 flex-1">
+                            <ChargeInput
+                                label={o.label}
+                                name={o.name}
+                                switchAmountType={switchAmountType}
+                                type={o.type}
+                                setType={o.setType}
+                                currency={currency}
+                            />
                         </div>
+                        <BaseButton
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                            aria-label={`${_t("form.steps.summary.remove")} ${o.label}`}
+                            onClick={() => o.setOn(false)}
+                        >
+                            <X className="h-3.5 w-3.5" />
+                        </BaseButton>
                     </div>
+                ))}
 
-                    <div>
-                        <Label>{_t("form.steps.summary.tax")}</Label>
-
-                        <div>
-                            <div>
-                                <Switch
-                                    checked={taxSwitch}
-                                    onCheckedChange={(value) => {
-                                        setTaxSwitch(value);
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <Label>{_t("form.steps.summary.shipping")}</Label>
-
-                        <div>
-                            <div>
-                                <Switch
-                                    checked={shippingSwitch}
-                                    onCheckedChange={(value) => {
-                                        setShippingSwitch(value);
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
+            {hidden.length > 0 && (
+                <div className="flex flex-wrap gap-x-4 gap-y-2 py-1">
+                    {hidden.map((o) => (
+                        <button
+                            key={o.key}
+                            type="button"
+                            onClick={() => o.setOn(true)}
+                            className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-opacity hover:opacity-80"
+                        >
+                            <Plus className="h-3.5 w-3.5" />
+                            {o.label}
+                        </button>
+                    ))}
                 </div>
+            )}
 
-                <div className="flex flex-col justify-center px-5 gap-y-3">
-                    <div className="flex justify-between items-center">
-                        <div>{_t("form.steps.summary.subTotal")}</div>
-
-                        <div>
-                            {formatNumberWithCommas(subTotal)} {currency}
-                        </div>
-                    </div>
-                    {discountSwitch && (
-                        <ChargeInput
-                            label={_t("form.steps.summary.discount")}
-                            name="details.discountDetails.amount"
-                            switchAmountType={switchAmountType}
-                            type={discountType}
-                            setType={setDiscountType}
-                            currency={currency}
-                        />
+            <div className="flex items-baseline justify-between border-t border-border pt-3">
+                <span className="font-medium">
+                    {_t("form.steps.summary.totalAmount")}
+                </span>
+                <div className="text-end">
+                    <p className="text-lg font-semibold tabular-nums">
+                        {formatNumberWithCommas(totalAmount)} {currency}
+                    </p>
+                    {errors.details?.totalAmount?.message && (
+                        <small className="text-sm font-medium text-destructive">
+                            {errors.details.totalAmount.message}
+                        </small>
                     )}
-
-                    {taxSwitch && (
-                        <ChargeInput
-                            label={_t("form.steps.summary.tax")}
-                            name="details.taxDetails.amount"
-                            switchAmountType={switchAmountType}
-                            type={taxType}
-                            setType={setTaxType}
-                            currency={currency}
-                        />
-                    )}
-
-                    {shippingSwitch && (
-                        <ChargeInput
-                            label={_t("form.steps.summary.shipping")}
-                            name="details.shippingDetails.cost"
-                            switchAmountType={switchAmountType}
-                            type={shippingType}
-                            setType={setShippingType}
-                            currency={currency}
-                        />
-                    )}
-
-                    <div className="flex justify-between items-center">
-                        <div>{_t("form.steps.summary.totalAmount")}</div>
-
-                        <div className="">
-                            <p>
-                                {formatNumberWithCommas(totalAmount)} {currency}
-                            </p>
-
-                            <small className="text-sm font-medium text-destructive">
-                                {errors.details?.totalAmount?.message}
-                            </small>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                        <p>{_t("form.steps.summary.includeTotalInWords")}</p>{" "}
-                        <p>
-                            {totalInWordsSwitch
-                                ? _t("form.steps.summary.yes")
-                                : _t("form.steps.summary.no")}
-                        </p>
-                        <Switch
-                            checked={totalInWordsSwitch}
-                            onCheckedChange={(value) => {
-                                setTotalInWordsSwitch(value);
-                            }}
-                        />
-                    </div>
                 </div>
             </div>
-        </>
+
+            <div className="flex items-center justify-between gap-3 pt-1">
+                <span className="text-sm text-muted-foreground">
+                    {_t("form.steps.summary.includeTotalInWords")}
+                </span>
+                <Switch
+                    checked={totalInWordsSwitch}
+                    onCheckedChange={setTotalInWordsSwitch}
+                    aria-label={_t("form.steps.summary.includeTotalInWords")}
+                />
+            </div>
+        </div>
     );
 };
 

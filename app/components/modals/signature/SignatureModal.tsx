@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+
+// Next
+import dynamic from "next/dynamic";
 
 // RHF
 import { useFormContext, useWatch } from "react-hook-form";
@@ -17,11 +20,23 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 
 // Components
-import {
-    DrawSignature,
-    TypeSignature,
-    UploadSignature,
-} from "@/app/components";
+import { TypeSignature, UploadSignature } from "@/app/components";
+
+/*
+ * Imported from its own path rather than the component barrel, and lazily, so
+ * react-signature-canvas + signature_pad load with the modal instead of sitting
+ * in the initial bundle. ssr:false because the canvas has no server rendering
+ * to do — it measures a live DOM node.
+ */
+const DrawSignature = dynamic(
+    () => import("./tabs/DrawSignature"),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="mx-auto h-[12rem] w-full max-w-[600px] animate-pulse rounded-[10px] bg-muted sm:h-[15rem]" />
+        ),
+    }
+);
 
 // Contexts
 import { useTranslationContext } from "@/contexts/TranslationContext";
@@ -36,9 +51,7 @@ import { isDataUrl } from "@/lib/helpers";
 // Types
 import { SignatureTabs } from "@/types";
 
-type SignatureModalProps = {};
-
-const SignatureModal = ({}: SignatureModalProps) => {
+const SignatureModal = () => {
     const { setValue } = useFormContext();
 
     const {
@@ -47,7 +60,6 @@ const SignatureModal = ({}: SignatureModalProps) => {
         typedSignature,
         selectedFont,
         uploadSignatureImg,
-        signatureRef,
     } = useSignatureContext();
 
     const { _t } = useTranslationContext();
@@ -105,39 +117,35 @@ const SignatureModal = ({}: SignatureModalProps) => {
         }
     };
 
-    // When opening modal or switching tabs, apply signatureData to the canvas when it's available
-    // Persists the signature
-    useEffect(() => {
-        if (open && signatureData) {
-            // Access the canvas element and draw the signature
-            setTimeout(() => {
-                const canvas = signatureRef?.current;
-                if (canvas) {
-                    canvas.fromDataURL(signatureData);
-                }
-            }, 50);
-        }
-    }, [open, tab]);
+    /*
+     * Restoring the existing signature onto the canvas used to live here, as a
+     * `setTimeout(…, 50)` — i.e. a base64 PNG decode landing 50ms into the
+     * dialog's 200ms open animation, every time the modal opened or a tab was
+     * switched. DrawSignature now does it itself, once, at the point the canvas
+     * has been sized. See the comment there.
+     */
 
     return (
         <>
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger className="flex justify-start">
-                    <div>
+                <DialogTrigger className="flex w-full justify-start">
+                    {/* max-w rather than a fixed 300px, so the preview cannot
+                        overflow its column on a narrow screen */}
+                    <div className="w-full max-w-[300px] min-w-0">
                         <Label>
                             {_t("form.steps.summary.signature.heading")}
                         </Label>
 
                         {signature && isDataUrl(signature) ? (
                             <img
-                                className="border border-black rounded-md hover:border-blue-500 bg-white"
+                                className="w-full rounded-md border border-border bg-white transition-colors hover:border-primary"
                                 src={signature}
-                                width={300}
-                                alt=""
+                                alt={_t("form.steps.summary.signature.heading")}
                             />
                         ) : signature && typedSignature ? (
-                            <div className="flex justify-center items-center w-[300px]">
+                            <div className="flex h-[155px] w-full items-center justify-center overflow-hidden">
                                 <p
+                                    className="truncate"
                                     style={{
                                         fontFamily: selectedFont.variable,
                                         fontSize: 55,
@@ -147,14 +155,9 @@ const SignatureModal = ({}: SignatureModalProps) => {
                                 </p>
                             </div>
                         ) : (
-                            <div
-                                style={{
-                                    width: "300px",
-                                }}
-                                className="flex flex-col justify-center items-center h-[155px] rounded-md bg-gray-100 dark:bg-slate-800 border border-black dark:border-white hover:border-blue-500"
-                            >
-                                <FileSignature />
-                                <Label>
+                            <div className="flex h-[155px] w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed border-border bg-muted/50 text-muted-foreground transition-colors hover:border-primary hover:text-foreground">
+                                <FileSignature className="h-5 w-5" />
+                                <Label className="cursor-pointer text-xs">
                                     {_t(
                                         "form.steps.summary.signature.placeholder"
                                     )}
@@ -185,20 +188,31 @@ const SignatureModal = ({}: SignatureModalProps) => {
                             </TabsTrigger>
                         </TabsList>
 
-                        {/* DRAW */}
-                        <DrawSignature
-                            handleSaveSignature={handleSaveSignature}
-                        />
+                        {/*
+                          * Only the active tab is rendered. Radix already keeps
+                          * inactive TabsContent out of the DOM, but the tab
+                          * components themselves still ran — mounting effects,
+                          * subscribing to context and, for the draw tab,
+                          * requesting its chunk — for panels the user may never
+                          * open.
+                          */}
+                        {tab === SignatureTabs.DRAW && (
+                            <DrawSignature
+                                handleSaveSignature={handleSaveSignature}
+                            />
+                        )}
 
-                        {/* TYPE */}
-                        <TypeSignature
-                            handleSaveSignature={handleSaveSignature}
-                        />
+                        {tab === SignatureTabs.TYPE && (
+                            <TypeSignature
+                                handleSaveSignature={handleSaveSignature}
+                            />
+                        )}
 
-                        {/* UPLOAD */}
-                        <UploadSignature
-                            handleSaveSignature={handleSaveSignature}
-                        />
+                        {tab === SignatureTabs.UPLOAD && (
+                            <UploadSignature
+                                handleSaveSignature={handleSaveSignature}
+                            />
+                        )}
                     </Tabs>
                 </DialogContent>
             </Dialog>

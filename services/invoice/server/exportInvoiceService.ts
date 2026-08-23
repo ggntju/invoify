@@ -6,11 +6,9 @@ import { AsyncParser } from "@json2csv/node";
 // XML2JS
 import { Builder } from "xml2js";
 
-// XLSX
-import XLSX from "xlsx";
-
-// Helpers
-import { flattenObject } from "@/lib/helpers";
+// Validation
+import { InvoiceSchema } from "@/lib/schemas";
+import { parseJsonBody } from "@/lib/server/validateRequest";
 
 // Types
 import { ExportTypes } from "@/types";
@@ -22,12 +20,21 @@ import { ExportTypes } from "@/types";
  * @returns {NextResponse} A response object containing the exported data in the requested format.
  */
 export async function exportInvoiceService(req: NextRequest) {
-    const body = await req.json();
     const format = req.nextUrl.searchParams.get("format");
+
+    /*
+     * The parsed body is handed to xml2js and json2csv, both of which walk the
+     * whole structure. Validating first means they only ever see an
+     * invoice-shaped object, rather than arbitrary deeply-nested JSON.
+     */
+    const parsed = await parseJsonBody(req, InvoiceSchema);
+    if (!parsed.ok) return parsed.response;
+
+    const body = parsed.data;
 
     try {
         switch (format) {
-            case ExportTypes.JSON:
+            case ExportTypes.JSON: {
                 const jsonData = JSON.stringify(body);
                 return new NextResponse(jsonData, {
                     headers: {
@@ -37,7 +44,8 @@ export async function exportInvoiceService(req: NextRequest) {
                     },
                     status: 200,
                 });
-            case ExportTypes.CSV:
+            }
+            case ExportTypes.CSV: {
                 //? Can pass specific fields to async parser. Empty = All
                 const parser = new AsyncParser();
                 const csv = await parser.parse(body).promise();
@@ -48,7 +56,8 @@ export async function exportInvoiceService(req: NextRequest) {
                             "attachment; filename=invoice.csv",
                     },
                 });
-            case ExportTypes.XML:
+            }
+            case ExportTypes.XML: {
                 // Convert JSON to XML
                 const builder = new Builder();
                 const xml = builder.buildObject(body);
@@ -59,38 +68,33 @@ export async function exportInvoiceService(req: NextRequest) {
                             "attachment; filename=invoice.xml",
                     },
                 });
-            // case ExportTypes.XLSX:
-            //     const flattenedData = flattenObject(body);
-
-            //     // Create a new worksheet and add the data
-            //     const worksheet = XLSX.utils.json_to_sheet([flattenedData]);
-            //     const workbook = XLSX.utils.book_new();
-            //     XLSX.utils.book_append_sheet(
-            //         workbook,
-            //         worksheet,
-            //         "invoice-worksheet"
-            //     );
-            //     // Generate the XLSX file as a buffer
-            //     const buffer = XLSX.write(workbook, {
-            //         bookType: "xlsx",
-            //         type: "buffer",
-            //     });
-
-            //     return new NextResponse(buffer, {
-            //         headers: {
-            //             "Content-Type":
-            //                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            //             "Content-Disposition":
-            //                 "attachment; filename=invoice.xlsx",
-            //         },
-            //     });
+            }
+            /*
+             * ExportTypes.XLSX is intentionally unimplemented. The original
+             * case was commented out, so the UI's "Export as XLSX" button only
+             * ever errored; that button has been removed rather than left
+             * broken. Restoring it needs a spreadsheet library — note the
+             * `xlsx` package was dropped here because the 0.18.5 line on npm
+             * carries unpatched advisories and SheetJS now publishes from its
+             * own registry.
+             */
+            default:
+                /*
+                 * Previously absent: an unknown format fell out of the switch
+                 * and returned undefined, which Next surfaces as an opaque
+                 * "no response returned" 500 rather than a usable error.
+                 */
+                return NextResponse.json(
+                    { error: `Unsupported export format: ${format ?? "none"}` },
+                    { status: 400 }
+                );
         }
     } catch (error) {
-        console.error(error);
+        console.error("Export error:", error);
 
-        // Return an error response
-        return new Response(`Error exporting: \n${error}`, {
-            status: 500,
-        });
+        return NextResponse.json(
+            { error: "Failed to export invoice" },
+            { status: 500 }
+        );
     }
 }

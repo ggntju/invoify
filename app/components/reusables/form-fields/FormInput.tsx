@@ -13,6 +13,13 @@ import {
 } from "@/components/ui/form";
 import { Input, InputProps } from "@/components/ui/input";
 
+// Utils
+import { cn } from "@/lib/utils";
+
+// Styles
+import { fieldControl, fieldLabel, fieldRow } from "./fieldStyles";
+
+
 type FormInputProps = {
     name: string;
     label?: string;
@@ -27,6 +34,7 @@ const FormInput = ({
     labelHelper,
     placeholder,
     vertical = false,
+    className,
     ...props
 }: FormInputProps) => {
     const { control } = useFormContext();
@@ -36,7 +44,9 @@ const FormInput = ({
             control={control}
             name={name}
             render={({ field }) => (
-                <FormItem>
+                // Fills its container; the parent grid/flex cell owns the
+                // width rather than a hardcoded one here.
+                <FormItem className="w-full min-w-0">
                     {label && <FormLabel>{`${label}:`}</FormLabel>}
 
                     {labelHelper && (
@@ -47,7 +57,7 @@ const FormInput = ({
                         <Input
                             {...field}
                             placeholder={placeholder}
-                            className="w-[13rem]"
+                            className={cn("w-full", className)}
                             {...props}
                         />
                     </FormControl>
@@ -63,18 +73,22 @@ const FormInput = ({
             name={name}
             render={({ field }) => (
                 <FormItem>
-                    <div className="flex w-full gap-5 items-center text-sm">
-                        {label && <FormLabel className="flex-1">{`${label}:`}</FormLabel>}
+                    <div className={fieldRow}>
+                        {label && (
+                            <FormLabel
+                                className={fieldLabel}
+                            >{`${label}:`}</FormLabel>
+                        )}
                         {labelHelper && (
                             <span className="text-xs"> {labelHelper}</span>
                         )}
 
-                        <div className="flex-1">
+                        <div className={fieldControl}>
                             <FormControl>
                                 <Input
                                     {...field}
                                     placeholder={placeholder}
-                                    className="w-[13rem]"
+                                    className={cn("w-full", className)}
                                     {...props}
                                 />
                             </FormControl>

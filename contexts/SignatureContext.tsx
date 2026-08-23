@@ -13,8 +13,14 @@ import React, {
 // RHF
 import { useFormContext, useWatch } from "react-hook-form";
 
-// Signature Canvas
-import SignatureCanvas from "react-signature-canvas";
+/*
+ * Type-only. This was a value import, which pulled react-signature-canvas and
+ * its signature_pad dependency into the initial client bundle — this context is
+ * mounted by InvoiceSummary, which is always in the form tree. The canvas is
+ * only ever *rendered* inside the signature modal, so the implementation now
+ * loads with that modal's chunk (see DrawSignature).
+ */
+import type SignatureCanvas from "react-signature-canvas";
 
 // Variables
 import { SIGNATURE_COLORS, SIGNATURE_FONTS } from "@/lib/variables";
@@ -84,20 +90,24 @@ export const SignatureContextProvider = ({
      *
      * @param {string} color - Color to be selected as string. Ex: "red"
      */
-    const handleColorButtonClick = (color: string) => {
+    const handleColorButtonClick = useCallback((color: string) => {
         setSelectedColor(color);
-    };
+    }, []);
 
     /**
-     * Clears drawn signature canvas
+     * Clears drawn signature canvas.
+     *
+     * Note the field path: this used to write `setValue("details.signature", "")`,
+     * replacing the whole `{ data, fontFamily }` object with a bare string and
+     * putting form state into a shape the schema rejects. Only `data` is cleared.
      */
     const clearSignature = useCallback(() => {
         if (signatureRef.current) {
             signatureRef.current.clear();
             setSignatureData("");
-            setValue("details.signature", "");
+            setValue("details.signature.data", "");
         }
-    }, []);
+    }, [setValue]);
 
     /**
      * Fires every time canvas drawing stops
@@ -160,10 +170,10 @@ export const SignatureContextProvider = ({
     /**
      * Clears typed signature
      */
-    const clearTypedSignature = () => {
+    const clearTypedSignature = useCallback(() => {
         setTypedSignature("");
-        setValue("details.signature", "");
-    };
+        setValue("details.signature.data", "");
+    }, [setValue]);
 
     /**
      * * UPLOAD SIGNATURE
@@ -175,55 +185,81 @@ export const SignatureContextProvider = ({
      * Function that fires every time signature file input changes
      * @param e - Event object from file input
      */
-    const handleUploadSignatureChange = (
-        e: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        const file = e.target.files![0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const base64String = event.target!.result as string;
-                setUploadSignatureImg(base64String);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
+    const handleUploadSignatureChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files![0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const base64String = event.target!.result as string;
+                    setUploadSignatureImg(base64String);
+                };
+                reader.readAsDataURL(file);
+            }
+        },
+        []
+    );
 
     /**
      * Function that removes uploaded signature
      */
-    const handleRemoveUploadedSignature = () => {
+    const handleRemoveUploadedSignature = useCallback(() => {
         setUploadSignatureImg("");
 
         if (uploadSignatureRef.current) {
             uploadSignatureRef.current.value = "";
         }
-    };
+    }, []);
+
+    /*
+     * The value was a fresh object literal on every render, so typing a single
+     * character into the typed-signature input invalidated every consumer —
+     * all three tabs, the trigger thumbnail and the colour and font pickers.
+     * With the handlers memoised above, this only changes when something a
+     * consumer actually reads changes.
+     */
+    const value = useMemo(
+        () => ({
+            signatureData,
+            signatureRef,
+            colors,
+            selectedColor,
+            handleColorButtonClick,
+            clearSignature,
+            handleCanvasEnd,
+            typedSignature,
+            setTypedSignature,
+            typedSignatureRef,
+            typedSignatureFonts,
+            selectedFont,
+            setSelectedFont,
+            typedSignatureFontSize,
+            clearTypedSignature,
+            uploadSignatureRef,
+            uploadSignatureImg,
+            handleUploadSignatureChange,
+            handleRemoveUploadedSignature,
+        }),
+        [
+            signatureData,
+            colors,
+            selectedColor,
+            handleColorButtonClick,
+            clearSignature,
+            handleCanvasEnd,
+            typedSignature,
+            typedSignatureFonts,
+            selectedFont,
+            typedSignatureFontSize,
+            clearTypedSignature,
+            uploadSignatureImg,
+            handleUploadSignatureChange,
+            handleRemoveUploadedSignature,
+        ]
+    );
 
     return (
-        <SignatureContext.Provider
-            value={{
-                signatureData,
-                signatureRef,
-                colors,
-                selectedColor,
-                handleColorButtonClick,
-                clearSignature,
-                handleCanvasEnd,
-                typedSignature,
-                setTypedSignature,
-                typedSignatureRef,
-                typedSignatureFonts,
-                selectedFont,
-                setSelectedFont,
-                typedSignatureFontSize,
-                clearTypedSignature,
-                uploadSignatureRef,
-                uploadSignatureImg,
-                handleUploadSignatureChange,
-                handleRemoveUploadedSignature,
-            }}
-        >
+        <SignatureContext.Provider value={value}>
             {children}
         </SignatureContext.Provider>
     );

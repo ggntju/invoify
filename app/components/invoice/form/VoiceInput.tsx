@@ -418,7 +418,7 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                 <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <Mic className="h-5 w-5 text-blue-500" />
+                            <Mic className="h-5 w-5 text-primary" />
                             {_t('voiceInput.title') || '语音录入商品明细'}
                         </DialogTitle>
                         <DialogDescription>
@@ -455,7 +455,7 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                                 className={`w-20 h-20 rounded-full transition-all duration-300 ${
                                     isListening 
                                         ? 'animate-pulse bg-red-500 hover:bg-red-600 shadow-lg shadow-red-200 dark:shadow-red-900/50' 
-                                        : 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-200 dark:shadow-blue-900/50'
+                                        : 'bg-primary hover:bg-primary/90 shadow-elevated'
                                 }`}
                                 onClick={isListening ? stopListening : startListening}
                             >
@@ -467,7 +467,7 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                             </Button>
                             
                             {isListening && (
-                                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                                <div className="flex items-center gap-2 text-primary">
                                     <Loader2 className="h-4 w-4 animate-spin" />
                                     <span className="text-sm font-medium">
                                         {_t('voiceInput.listening') || '正在聆听...'}
@@ -508,7 +508,7 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                                         onClick={resetAll}
                                         className="h-6 px-2 text-xs"
                                     >
-                                        <X className="h-3 w-3 mr-1" />
+                                        <X className="h-3 w-3 me-1" />
                                         {_t('voiceInput.clear') || '清除'}
                                     </Button>
                                 </div>
@@ -528,14 +528,14 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                                     onClick={startListening}
                                     className="flex-1"
                                 >
-                                    <Mic className="h-4 w-4 mr-2" />
+                                    <Mic className="h-4 w-4 me-2" />
                                     {_t('voiceInput.continueRecording') || '继续录音'}
                                 </Button>
                                 <Button
                                     onClick={parseTranscript}
                                     className="flex-1"
                                 >
-                                    <Check className="h-4 w-4 mr-2" />
+                                    <Check className="h-4 w-4 me-2" />
                                     {_t('voiceInput.parse') || '解析商品'}
                                 </Button>
                             </div>
@@ -546,7 +546,7 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                                 <div className="flex items-center justify-between">
                                     <h3 className="text-sm font-medium">
                                         {_t('voiceInput.parsedItems') || '解析结果'}
-                                        <Badge variant="secondary" className="ml-2">
+                                        <Badge variant="secondary" className="ms-2">
                                             {parsedItems.length}
                                         </Badge>
                                     </h3>
@@ -556,7 +556,7 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                                     {parsedItems.map((item, index) => (
                                         <div
                                             key={index}
-                                            className="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700"
+                                            className="rounded-lg border border-border bg-muted/40 p-3"
                                         >
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -581,7 +581,7 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                                                         type="text"
                                                         value={item.name}
                                                         onChange={(e) => updateItem(index, 'name', e.target.value)}
-                                                        className="w-full h-8 px-2 text-sm border border-gray-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        className="h-8 w-full rounded border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                                                     />
                                                 </div>
                                                 <div className="col-span-1">
@@ -593,7 +593,7 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                                                         min="1"
                                                         value={item.quantity}
                                                         onChange={(e) => updateItem(index, 'quantity', e.target.value)}
-                                                        className="w-full h-8 px-2 text-sm border border-gray-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        className="h-8 w-full rounded border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                                                     />
                                                 </div>
                                                 <div className="col-span-1">
@@ -606,7 +606,7 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                                                         step="0.01"
                                                         value={item.unitPrice}
                                                         onChange={(e) => updateItem(index, 'unitPrice', e.target.value)}
-                                                        className="w-full h-8 px-2 text-sm border border-gray-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        className="h-8 w-full rounded border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                                                     />
                                                 </div>
                                             </div>
@@ -632,7 +632,7 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                                 onClick={confirmItems}
                                 className="bg-green-500 hover:bg-green-600"
                             >
-                                <Check className="h-4 w-4 mr-2" />
+                                <Check className="h-4 w-4 me-2" />
                                 {_t('voiceInput.confirm') || '确认添加'} ({parsedItems.length})
                             </Button>
                         )}

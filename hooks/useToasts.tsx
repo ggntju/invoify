@@ -8,6 +8,30 @@ const useToasts = () => {
         sendPdfToMail: (email: string) => void;
     };
 
+    /*
+     * One address book per side of the invoice, so the toast has to say which
+     * one it means — "Client saved" after saving your own company reads as a
+     * bug report.
+     */
+    const partyNoun = (kind: "sender" | "receiver") =>
+        kind === "sender" ? "Sender" : "Client";
+
+    const partySaved = (kind: "sender" | "receiver", name: string) => {
+        toast({
+            variant: "default",
+            title: `${partyNoun(kind)} saved`,
+            description: `${name} is now in your address book.`,
+        });
+    };
+
+    const partyRemoved = (kind: "sender" | "receiver", name: string) => {
+        toast({
+            variant: "default",
+            title: `${partyNoun(kind)} removed`,
+            description: `${name} is no longer in your address book.`,
+        });
+    };
+
     const newInvoiceSuccess = () => {
         toast({
             variant: "default",
@@ -65,6 +89,36 @@ const useToasts = () => {
         });
     };
 
+    /**
+     * Surfaced when RHF rejects a submit. Without this the failure was silent
+     * apart from a console.log, and on mobile the invalid field is usually on
+     * a wizard step that is not currently visible.
+     */
+    const exportInvoiceError = () => {
+        toast({
+            variant: "destructive",
+            title: "Could not export the invoice",
+            description: "Something went wrong. Try again in a moment.",
+        });
+    };
+
+    const pdfGenerationError = () => {
+        toast({
+            variant: "destructive",
+            title: "Could not generate the PDF",
+            description: "Something went wrong. Try again in a moment.",
+        });
+    };
+
+    const formValidationError = () => {
+        toast({
+            variant: "destructive",
+            title: "Please check the form",
+            description:
+                "Some required fields are missing or invalid. Steps with errors are marked in the progress bar.",
+        });
+    };
+
     const importInvoiceError = () => {
         toast({
             variant: "destructive",
@@ -74,12 +128,17 @@ const useToasts = () => {
     };
 
     return {
+        partySaved,
+        partyRemoved,
         newInvoiceSuccess,
         pdfGenerationSuccess,
         saveInvoiceSuccess,
         modifiedInvoiceSuccess,
         sendPdfSuccess,
         sendPdfError,
+        pdfGenerationError,
+        exportInvoiceError,
+        formValidationError,
         importInvoiceError,
     };
 };

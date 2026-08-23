@@ -19,24 +19,28 @@ const FormCustomInput = ({
     const nameValue = `${location}[${index}].value`;
     return (
         <>
-            <div className="flex items-center gap-2">
-                <FormInput
-                    name={nameKey}
-                    placeholder="Name"
-                    className="font-medium p-0 border-none h-[1.5rem] w-[4rem]"
-                />
+            <div className="flex items-start gap-2">
+                <div className="w-[38%] min-w-0 @xl:w-[8rem]">
+                    <FormInput
+                        name={nameKey}
+                        placeholder="Name"
+                        vertical
+                        className="h-9 border-none p-0 font-medium"
+                    />
+                </div>
 
-                <FormInput
-                    name={nameValue}
-                    placeholder="Value"
-                    className="w-[10rem]"
-                />
+                <div className="min-w-0 flex-1">
+                    <FormInput name={nameValue} placeholder="Value" vertical />
+                </div>
+
                 <BaseButton
                     size="icon"
-                    variant="destructive"
+                    variant="ghost"
+                    aria-label="Remove field"
+                    className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => removeField(index)}
                 >
-                    <Trash2 />
+                    <Trash2 className="h-4 w-4" />
                 </BaseButton>
             </div>
         </>

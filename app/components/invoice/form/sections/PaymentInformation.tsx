@@ -11,7 +11,7 @@ const PaymentInformation = () => {
     return (
         <section>
             <Subheading>{_t("form.steps.paymentInfo.heading")}:</Subheading>
-            <div className="flex flex-wrap gap-10 mt-5">
+            <div className="mt-5 grid grid-cols-1 gap-5 @xl:grid-cols-2">
                 <FormInput
                     name="details.paymentInformation.bankName"
                     label={_t("form.steps.paymentInfo.bankName")}

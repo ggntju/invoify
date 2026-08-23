@@ -32,7 +32,22 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
+# next-env.d.ts is deliberately NOT ignored. It is generated, but it is what
+# declares *.svg and friends as modules, so `tsc --noEmit` cannot resolve the
+# navbar logo import without it. CI typechecks before it builds anything, so
+# ignoring it made the typecheck depend on a build artefact that is not there
+# yet. Committing it makes the typecheck self-sufficient on a fresh clone.
 
 # cache
 /.cache
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Local scratch
+/.scratch/
+
+# Claude Code local state
+/.claude/settings.local.json

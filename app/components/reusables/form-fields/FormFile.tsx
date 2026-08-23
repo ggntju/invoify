@@ -67,35 +67,31 @@ const FormFile = ({ name, label, placeholder }: FormFileProps) => {
             <FormField
                 control={control}
                 name={name}
-                render={({ field }) => (
-                    <FormItem>
+                render={() => (
+                    <FormItem className="w-full min-w-0">
                         <Label>{label}:</Label>
                         {base64Image ? (
                             <img
                                 id="logoImage"
                                 src={base64Image}
-                                style={{
-                                    objectFit: "contain",
-                                    width: "10rem",
-                                    height: "7rem",
-                                }}
+                                alt={label ?? "Invoice logo"}
+                                className="h-[7rem] w-full max-w-[10rem] object-contain"
                             />
                         ) : (
-                            <div
-                                style={{
-                                    objectFit: "contain",
-                                    width: "10rem",
-                                    height: "7rem",
-                                }}
-                            >
+                            <div className="w-full max-w-[10rem]">
                                 <Label
                                     htmlFor={name}
-                                    className="flex justify-center items-center h-[7rem] w-[10rem] cursor-pointer rounded-md bg-gray-100 dark:bg-slate-800 border border-black dark:border-white hover:border-blue-500"
+                                    className="flex h-[7rem] w-full cursor-pointer items-center justify-center rounded-md border border-dashed border-border bg-muted/50 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
                                 >
                                     <>
-                                        <div className="flex flex-col items-center">
-                                            <Image />
-                                            <p>{placeholder}</p>
+                                        <div className="flex flex-col items-center gap-1 px-2 text-center">
+                                            <Image
+                                                className="h-5 w-5"
+                                                aria-hidden="true"
+                                            />
+                                            <p className="text-xs">
+                                                {placeholder}
+                                            </p>
                                         </div>
                                         <FormControl>
                                             <input
@@ -116,9 +112,14 @@ const FormFile = ({ name, label, placeholder }: FormFileProps) => {
                 )}
             />
             {base64Image && (
-                <div>
-                    <BaseButton variant="destructive" onClick={removeLogo}>
-                        <ImageMinus />
+                <div className="mt-2">
+                    <BaseButton
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={removeLogo}
+                    >
+                        <ImageMinus className="h-4 w-4" />
                         Remove logo
                     </BaseButton>
                 </div>

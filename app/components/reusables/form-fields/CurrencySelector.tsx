@@ -24,6 +24,9 @@ import {
 // Hooks
 import useCurrencies from "@/hooks/useCurrencies";
 
+// Styles
+import { fieldControl, fieldLabel, fieldRow } from "./fieldStyles";
+
 // Types
 import { CurrencyType, NameType } from "@/types";
 
@@ -40,7 +43,12 @@ const CurrencySelector = ({
 }: CurrencySelectorProps) => {
     const { control } = useFormContext();
 
-    const { currencies, currenciesLoading } = useCurrencies();
+    const {
+        currencies,
+        currenciesLoading,
+        currenciesError,
+        retryFetchCurrencies,
+    } = useCurrencies();
 
     return (
         <div>
@@ -49,18 +57,18 @@ const CurrencySelector = ({
                 name={name}
                 render={({ field }) => (
                     <FormItem>
-                        <div className="flex justify-between gap-5 items-center text-sm">
-                            <div>
-                                <FormLabel>{label}:</FormLabel>
-                            </div>
-                            <div>
+                        <div className={fieldRow}>
+                            <FormLabel className={fieldLabel}>
+                                {label}:
+                            </FormLabel>
+                            <div className={fieldControl}>
                                 <Select
                                     {...field}
                                     defaultValue={field.value}
                                     onValueChange={field.onChange}
                                 >
                                     <FormControl>
-                                        <SelectTrigger className="w-[13rem]">
+                                        <SelectTrigger className="w-full">
                                             <SelectValue
                                                 placeholder={placeholder}
                                             />
@@ -76,6 +84,33 @@ const CurrencySelector = ({
                                             <SelectLabel>
                                                 Currencies
                                             </SelectLabel>
+
+                                            {currenciesLoading && (
+                                                <p className="px-2 py-3 text-sm text-muted-foreground">
+                                                    Loading currencies…
+                                                </p>
+                                            )}
+
+                                            {/* Previously a silent empty list */}
+                                            {currenciesError &&
+                                                !currenciesLoading && (
+                                                    <div className="px-2 py-3">
+                                                        <p className="mb-2 text-sm text-muted-foreground">
+                                                            Could not load
+                                                            currencies.
+                                                        </p>
+                                                        <button
+                                                            type="button"
+                                                            onClick={
+                                                                retryFetchCurrencies
+                                                            }
+                                                            className="text-sm font-medium text-primary underline underline-offset-4"
+                                                        >
+                                                            Retry
+                                                        </button>
+                                                    </div>
+                                                )}
+
                                             {!currenciesLoading &&
                                                 currencies.map(
                                                     (

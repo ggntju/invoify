@@ -8,6 +8,7 @@ import {
     BaseButton,
     FormCustomInput,
     FormInput,
+    PartyPicker,
     Subheading,
 } from "@/app/components";
 
@@ -42,6 +43,16 @@ const BillFromSection = () => {
     return (
         <section className="flex flex-col gap-3">
             <Subheading>{_t("form.steps.fromAndTo.billFrom")}:</Subheading>
+
+            {/*
+             * Your own details are the ones retyped on every invoice, not just
+             * on repeat ones, so this side wants the address book at least as
+             * much as the other. It also squares the two columns up: with a
+             * picker on one side only, Bill To's first field sat ~84px below
+             * Bill From's.
+             */}
+            <PartyPicker kind="sender" />
+
             <FormInput
                 name="sender.name"
                 label={_t("form.steps.fromAndTo.name")}

@@ -24,6 +24,9 @@ import {
 // Utils
 import { cn } from "@/lib/utils";
 
+// Styles
+import { fieldControl, fieldLabel, fieldRow } from "./fieldStyles";
+
 // Variables
 import { DATE_OPTIONS } from "@/lib/variables";
 
@@ -50,11 +53,11 @@ const DatePickerFormField = ({ name, label }: DatePickerFormFieldProps) => {
                 name={name}
                 render={({ field }) => (
                     <FormItem>
-                        <div className="flex justify-between gap-5 items-center text-sm">
-                            <div>
-                                <FormLabel>{label}:</FormLabel>
-                            </div>
-                            <div>
+                        <div className={fieldRow}>
+                            <FormLabel className={fieldLabel}>
+                                {label}:
+                            </FormLabel>
+                            <div className={fieldControl}>
                                 <Popover
                                     open={isPopoverOpen}
                                     onOpenChange={setIsPopoverOpen}
@@ -64,12 +67,12 @@ const DatePickerFormField = ({ name, label }: DatePickerFormFieldProps) => {
                                             <Button
                                                 variant={"outline"}
                                                 className={cn(
-                                                    "w-[13rem]",
+                                                    "w-full justify-start font-normal",
                                                     !field.value &&
                                                         "text-muted-foreground"
                                                 )}
                                             >
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                <CalendarIcon className="me-2 h-4 w-4" />
                                                 {field.value ? (
                                                     new Date(
                                                         field.value
@@ -83,7 +86,12 @@ const DatePickerFormField = ({ name, label }: DatePickerFormFieldProps) => {
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0">
+                                    {/* `align="start"` keeps the calendar from
+                                        clipping off a narrow viewport */}
+                                    <PopoverContent
+                                        className="w-auto max-w-[calc(100vw-2rem)] overflow-x-auto p-0"
+                                        align="start"
+                                    >
                                         <Calendar
                                             mode="single"
                                             captionLayout="dropdown-buttons"
