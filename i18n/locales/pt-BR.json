@@ -11,7 +11,8 @@
       "summary": "Resumo",
       "next": "Próximo",
       "back": "Voltar",
-      "upNext": "A seguir"
+      "upNext": "A seguir",
+      "sections": "Seções"
     },
     "steps": {
       "fromAndTo": {

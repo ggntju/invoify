@@ -18,7 +18,8 @@
       "nextTooltip": "Növbəti addıma keç",
       "stateComplete": "tamamlanıb",
       "stateIncomplete": "yarımçıqdır",
-      "upNext": "Növbəti"
+      "upNext": "Növbəti",
+      "sections": "Bölmələr"
     },
     "steps": {
       "fromAndTo": {
@@ -199,6 +200,7 @@
     "density": "Sıxlıq",
     "comfortable": "Geniş",
     "compact": "Sıx",
+    "spacious": "Geniş",
     "customColor": "Fərdi rəng",
     "reset": "Sıfırla"
   }

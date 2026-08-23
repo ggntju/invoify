@@ -5,6 +5,12 @@
 @layer base {
     :root {
         --background: 240 25% 98%;
+        /*
+         * The tinted ground the invoice paper floats on, in the preview pane.
+         * Deliberately its own token rather than --muted, which is already the
+         * resting fill of every input; the two need to move independently.
+         */
+        --ground: 240 20% 93.5%;
         --foreground: 224 44% 12%;
 
         --card: 0 0% 100%;
@@ -43,6 +49,8 @@
 
     .dark {
         --background: 235 30% 9%;
+        /* Darker than the surface in dark mode, so the paper still lifts. */
+        --ground: 235 32% 7%;
         --foreground: 240 20% 96%;
 
         --card: 235 27% 12%;

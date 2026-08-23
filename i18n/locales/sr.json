@@ -11,7 +11,8 @@
       "summary": "Rezime",
       "next": "Dalje",
       "back": "Nazad",
-      "upNext": "Следеће"
+      "upNext": "Следеће",
+      "sections": "Одељци"
     },
     "steps": {
       "fromAndTo": {

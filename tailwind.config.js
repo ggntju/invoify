@@ -40,6 +40,8 @@ module.exports = {
                 input: "hsl(var(--input))",
                 ring: "hsl(var(--ring))",
                 background: "hsl(var(--background))",
+                // Tinted backdrop the invoice paper sits on. See globals.css
+                ground: "hsl(var(--ground))",
                 foreground: "hsl(var(--foreground))",
                 primary: {
                     DEFAULT: "hsl(var(--primary))",

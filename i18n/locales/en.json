@@ -18,7 +18,8 @@
       "nextTooltip": "Go to the next step",
       "stateComplete": "complete",
       "stateIncomplete": "incomplete",
-      "upNext": "Up next"
+      "upNext": "Up next",
+      "sections": "Sections"
     },
     "steps": {
       "fromAndTo": {
@@ -199,6 +200,7 @@
     "density": "Density",
     "comfortable": "Comfortable",
     "compact": "Compact",
+    "spacious": "Spacious",
     "customColor": "Custom colour",
     "reset": "Reset"
   }

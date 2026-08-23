@@ -11,7 +11,8 @@
       "summary": "Sammendrag",
       "next": "Neste",
       "back": "Tilbake",
-      "upNext": "Neste"
+      "upNext": "Neste",
+      "sections": "Deler"
     },
     "steps": {
       "fromAndTo": {

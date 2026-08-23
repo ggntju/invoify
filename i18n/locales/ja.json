@@ -11,7 +11,8 @@
       "summary": "概要",
       "next": "次へ",
       "back": "戻る",
-      "upNext": "次は"
+      "upNext": "次は",
+      "sections": "セクション"
     },
     "steps": {
       "fromAndTo": {

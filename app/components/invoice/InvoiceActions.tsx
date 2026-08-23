@@ -15,6 +15,7 @@ import {
     NewInvoiceAlert,
     InvoiceLoaderModal,
     InvoiceExportModal,
+    TemplateGallery,
 } from "@/app/components";
 
 // Contexts
@@ -107,20 +108,33 @@ const InvoiceActions = () => {
     );
 
     return (
-        <div className="min-w-0 shell:flex shell:min-h-0 shell:flex-col">
+        // The preview pane sits on the tinted ground, so the invoice reads as a
+        // sheet of paper on a desk rather than as another panel.
+        <div className="min-w-0 shell:flex shell:min-h-0 shell:flex-col shell:bg-ground">
             {/*
              * Sticky is the fallback for tall-enough-but-short viewports; in
              * the shell the column is a flex child that fills the pinned
              * region instead.
              */}
             <div className="xl:sticky xl:top-24 shell:static shell:flex shell:min-h-0 shell:flex-1 shell:flex-col">
-                {/* Toolbar above the preview — desktop only */}
-                <div className="mb-3 hidden items-center justify-between gap-3 xl:flex">
-                    <h2 className="text-sm font-medium text-muted-foreground">
-                        {_t("actions.previewTitle")}
-                    </h2>
+                {/*
+                 * Toolbar above the preview — desktop only.
+                 *
+                 * Document controls on the left, actions on the right, as in
+                 * option B. The heading this used to carry said "Invoice
+                 * preview" above an invoice preview; the chips use that space
+                 * to say something the user can act on.
+                 */}
+                <div className="mb-3 hidden items-center justify-between gap-3 xl:flex shell:px-5 shell:pt-5">
+                    {isDesktop ? (
+                        <TemplateGallery variant="chips" />
+                    ) : (
+                        <h2 className="text-sm font-medium text-muted-foreground">
+                            {_t("actions.previewTitle")}
+                        </h2>
+                    )}
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
                         <Popover>
                             <PopoverTrigger asChild>
                                 <BaseButton
@@ -157,7 +171,7 @@ const InvoiceActions = () => {
                  * is what keeps the form and the toolbar in place while you
                  * read down the document.
                  */}
-                <div className="hidden xl:block shell:min-h-0 shell:flex-1 shell:overflow-y-auto shell:overscroll-contain">
+                <div className="hidden xl:block shell:min-h-0 shell:flex-1 shell:overflow-y-auto shell:overscroll-contain shell:px-8 shell:pb-8">
                     {isDesktop ? (
                         <PdfViewer />
                     ) : (

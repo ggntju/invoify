@@ -11,7 +11,8 @@
       "summary": "Özet",
       "next": "İleri",
       "back": "Geri",
-      "upNext": "Sıradaki"
+      "upNext": "Sıradaki",
+      "sections": "Bölümler"
     },
     "steps": {
       "fromAndTo": {

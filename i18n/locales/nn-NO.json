@@ -11,7 +11,8 @@
       "summary": "Samandrag",
       "next": "Neste",
       "back": "Tilbake",
-      "upNext": "Neste"
+      "upNext": "Neste",
+      "sections": "Delar"
     },
     "steps": {
       "fromAndTo": {

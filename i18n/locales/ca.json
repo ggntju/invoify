@@ -11,7 +11,8 @@
       "summary": "Sumari",
       "next": "Sigüent",
       "back": "Enrere",
-      "upNext": "A continuació"
+      "upNext": "A continuació",
+      "sections": "Seccions"
     },
     "steps": {
       "fromAndTo": {

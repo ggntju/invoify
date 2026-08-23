@@ -9,7 +9,12 @@
  * This module is deliberately free of React so it is safe to import anywhere.
  */
 
-export type InvoiceDensity = "compact" | "comfortable";
+/**
+ * Three levels, smallest to largest. Adjusts spacing *and* text size together,
+ * so one control covers both "twenty items must fit on one page" and "three
+ * items look lost on all that paper".
+ */
+export type InvoiceDensity = "compact" | "comfortable" | "spacious";
 
 export type InvoiceFontId = "outfit" | "plexSans" | "sourceSerif" | "plexMono";
 
@@ -109,19 +114,44 @@ export function fontStack(fontId: InvoiceFontId): string {
  */
 export type InvoiceScale = ReturnType<typeof densityScale>;
 
+const DENSITY_SCALES = {
+    compact: {
+        page: "p-5 sm:p-8",
+        stack: "space-y-4",
+        sectionGap: "mt-4",
+        rowY: "py-1",
+        body: "text-[11px]",
+        label: "text-[9px]",
+        heading: "text-lg",
+        name: "text-sm",
+        total: "text-base",
+    },
+    comfortable: {
+        page: "p-6 sm:p-12",
+        stack: "space-y-7",
+        sectionGap: "mt-7",
+        rowY: "py-2",
+        body: "text-xs",
+        label: "text-[10px]",
+        heading: "text-2xl",
+        name: "text-base",
+        total: "text-lg",
+    },
+    spacious: {
+        page: "p-7 sm:p-14",
+        stack: "space-y-9",
+        sectionGap: "mt-9",
+        rowY: "py-3",
+        body: "text-sm",
+        label: "text-[11px]",
+        heading: "text-3xl",
+        name: "text-lg",
+        total: "text-xl",
+    },
+} as const;
+
 export function densityScale(density: InvoiceDensity) {
-    const compact = density === "compact";
-    return {
-        page: compact ? "p-5 sm:p-8" : "p-6 sm:p-12",
-        stack: compact ? "space-y-4" : "space-y-7",
-        sectionGap: compact ? "mt-4" : "mt-7",
-        rowY: compact ? "py-1" : "py-2",
-        body: compact ? "text-[11px]" : "text-xs",
-        label: compact ? "text-[9px]" : "text-[10px]",
-        heading: compact ? "text-lg" : "text-2xl",
-        name: compact ? "text-sm" : "text-base",
-        total: compact ? "text-base" : "text-lg",
-    };
+    return DENSITY_SCALES[density] ?? DENSITY_SCALES.comfortable;
 }
 
 /** Normalises a possibly-partial theme coming from stored invoices. */

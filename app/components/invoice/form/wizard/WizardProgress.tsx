@@ -8,6 +8,9 @@ import { useFormContext, useWatch, type FieldErrors } from "react-hook-form";
 // ShadCn
 import { Progress } from "@/components/ui/progress";
 
+// Hooks
+import { useIsShell } from "@/hooks/useMediaQuery";
+
 // Contexts
 import { useWizard } from "@/contexts/WizardContext";
 import { useTranslationContext } from "@/contexts/TranslationContext";
@@ -54,6 +57,15 @@ function hasError(errors: FieldErrors<InvoiceType>, path: string): boolean {
 
 const WizardProgress = () => {
     const { activeStep, stepCount, goToStep } = useWizard();
+
+    /*
+     * Branch in JS, not with `hidden`/`shell:block`.
+     *
+     * Rendering both shapes and hiding one with CSS put two complete <ol>s of
+     * step buttons in the DOM, so assistive technology announced ten steps for
+     * a five-step form.
+     */
+    const isShell = useIsShell();
 
     const {
         control,
@@ -179,75 +191,139 @@ const WizardProgress = () => {
         }`;
 
     /*
-     * The stepper stays deliberately quiet: one progress rule with the current
-     * step named beside it, then the step markers.
+     * Two shapes, one component.
      *
-     * The markers now carry their names from sm up. Numbers alone meant there
-     * was no way to tell what step 4 held without going to it — the label
-     * existed only in a title attribute, invisible on touch and to anyone not
-     * hovering. On phones they stay dots, because five labels do not fit in
-     * 375px and the active step is already named directly above.
+     * On a phone the five steps are a compact row of dots with the active
+     * step's name above — five labels do not fit in 375px. That row is signed
+     * off and unchanged.
+     *
+     * At `shell`, where the form is a ~420px rail, the steps become a vertical
+     * outline: a full-size marker and a full-length label per row, the way
+     * option B's "SECTIONS" list works. This is also why the markers were too
+     * small before — they had shrunk to 20px with 11px text purely to fit five
+     * labels across a horizontal row, which a vertical list does not have to
+     * do.
      */
     return (
         <nav aria-label={_t("form.wizard.progressLabel")} className="mb-6">
-            <div className="mb-2.5 flex items-baseline justify-between gap-3">
-                <span className="truncate text-sm font-medium">
-                    {activeStepData?.label}
-                </span>
-                <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                    {_t("form.wizard.stepLabel")} {activeStep + 1} / {stepCount}
-                </span>
-            </div>
+            {/* Compact header + progress rule. */}
+            {!isShell && (
+                <div>
+                <div className="mb-2.5 flex items-baseline justify-between gap-3">
+                    <span className="truncate text-sm font-medium">
+                        {activeStepData?.label}
+                    </span>
+                    <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                        {_t("form.wizard.stepLabel")} {activeStep + 1} /{" "}
+                        {stepCount}
+                    </span>
+                </div>
 
-            <Progress
-                value={((activeStep + 1) / stepCount) * 100}
-                indicatorClassName={cn(
-                    activeStepState === "invalid" && "bg-destructive"
-                )}
-            />
+                <Progress
+                    value={((activeStep + 1) / stepCount) * 100}
+                    indicatorClassName={cn(
+                        activeStepState === "invalid" && "bg-destructive"
+                    )}
+                />
 
-            {/*
-             * gap-1 and an 11px label from sm up: with five steps sharing the
-             * form column, "Invoice Details" was being truncated at 1440px.
-             */}
-            <ol className="mt-3 flex items-center gap-1.5 sm:gap-1">
-                {steps.map((step) => {
-                    const state = getStepState(step);
-                    const isActive = step.id === activeStep;
+                <ol className="mt-3 flex items-center gap-1.5 sm:gap-1">
+                    {steps.map((step) => {
+                        const state = getStepState(step);
+                        const isActive = step.id === activeStep;
 
-                    return (
-                        <li key={step.id} className="min-w-0 sm:flex-1">
-                            <button
-                                type="button"
-                                onClick={() => goToStep(step.id)}
-                                aria-label={stepAriaLabel(step, state)}
-                                aria-current={isActive ? "step" : undefined}
-                                title={step.label}
-                                className="flex w-full items-center gap-1.5 rounded-md transition-opacity hover:opacity-80 sm:gap-1"
-                            >
-                                <span
+                        return (
+                            <li key={step.id} className="min-w-0 sm:flex-1">
+                                <button
+                                    type="button"
+                                    onClick={() => goToStep(step.id)}
+                                    aria-label={stepAriaLabel(step, state)}
+                                    aria-current={isActive ? "step" : undefined}
+                                    title={step.label}
+                                    className="flex w-full items-center gap-1.5 rounded-md transition-opacity hover:opacity-80 sm:gap-1"
+                                >
+                                    <span
+                                        className={cn(
+                                            "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold sm:h-5 sm:w-5 sm:text-[10px]",
+                                            markerStyles[state]
+                                        )}
+                                    >
+                                        {renderMarker(step, state, isActive)}
+                                    </span>
+
+                                    <span
+                                        className={cn(
+                                            "hidden min-w-0 truncate text-left text-[11px] leading-tight sm:inline",
+                                            isActive
+                                                ? "font-semibold"
+                                                : "font-medium",
+                                            labelStyles[state]
+                                        )}
+                                    >
+                                        {step.label}
+                                    </span>
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ol>
+                </div>
+            )}
+
+            {/* Vertical outline: the rail's table of contents. */}
+            {isShell && (
+                <div>
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {_t("form.wizard.sections")}
+                </p>
+
+                <ol className="-mx-2 space-y-0.5">
+                    {steps.map((step) => {
+                        const state = getStepState(step);
+                        const isActive = step.id === activeStep;
+
+                        return (
+                            <li key={step.id}>
+                                <button
+                                    type="button"
+                                    onClick={() => goToStep(step.id)}
+                                    aria-label={stepAriaLabel(step, state)}
+                                    aria-current={isActive ? "step" : undefined}
                                     className={cn(
-                                        "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold sm:h-5 sm:w-5 sm:text-[10px]",
-                                        markerStyles[state]
+                                        "flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors",
+                                        isActive
+                                            ? "bg-primary/10"
+                                            : "hover:bg-muted"
                                     )}
                                 >
-                                    {renderMarker(step, state, isActive)}
-                                </span>
+                                    <span
+                                        className={cn(
+                                            "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold",
+                                            markerStyles[state]
+                                        )}
+                                    >
+                                        {renderMarker(step, state, isActive)}
+                                    </span>
 
-                                <span
-                                    className={cn(
-                                        "hidden min-w-0 truncate text-left text-[11px] leading-tight sm:inline",
-                                        isActive ? "font-semibold" : "font-medium",
-                                        labelStyles[state]
-                                    )}
-                                >
-                                    {step.label}
-                                </span>
-                            </button>
-                        </li>
-                    );
-                })}
-            </ol>
+                                    <span
+                                        className={cn(
+                                            "min-w-0 flex-1 truncate text-[13px]",
+                                            isActive
+                                                ? "font-semibold text-foreground"
+                                                : cn(
+                                                      "font-medium",
+                                                      labelStyles[state]
+                                                  )
+                                        )}
+                                    >
+                                        {step.label}
+                                    </span>
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ol>
+                </div>
+            )}
         </nav>
     );
 };

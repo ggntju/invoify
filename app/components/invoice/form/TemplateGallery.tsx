@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // Next Intl
 import { useLocale } from "next-intl";
@@ -15,7 +15,6 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 
@@ -98,7 +97,26 @@ const TemplatePreview = memo(function TemplatePreview({
     );
 });
 
-const TemplateGallery = () => {
+type TemplateGalleryProps = {
+    /**
+     * `field` is the labelled thumbnail inside the Details step, used below xl.
+     * `chips` is the three-pill row above the invoice in the desktop preview
+     * toolbar, where option B puts template, accent and density.
+     *
+     * One component either way, so both entry points share a single dialog
+     * instance rather than mounting two.
+     */
+    variant?: "field" | "chips";
+};
+
+/**
+ * Trailing debounce for the custom colour picker. Long enough that a drag
+ * produces a handful of commits rather than dozens, short enough that letting
+ * go feels immediate.
+ */
+const ACCENT_COMMIT_DELAY_MS = 140;
+
+const TemplateGallery = ({ variant = "field" }: TemplateGalleryProps) => {
     const { control, setValue, getValues } = useFormContext<InvoiceType>();
     const { _t } = useTranslationContext();
     const locale = useLocale();
@@ -130,7 +148,20 @@ const TemplateGallery = () => {
     });
 
     const activeId = activeIdRaw ?? DEFAULT_TEMPLATE_ID;
-    const theme = resolveTheme(themeRaw);
+
+    /*
+     * Memoised on the three primitives, not on `themeRaw`.
+     *
+     * resolveTheme returns a fresh object literal every call, so an unmemoised
+     * `theme` gave `previewBase` a new identity on every render — which meant
+     * the `memo` on TemplatePreview never hit and all thirteen miniatures
+     * re-rendered for reasons entirely unrelated to the theme.
+     */
+    const theme = useMemo(
+        () => resolveTheme(themeRaw),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [themeRaw?.accentColor, themeRaw?.fontId, themeRaw?.density]
+    );
 
     /*
      * The trigger thumbnail is 64px tall at 0.12 scale — nothing typed into the
@@ -161,54 +192,150 @@ const TemplateGallery = () => {
         setOpen(next);
     };
 
-    const setTheme = (patch: Partial<typeof theme>) => {
-        setValue(
-            "details.theme",
-            { ...theme, ...patch },
-            { shouldDirty: true }
-        );
-    };
+    const setTheme = useCallback(
+        (patch: Partial<typeof theme>) => {
+            setValue(
+                "details.theme",
+                { ...theme, ...patch },
+                { shouldDirty: true }
+            );
+        },
+        [setValue, theme]
+    );
 
+    /*
+     * The custom colour input, debounced.
+     *
+     * A native `<input type="color">` streams `change` events continuously
+     * while the user drags around the picker — dozens per second. Each one was
+     * committing to form state, which re-rendered all thirteen gallery
+     * miniatures, each a complete invoice template. That is what made dragging
+     * the colour feel stuck to treacle.
+     *
+     * The swatch itself is driven by local state so it tracks the pointer with
+     * no lag, and the form is written on a trailing timer. Presets commit
+     * immediately — they are a single discrete click, not a drag.
+     */
+    const [draftAccent, setDraftAccent] = useState<string | null>(null);
+    const accentTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const commitAccent = useCallback(
+        (value: string) => {
+            setDraftAccent(value);
+            if (accentTimer.current) clearTimeout(accentTimer.current);
+            accentTimer.current = setTimeout(() => {
+                setTheme({ accentColor: value });
+                setDraftAccent(null);
+            }, ACCENT_COMMIT_DELAY_MS);
+        },
+        [setTheme]
+    );
+
+    // Flush a pending colour rather than dropping it if the dialog closes mid-drag.
+    useEffect(
+        () => () => {
+            if (accentTimer.current) clearTimeout(accentTimer.current);
+        },
+        []
+    );
+
+    const shownAccent = draftAccent ?? theme.accentColor;
+
+    // Ordered smallest to largest, so the row reads as a scale.
     const densities: { id: InvoiceDensity; label: string }[] = [
-        { id: "comfortable", label: _t("gallery.comfortable") },
         { id: "compact", label: _t("gallery.compact") },
+        { id: "comfortable", label: _t("gallery.comfortable") },
+        { id: "spacious", label: _t("gallery.spacious") },
     ];
 
+    const densityLabel =
+        densities.find((d) => d.id === theme.density)?.label ??
+        _t("gallery.comfortable");
+
+    const fontLabel =
+        INVOICE_FONTS.find((f) => f.id === theme.fontId)?.name ??
+        INVOICE_FONTS[0].name;
+
+    /*
+     * The chip row that sits above the invoice in the desktop toolbar, as in
+     * option B. Three separate buttons all opening the same dialog, so the
+     * dialog is controlled rather than wrapped in a single DialogTrigger.
+     */
+    const chip =
+        "inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground";
+
+    const trigger =
+        variant === "chips" ? (
+            <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                    type="button"
+                    className={chip}
+                    onClick={() => handleOpenChange(true)}
+                >
+                    <LayoutTemplate className="h-3.5 w-3.5" />
+                    {activeName}
+                </button>
+
+                <button
+                    type="button"
+                    className={chip}
+                    onClick={() => handleOpenChange(true)}
+                    aria-label={_t("gallery.accent")}
+                >
+                    <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: theme.accentColor }}
+                    />
+                    {fontLabel}
+                </button>
+
+                <button
+                    type="button"
+                    className={chip}
+                    onClick={() => handleOpenChange(true)}
+                >
+                    {densityLabel}
+                </button>
+            </div>
+        ) : (
+            <>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {_t("gallery.templateLabel")}
+                </p>
+                <button
+                    type="button"
+                    onClick={() => handleOpenChange(true)}
+                    className="flex w-full items-center gap-3 rounded-lg border border-border p-2 text-left transition-colors hover:border-primary/60"
+                >
+                    <div className="w-24 shrink-0 overflow-hidden rounded border border-border">
+                        {triggerValues && (
+                            <TemplatePreview
+                                values={triggerValues}
+                                templateId={activeId}
+                                locale={locale}
+                                scale={0.12}
+                                height={64}
+                            />
+                        )}
+                    </div>
+                    <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">
+                            {activeName}
+                        </span>
+                        <span className="block text-xs text-muted-foreground">
+                            {_t("gallery.changeTemplate")}
+                        </span>
+                    </span>
+                    <LayoutTemplate className="h-4 w-4 shrink-0 text-muted-foreground" />
+                </button>
+            </>
+        );
+
     return (
-        <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {_t("gallery.templateLabel")}
-            </p>
+        <div className={variant === "chips" ? "min-w-0" : undefined}>
+            {trigger}
 
             <Dialog open={open} onOpenChange={handleOpenChange}>
-                <DialogTrigger asChild>
-                    <button
-                        type="button"
-                        className="flex w-full items-center gap-3 rounded-lg border border-border p-2 text-left transition-colors hover:border-primary/60"
-                    >
-                        <div className="w-24 shrink-0 overflow-hidden rounded border border-border">
-                            {triggerValues && (
-                                <TemplatePreview
-                                    values={triggerValues}
-                                    templateId={activeId}
-                                    locale={locale}
-                                    scale={0.12}
-                                    height={64}
-                                />
-                            )}
-                        </div>
-                        <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-medium">
-                                {activeName}
-                            </span>
-                            <span className="block text-xs text-muted-foreground">
-                                {_t("gallery.changeTemplate")}
-                            </span>
-                        </span>
-                        <LayoutTemplate className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    </button>
-                </DialogTrigger>
-
                 <DialogContent className="flex h-[92dvh] max-w-6xl flex-col gap-0 p-0 sm:max-w-6xl">
                     <DialogHeader className="shrink-0 border-b px-5 py-4 text-left">
                         <DialogTitle>{_t("gallery.title")}</DialogTitle>
@@ -255,17 +382,23 @@ const TemplateGallery = () => {
                                     <label
                                         className="ml-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-dashed border-border text-[10px] text-muted-foreground"
                                         title={_t("gallery.customColor")}
+                                        style={
+                                            draftAccent
+                                                ? {
+                                                      backgroundColor:
+                                                          draftAccent,
+                                                      borderStyle: "solid",
+                                                  }
+                                                : undefined
+                                        }
                                     >
-                                        +
+                                        {draftAccent ? "" : "+"}
                                         <input
                                             type="color"
                                             className="sr-only"
-                                            value={theme.accentColor}
+                                            value={shownAccent}
                                             onChange={(e) =>
-                                                setTheme({
-                                                    accentColor:
-                                                        e.target.value,
-                                                })
+                                                commitAccent(e.target.value)
                                             }
                                         />
                                     </label>

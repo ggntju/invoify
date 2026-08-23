@@ -13,8 +13,22 @@ import {
 // Contexts
 import { useTranslationContext } from "@/contexts/TranslationContext";
 
+// Hooks
+import { useIsDesktop } from "@/hooks/useMediaQuery";
+
 const InvoiceDetails = () => {
     const { _t } = useTranslationContext();
+
+    /*
+     * Above xl the template, accent and density controls live in the preview
+     * toolbar beside the invoice, which is where option B puts them and where
+     * they belong — they change the document, not the data. Below xl there is
+     * no toolbar, so they stay here.
+     *
+     * Gated on the hook rather than a CSS `xl:hidden` so only one of the two
+     * mounts: two TemplateGallery instances would mean two dialogs.
+     */
+    const isDesktop = useIsDesktop();
 
     return (
         <section className="flex flex-col flex-wrap gap-5">
@@ -55,9 +69,11 @@ const InvoiceDetails = () => {
                     />
                 </div>
 
-                <div className="flex min-w-0 flex-col gap-2">
-                    <TemplateGallery />
-                </div>
+                {!isDesktop && (
+                    <div className="flex min-w-0 flex-col gap-2">
+                        <TemplateGallery />
+                    </div>
+                )}
             </div>
         </section>
     );

@@ -175,7 +175,9 @@ const ThemeSchema = z.object({
     fontId: z
         .enum(["outfit", "plexSans", "sourceSerif", "plexMono"])
         .optional(),
-    density: z.enum(["compact", "comfortable"]).optional(),
+    // "spacious" is new; the two older values still validate, so invoices
+    // saved before it existed keep loading.
+    density: z.enum(["compact", "comfortable", "spacious"]).optional(),
 });
 
 const InvoiceDetailsSchema = z.object({

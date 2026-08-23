@@ -97,7 +97,7 @@ const BaseNavbar = () => {
                                     <span className="text-sm text-muted-foreground">
                                         {_t("navbar.language")}
                                     </span>
-                                    <LanguageSelector />
+                                    <LanguageSelector variant="block" />
                                 </div>
 
                                 {devEnv && <DevDebug />}

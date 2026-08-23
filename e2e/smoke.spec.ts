@@ -154,9 +154,20 @@ test.describe("invoice builder", () => {
         collectProblems(page, problems);
 
         await page.goto("/en");
-        await page.locator('nav[aria-label] ol button').nth(1).click();
+        await page.locator("nav[aria-label] ol button").nth(1).click();
 
-        await page.getByRole("button", { name: /change template/i }).click();
+        /*
+         * Two entry points by design: the chip row above the invoice on
+         * desktop, the labelled thumbnail inside the Details step below xl.
+         * Both open the same dialog.
+         */
+        const chip = page.getByRole("button", { name: /^classic$/i });
+        if (await chip.count()) {
+            await chip.first().click();
+        } else {
+            await page.getByRole("button", { name: /change template/i }).click();
+        }
+
         const dialog = page.getByRole("dialog");
         await expect(dialog).toBeVisible();
 
@@ -212,10 +223,14 @@ test.describe("invoice builder", () => {
         await seedDraft(page);
         await page.goto("/en");
 
-        // Headings, not free text: "Back to Live Preview" is a button whose
-        // label also matches /live preview/, so matching on text alone would
-        // find the wrong node and pass for the wrong reason.
-        const livePreview = page.getByRole("heading", { name: /live preview/i });
+        /*
+         * Assert on the surfaces, not on their labels. In the desktop shell the
+         * "Live Preview" heading is deliberately gone — the paper on its ground
+         * says what it is — and "Back to Live Preview" is a button whose text
+         * also matches /live preview/, so a text match would pass for the wrong
+         * reason.
+         */
+        const livePreview = page.locator(".invoice-live-preview");
         const finalPdf = page.getByRole("heading", { name: /final pdf/i });
 
         await expect(livePreview).toBeVisible();
@@ -296,6 +311,69 @@ test.describe("invoice builder", () => {
         expect(shell.paneCount, "form and preview should each scroll").toBe(2);
         expect(shell.horizontal).toBe(false);
         expect(shell.verticalSlack).toBeLessThan(200);
+
+        expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
+    });
+
+    test("nothing overflows the narrow form rail", async ({ page }) => {
+        test.skip(
+            page.viewportSize()!.width < 1280,
+            "the rail only exists in the desktop shell"
+        );
+
+        const problems: string[] = [];
+        collectProblems(page, problems);
+
+        await seedDraft(page);
+        await page.goto("/en");
+
+        /*
+         * The mirror of the 375px audit, scoped to the form column. The rail is
+         * ~420px inside a 1440px viewport, so a viewport breakpoint like `sm:`
+         * would fire there and lay out for a width the column does not have.
+         * The line-items step is the one that breaks first.
+         */
+        const dots = page.locator("nav[aria-label] ol button");
+        const count = await dots.count();
+
+        for (let i = 0; i < count; i++) {
+            await dots.nth(i).click();
+            await page.waitForTimeout(250);
+
+            const result = await page.evaluate(() => {
+                // Found by computed style: `.@container` is not a valid
+                // CSS selector without escaping, and the escape differs
+                // between the DOM API and Playwright's parser.
+                const pane = [
+                    ...document.querySelectorAll<HTMLElement>("div"),
+                ].find(
+                    (el) => getComputedStyle(el).containerType === "inline-size"
+                );
+                if (!pane) return { paneWidth: 0, offenders: ["no @container pane found"] };
+
+                const right = pane.getBoundingClientRect().right;
+                const offenders: string[] = [];
+
+                pane.querySelectorAll<HTMLElement>("*").forEach((el) => {
+                    const style = getComputedStyle(el);
+                    if (style.overflowX === "auto" || style.overflowX === "scroll") return;
+                    const rect = el.getBoundingClientRect();
+                    if (rect.width === 0 || rect.height === 0) return;
+                    if (rect.right > right + 1) {
+                        offenders.push(
+                            `${el.tagName.toLowerCase()}.${el.className.toString().slice(0, 50)} +${Math.round(rect.right - right)}px`
+                        );
+                    }
+                });
+
+                return { paneWidth: Math.round(pane.clientWidth), offenders };
+            });
+
+            expect(
+                result.offenders,
+                `step ${i + 1} overflows the ${result.paneWidth}px rail`
+            ).toEqual([]);
+        }
 
         expect(problems, `page problems:\n${problems.join("\n")}`).toEqual([]);
     });

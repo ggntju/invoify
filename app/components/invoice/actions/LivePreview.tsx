@@ -97,7 +97,15 @@ function LivePreview({ data }: LivePreviewProps) {
 
     return (
         <>
-            <Subheading>{_t("actions.livePreview")}:</Subheading>
+            {/*
+             * The label is redundant once the invoice is a sheet of paper on a
+             * tinted ground — the shape says what it is. Kept below `shell`,
+             * where the preview shares a plain background with the form.
+             */}
+            <div className="shell:hidden">
+                <Subheading>{_t("actions.livePreview")}:</Subheading>
+            </div>
+
             <div
                 ref={containerRef}
                 onClick={handleClick}
@@ -105,8 +113,11 @@ function LivePreview({ data }: LivePreviewProps) {
                  * The hover affordance is scoped to this container, so the same
                  * markup rendered into the PDF or into a gallery miniature
                  * shows no interactive styling.
+                 *
+                 * In the shell this is the "paper": bounded width, centred on
+                 * the ground, with a shadow so it lifts off it.
                  */
-                className="invoice-live-preview my-1 overflow-hidden rounded-xl border border-border"
+                className="invoice-live-preview my-1 overflow-hidden rounded-xl border border-border shell:mx-auto shell:my-0 shell:max-w-[44rem] shell:border-black/5 shell:shadow-elevated"
             >
                 <DynamicInvoiceTemplate {...data} labels={labels} locale={locale} />
             </div>

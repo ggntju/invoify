@@ -48,4 +48,13 @@ export function useIsDesktop(): boolean {
     return useMediaQuery("(min-width: 1280px)");
 }
 
+/**
+ * Matches the `shell` screen in tailwind.config.js — the pinned two-pane
+ * layout. Keep the two in step; a mismatch shows up as markup that disagrees
+ * with its own styling.
+ */
+export function useIsShell(): boolean {
+    return useMediaQuery("(min-width: 1280px) and (min-height: 800px)");
+}
+
 export default useMediaQuery;

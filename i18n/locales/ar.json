@@ -11,7 +11,8 @@
       "summary": "الملخص",
       "next": "التالي",
       "back": "السابق",
-      "upNext": "التالي"
+      "upNext": "التالي",
+      "sections": "الأقسام"
     },
     "steps": {
       "fromAndTo": {

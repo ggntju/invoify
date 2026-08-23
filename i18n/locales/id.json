@@ -11,7 +11,8 @@
       "summary": "Ringkasan",
       "next": "Selanjutnya",
       "back": "Kembali",
-      "upNext": "Berikutnya"
+      "upNext": "Berikutnya",
+      "sections": "Bagian"
     },
     "steps": {
       "fromAndTo": {
