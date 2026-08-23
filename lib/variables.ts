@@ -70,10 +70,12 @@ export const NODEMAILER_PW = process.env.NODEMAILER_PW;
 /**
  * I18N
  */
-export const LOCALES = [
+/**
+ * Every locale the app ships, unordered. `LOCALES` below is the ordered list
+ * that the switcher, the sitemap and next-intl's routing all read.
+ */
+const LOCALE_CATALOGUE = [
   { code: "en", name: "English" },
-  // Second by request, directly below English. DEFAULT_LOCALE reads
-  // LOCALES[0].code, so English remains the default.
   { code: "az", name: "Azərbaycanca" },
   { code: "de", name: "Deutsch" },
   { code: "it", name: "Italiano" },
@@ -93,6 +95,33 @@ export const LOCALES = [
   { code: "id", name: "Bahasa Indonesia" },
   { code: "sr", name: "Српски" },
   { code: "he", name: "עברית" },
+];
+
+/**
+ * Pinned to the top of the switcher by request. DEFAULT_LOCALE reads
+ * LOCALES[0].code, so English must stay first of these two.
+ */
+const PINNED_LOCALES = ["en", "az"];
+
+/**
+ * The switcher shows each language under its own name, so that is what the
+ * order is built from — sorting by English name would look arbitrary next to
+ * "Deutsch" and "日本語".
+ *
+ * Intl.Collator's root order alphabetises the Latin-script names and then
+ * groups the remaining scripts after them (Cyrillic, Hebrew, Arabic, then
+ * Han/kana), which is a readable result for a mixed-script list. Computed once
+ * at module load rather than per render.
+ */
+const localeCollator = new Intl.Collator("en", { sensitivity: "base" });
+
+export const LOCALES = [
+  ...PINNED_LOCALES.map(
+    (code) => LOCALE_CATALOGUE.find((locale) => locale.code === code)!
+  ),
+  ...LOCALE_CATALOGUE.filter(
+    (locale) => !PINNED_LOCALES.includes(locale.code)
+  ).sort((a, b) => localeCollator.compare(a.name, b.name)),
 ];
 export const DEFAULT_LOCALE = LOCALES[0].code;
 
