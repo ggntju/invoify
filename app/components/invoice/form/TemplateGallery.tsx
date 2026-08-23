@@ -43,7 +43,7 @@ import { useTranslationContext } from "@/contexts/TranslationContext";
 import { cn } from "@/lib/utils";
 
 // Icons
-import { Check, LayoutTemplate } from "lucide-react";
+import { Check, ChevronDown, LayoutTemplate } from "lucide-react";
 
 // Types
 import type { InvoiceType } from "@/types";
@@ -257,44 +257,83 @@ const TemplateGallery = ({ variant = "field" }: TemplateGalleryProps) => {
         INVOICE_FONTS[0].name;
 
     /*
-     * The chip row that sits above the invoice in the desktop toolbar, as in
-     * option B. Three separate buttons all opening the same dialog, so the
-     * dialog is controlled rather than wrapped in a single DialogTrigger.
+     * The chip row above the invoice, as in option B.
+     *
+     * Each chip names *what it controls* before naming its value —
+     * "Template · Classic", not "Classic" — and carries a chevron, because a
+     * chip that only reads "Classic" tells you what the template is and
+     * nothing about it being yours to change. That is the mockup's own wording.
+     *
+     * Three separate buttons all opening the same dialog, so the dialog is
+     * controlled rather than wrapped in a single DialogTrigger.
      */
     const chip =
-        "inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground";
+        "inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/60 hover:bg-muted hover:text-foreground";
+
+    const chipValue = "font-medium text-foreground";
+    const chipSep = <span aria-hidden="true">·</span>;
 
     const trigger =
         variant === "chips" ? (
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div
+                className="flex flex-wrap items-center gap-1.5"
+                aria-label={_t("gallery.appearanceControls")}
+            >
                 <button
                     type="button"
                     className={chip}
                     onClick={() => handleOpenChange(true)}
+                    title={_t("gallery.changeTemplate")}
                 >
                     <LayoutTemplate className="h-3.5 w-3.5" />
-                    {activeName}
+                    {_t("gallery.templateLabel")}
+                    {chipSep}
+                    <span className={chipValue}>{activeName}</span>
+                    <ChevronDown className="h-3 w-3 opacity-60" />
                 </button>
 
+                {/*
+                 * The swatch *is* this chip's value, so there is no text after
+                 * the separator. Pairing "Accent" with the font name — as an
+                 * earlier version did — promised the accent and then showed
+                 * something else.
+                 */}
                 <button
                     type="button"
                     className={chip}
                     onClick={() => handleOpenChange(true)}
-                    aria-label={_t("gallery.accent")}
+                    title={_t("gallery.changeAppearance")}
                 >
+                    {_t("gallery.accent")}
                     <span
-                        className="h-2.5 w-2.5 rounded-full"
+                        className="h-3 w-3 rounded-full ring-1 ring-inset ring-black/10"
                         style={{ backgroundColor: theme.accentColor }}
                     />
-                    {fontLabel}
+                    <ChevronDown className="h-3 w-3 opacity-60" />
                 </button>
 
                 <button
                     type="button"
                     className={chip}
                     onClick={() => handleOpenChange(true)}
+                    title={_t("gallery.changeAppearance")}
                 >
-                    {densityLabel}
+                    {_t("gallery.font")}
+                    {chipSep}
+                    <span className={chipValue}>{fontLabel}</span>
+                    <ChevronDown className="h-3 w-3 opacity-60" />
+                </button>
+
+                <button
+                    type="button"
+                    className={chip}
+                    onClick={() => handleOpenChange(true)}
+                    title={_t("gallery.changeAppearance")}
+                >
+                    {_t("gallery.density")}
+                    {chipSep}
+                    <span className={chipValue}>{densityLabel}</span>
+                    <ChevronDown className="h-3 w-3 opacity-60" />
                 </button>
             </div>
         ) : (
@@ -322,11 +361,11 @@ const TemplateGallery = ({ variant = "field" }: TemplateGalleryProps) => {
                         <span className="block truncate text-sm font-medium">
                             {activeName}
                         </span>
-                        <span className="block text-xs text-muted-foreground">
+                        <span className="block text-xs text-primary">
                             {_t("gallery.changeTemplate")}
                         </span>
                     </span>
-                    <LayoutTemplate className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
                 </button>
             </>
         );

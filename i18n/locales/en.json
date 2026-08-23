@@ -215,7 +215,9 @@
     "compact": "Compact",
     "spacious": "Spacious",
     "customColor": "Custom colour",
-    "reset": "Reset"
+    "reset": "Reset",
+    "appearanceControls": "Appearance",
+    "changeAppearance": "Change the invoice's appearance"
   },
   "meta": {
     "title": "Free Invoice Generator | Invoify",

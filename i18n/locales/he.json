@@ -215,7 +215,9 @@
     "compact": "צפוף",
     "spacious": "מרווח מאוד",
     "customColor": "צבע מותאם",
-    "reset": "איפוס"
+    "reset": "איפוס",
+    "appearanceControls": "מראה",
+    "changeAppearance": "שינוי המראה של החשבונית"
   },
   "meta": {
     "title": "מחולל חשבוניות חינמי | Invoify",

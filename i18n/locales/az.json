@@ -215,7 +215,9 @@
     "compact": "Sıx",
     "spacious": "Geniş",
     "customColor": "Fərdi rəng",
-    "reset": "Sıfırla"
+    "reset": "Sıfırla",
+    "appearanceControls": "Görünüş",
+    "changeAppearance": "Qaimənin görünüşünü dəyişin"
   },
   "meta": {
     "title": "Pulsuz Qaimə Yaradıcısı | Invoify",
