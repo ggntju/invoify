@@ -1,7 +1,8 @@
 [![Discord](https://img.shields.io/badge/Discord-%40Invoify-000000?style=flat&logo=Discord&logoColor=#5865F2)](https://discord.gg/uhXKHbVKHZ)
+[![CI](https://github.com/al1abb/invoify/actions/workflows/ci.yml/badge.svg)](https://github.com/al1abb/invoify/actions/workflows/ci.yml)
 # Invoify
 
-Invoify is a web-based invoice generator application built with Next.js 13, TypeScript, React, and the Shadcn UI library. It provides an easy way to create and manage professional invoices.
+Invoify is a free, web-based invoice generator built with Next.js, TypeScript, React and the shadcn/ui library. Fill in a form, pick a template, and get a real PDF. No account, no subscription, and nothing about your customers stored on a server.
 
 ![Invoify Website image](/public/assets/img/invoify-web-app.png)
 
@@ -9,52 +10,78 @@ Invoify is a web-based invoice generator application built with Next.js 13, Type
 
 - [Invoify](#invoify)
   - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Your data stays in your browser](#your-data-stays-in-your-browser)
+  - [Languages](#languages)
   - [Technologies](#technologies)
     - [Core Technologies](#core-technologies)
     - [Additional Dependencies](#additional-dependencies)
-  - [Roadmap](#roadmap)
   - [Demo](#demo)
   - [Getting Started](#getting-started)
     - [Prerequisites](#prerequisites)
     - [Installation](#installation)
+    - [Environment variables](#environment-variables)
+  - [Development](#development)
+    - [Scripts](#scripts)
+    - [Tests](#tests)
   - [License](#license)
+  - [Discord](#discord)
 
+## Features
+
+- **13 invoice templates:** Classic, Modern, Sidebar, Bold Header, Minimal, Letterhead, Compact, Two-Tone, Bordered, Left Rail, Statement, Corner and Column.
+- **Live preview:** edit the form and watch the invoice update as you type.
+- **Real PDFs:** rendered with headless Chromium, not a screenshot of the page.
+- **Email delivery:** send the finished PDF straight to your client.
+- **Save and reload:** keep invoices in your browser and load them back later.
+- **Address book:** save senders and clients once, reuse them on every invoice.
+- **Export:** download the invoice data as JSON, CSV or XML.
+- **Signatures, logos and custom line items,** including per-invoice tax, discount and shipping.
+- **18 languages,** for both the interface and the generated PDF.
+- **Responsive:** works on a phone as well as a desktop.
+
+A walkthrough of what each part does lives on the [guide page](https://invoify.vercel.app/en/guide).
+
+## Your data stays in your browser
+
+Invoify has no accounts and no database. Everything you enter (the address book, the autosave draft and your saved invoices) is stored locally, and it is encrypted at rest with AES-GCM 256 under a key the browser generates as non-extractable, so the key cannot be copied out of the origin.
+
+Two things worth being clear about:
+
+- This protects you against someone **reading the browser profile off disk**: a shared or stolen machine, a filesystem backup, a synced profile, another OS account.
+- It does **not** protect against a script injected into the page, which holds the same key handle the app does. Defending against that would need a passphrase the app never stores.
+
+The only time invoice data leaves your machine is when you generate a PDF or send one by email, and it is not retained afterwards.
+
+## Languages
+
+Arabic, Azerbaijani, Catalan, Chinese (Simplified), English, French, German, Hebrew, Indonesian, Italian, Japanese, Norwegian (Bokmål), Norwegian (Nynorsk), Polish, Portuguese (Brazil), Serbian, Spanish and Turkish.
+
+Right-to-left layouts are supported for Arabic and Hebrew. Some PDF translations are still incomplete and fall back to English.
 
 ## Technologies
 
 ### Core Technologies
 
-- **Next.js:** React framework for SSR and client-side navigation.
+- **Next.js 15:** React framework for SSR and client-side navigation.
 - **TypeScript:** JavaScript superset with static typing.
 - **Shadcn-UI:** UI library for enhanced visuals.
 - **Tailwind:** Utility-first CSS framework.
 - **React Hook Form:** Form management for React.
 - **Zod:** TypeScript-first schema validation.
 - **Puppeteer:** PDF generation with headless browsers.
+- **next-intl:** Internationalized routing and messages.
 
 ### Additional Dependencies
 
 - **Nodemailer:** Node.js module for sending emails.
 - **Lucide Icons:** Collection of customizable SVG icons.
-
-## Roadmap
-
-- [x] **Easily Create Invoices:** Utilize a simple form to quickly generate invoices.
-- [x] **Save for Future Access:** Store your invoices directly in your browser for easy retrieval.
-- [x] **Retrieve Invoices Effortlessly:** Load and access invoices seamlessly from your saved list.
-- [x] **Flexible Download Options:** Download invoices directly or send them via email in PDF format.
-- [x] **Template Variety:** Choose from multiple (currently 2) invoice templates.
-- [x] **Live Preview:** Edit the form and see changes in real-time with the live preview feature.
-- [x] **Export in Various Formats:** Export invoices in different formats, including JSON, XLSX, CSV, and XML.
-- [ ] **I18N Support:** i18n support with multiple languages for UI and templates.
-- [ ] **Themeable Templates:** Select a theme color for the invoice
-- [ ] **Custom Inputs:** Define your own inputs that are missing from the default invoice builder. (Ex: VAT number)
-- [ ] **Individual Tax for Line Items:** Add tax details for a specific line item other than the general tax
+- **Playwright:** End-to-end tests.
 
 ## Demo
 
 > [!NOTE]
-> Please be advised that there are currently issues when using this application in the Mozilla Firefox browser. For more information, refer to [Issue #11](https://github.com/aliabb01/invoify/issues/11).
+> [Issue #11](https://github.com/al1abb/invoify/issues/11) reports PDF generation problems in Mozilla Firefox and is still open. The automated tests run against Chromium only, so the current state in Firefox is untested.
 
 Visit the [live demo](https://invoify.vercel.app) to see Invoify in action.
 
@@ -64,7 +91,7 @@ Follow these instructions to get Invoify up and running on your local machine.
 
 ### Prerequisites
 
-- Node.js and npm installed on your system.
+- Node.js 20 or later, and npm.
 
 ### Installation
 
@@ -75,25 +102,66 @@ Follow these instructions to get Invoify up and running on your local machine.
    cd invoify
    ```
 2. Install dependencies
-   
+
    ```bash
    npm install
    ```
-3. Create an .env.local file with this content (This step is for sending pdf to email feature):
-   ```env
-   NODEMAILER_EMAIL=your_email@example.com
-   NODEMAILER_PW=your_email_password
-   ```
+3. Create an `.env.local` file. See [Environment variables](#environment-variables) below. You can skip this if you do not need the "send PDF by email" feature.
 4. Start development server
 
-    ```bash
-    npm run dev
-    ```
+   ```bash
+   npm run dev
+   ```
 5. Open your web browser and access the application at [http://localhost:3000](http://localhost:3000)
-<!-- LICENSE -->
+
+### Environment variables
+
+All of these are optional; the app runs without them, minus the features they enable.
+
+| Variable | Required for | Notes |
+| --- | --- | --- |
+| `NODEMAILER_EMAIL` | Sending invoices by email | The Gmail address that sends the mail. |
+| `NODEMAILER_PW` | Sending invoices by email | A [Gmail **App Password**](https://support.google.com/accounts/answer/185833), **not** your account password. Requires 2-Step Verification. |
+| `NEXT_PUBLIC_SITE_URL` | Self-hosting | Your public origin, used for canonical URLs, hreflang and the sitemap. Defaults to `https://invoify.vercel.app`, so set it if you deploy your own copy. |
+| `GOOGLE_SC_VERIFICATION` | Google Search Console | The site-verification token. |
+
+```env
+NODEMAILER_EMAIL=your_email@example.com
+NODEMAILER_PW=your_gmail_app_password
+```
+
+`.env.local` is gitignored. If a password ever reaches a commit, revoke it rather than deleting the line, because it stays in the history.
+
+## Development
+
+### Scripts
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Development server. |
+| `npm run build` | Production build. |
+| `npm run start` | Serve the production build. |
+| `npm run lint` | ESLint. |
+| `npm run format` | Prettier, writing in place. |
+| `npm run test:e2e` | Playwright end-to-end tests. |
+| `npm run test:e2e:ui` | The same tests in Playwright's UI mode. |
+| `npm run analyze` | Production build with the bundle analyzer. |
+| `npx tsc --noEmit` | Typecheck. |
+
+`predev` and `prebuild` run `scripts/build-pdf-css.mjs`, which compiles the stylesheet the PDF renderer inlines. It runs automatically, so you only need `npm run build:pdf-css` if you change PDF styling and want to rebuild it on its own.
+
+### Tests
+
+```bash
+npx playwright install --with-deps chromium
+npm run test:e2e
+```
+
+The suite builds and serves the production bundle, then runs against it in a desktop and a mobile viewport. CI runs the same typecheck, lint and test steps on every push and pull request. See [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
 
 ## Discord
 Join the Discord server [here](https://discord.gg/uhXKHbVKHZ)
