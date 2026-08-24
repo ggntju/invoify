@@ -4,7 +4,7 @@
 
 Invoify is a free, web-based invoice generator built with Next.js, TypeScript, React and the shadcn/ui library. Fill in a form, pick a template, and get a real PDF. No account, no subscription, and nothing about your customers stored on a server.
 
-![Invoify Website image](/public/assets/img/invoify-web-app.png)
+![Invoify Website image](https://github.com/user-attachments/assets/7b7076db-736e-4a82-b61b-cec3c0ff5695)
 
 ## Table of Contents
 
@@ -122,15 +122,6 @@ All of these are optional; the app runs without them, minus the features they en
 | --- | --- | --- |
 | `NODEMAILER_EMAIL` | Sending invoices by email | The Gmail address that sends the mail. |
 | `NODEMAILER_PW` | Sending invoices by email | A [Gmail **App Password**](https://support.google.com/accounts/answer/185833), **not** your account password. Requires 2-Step Verification. |
-| `NEXT_PUBLIC_SITE_URL` | Self-hosting | Your public origin, used for canonical URLs, hreflang and the sitemap. Defaults to `https://invoify.vercel.app`, so set it if you deploy your own copy. |
-| `GOOGLE_SC_VERIFICATION` | Google Search Console | The site-verification token. |
-
-```env
-NODEMAILER_EMAIL=your_email@example.com
-NODEMAILER_PW=your_gmail_app_password
-```
-
-`.env.local` is gitignored. If a password ever reaches a commit, revoke it rather than deleting the line, because it stays in the history.
 
 ## Development
 
